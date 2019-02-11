@@ -1,0 +1,4 @@
+include ":core", ":android", ":desktop"
+
+include ":engine"
+project(":engine").projectDir = file("../cardengine")

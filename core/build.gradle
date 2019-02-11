@@ -1,0 +1,51 @@
+apply plugin: "kotlin"
+
+dependencies {
+    api project(":engine")
+
+    implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    implementation "io.github.libktx:ktx-collections:$ktxVersion"
+    implementation "io.github.libktx:ktx-graphics:$ktxVersion"
+    implementation "io.github.libktx:ktx-assets:$ktxVersion"
+
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion"
+    testImplementation "junit:junit:$junitVersion"
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_6
+    targetCompatibility = JavaVersion.VERSION_1_6
+}
+
+sourceSets {
+    main {
+        java.srcDirs = ["src/main"]
+        resources.srcDirs = ["assets"]
+    }
+    test {
+        java.srcDirs = ["src/test"]
+    }
+}
+
+
+// Tasks to copy the engine assets to the core assets folder
+task copyEngineAssets {
+    file("assets/engine").mkdirs()
+    copy {
+        from "../../cardengine/assets"
+        into "assets/engine"
+    }
+}
+
+task cleanEngineAssets(type: Delete) {
+    setDelete("assets/engine")
+}
+
+clean {
+    finalizedBy cleanEngineAssets
+}
+
+build {
+    finalizedBy copyEngineAssets
+}
