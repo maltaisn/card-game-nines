@@ -21,8 +21,8 @@ import com.badlogic.gdx.utils.Align
 import io.github.maltaisn.cardengine.CardGameScreen
 import io.github.maltaisn.cardengine.PCardSpriteLoader
 import io.github.maltaisn.cardengine.core.PCard
+import io.github.maltaisn.cardengine.widget.AnimationLayer
 import io.github.maltaisn.cardengine.widget.CardActor
-import io.github.maltaisn.cardengine.widget.CardAnimationLayer
 import io.github.maltaisn.cardengine.widget.CardContainer
 import io.github.maltaisn.cardengine.widget.CardHand
 
@@ -49,7 +49,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                 alignment = Align.top
                 setCards(deck.drawTop(5))
                 setDragListener(object : CardContainer.DragListener {
-                    override fun onCardDragged(actor: CardActor): CardAnimationLayer.CardDragListener? {
+                    override fun onCardDragged(actor: CardActor): AnimationLayer.CardDragListener? {
                         val start = column.findIndexOfCardActor(actor)
                         val actors = Array(column.size - start) { column.getCardActorAt(it + start) }
                         return animationLayer.dragCards(*actors)
