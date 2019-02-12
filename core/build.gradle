@@ -31,15 +31,15 @@ sourceSets {
 
 // Tasks to copy the engine assets to the core assets folder
 task copyEngineAssets {
-    file("assets/engine").mkdirs()
+    file("../assets/engine").mkdirs()
     copy {
         from "../../cardengine/assets"
-        into "assets/engine"
+        into "../assets/engine"
     }
 }
 
 task cleanEngineAssets(type: Delete) {
-    setDelete("assets/engine")
+    setDelete("../assets/engine")
 }
 
 clean {

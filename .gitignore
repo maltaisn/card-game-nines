@@ -1,4 +1,5 @@
 todo.txt
+META-INF/
 
 ## Android Studio and Intellij and Android in general
 /android/libs/armeabi/
@@ -14,13 +15,10 @@ todo.txt
 ## Gradle
 /local.properties
 .gradle/
-/build/
-/android/build/
-/core/build/
-/desktop/build/
+build/
 
 ## Copied assets
-/core/assets/engine/
+/assets/engine/
 
 ## OS Specific
 .DS_Store

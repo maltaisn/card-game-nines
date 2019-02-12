@@ -8,33 +8,13 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_6
-    targetCompatibility = JavaVersion.VERSION_1_6
-}
-
 sourceSets {
     main {
         java.srcDirs = ["src/main"]
     }
 }
 
-def mainClassName = "io.github.maltaisn.cardenginetest.desktop.DesktopLauncher"
-def assetsDir = file("../core/assets")
-
-task dist(dependsOn: classes, type: Jar) {
-    from files(sourceSets.main.output.getClassesDirs())
-    from { configurations.compile.collect { zipTree(it) } }
-    from files(assetsDir)
-    
-    /*
-    from {
-        files(sourceSets.main.output.getClassesDirs())
-        files(sourceSets.main.output.resourcesDir)
-        files(assetsDir)
-        configurations.compile.collect { zipTree(it) }
-    }
-    */
-
-    manifest.attributes "Main-Class": mainClassName
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_6
+    targetCompatibility = JavaVersion.VERSION_1_6
 }
