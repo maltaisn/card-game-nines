@@ -59,9 +59,11 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                     override fun canCardsBePlayed(actors: Array<CardActor>, src: CardContainer) = true
 
                     override fun onCardsPlayed(actors: Array<CardActor>, src: CardContainer, pos: Vector2) {
+                        var insertPos = column.findInsertPositionForCoordinates(pos.x, pos.y)
                         for (actor in actors) {
                             animationLayer.moveCard(src, column,
-                                    src.findIndexOfCardActor(actor), column.size)
+                                    src.findIndexOfCardActor(actor), insertPos)
+                            insertPos++
                         }
                     }
                 })
