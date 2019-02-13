@@ -39,11 +39,38 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         val deck = PCard.fullDeck(true)
         deck.shuffle()
 
+        /*
+        val count = 16
+
+        val hand1 = CardHand(cardLoader)
+        gameLayer.add(hand1).pad(30f).grow().row()
+        hand1.setCards(deck.drawTop(count))
+
+        val hand2 = CardHand(cardLoader)
+        hand2.setCards(arrayOfNulls<Card>(count).toList())
+        gameLayer.add(hand2).pad(30f).grow()
+
+        addListener(object : InputListener() {
+            override fun keyUp(event: InputEvent, keycode: Int): Boolean {
+                if (keycode == Input.Keys.A) {
+                    repeat(count) {
+                        animationLayer.moveCardDelayed(hand1, hand2,
+                                count - it - 1, it, true, it * 0.5f + 1f) {
+                            animationLayer.update()
+                        }
+                    }
+                    return true
+                }
+                return false
+
+            }
+        })
+        */
 
         repeat(4) {
             val column = CardHand(cardLoader)
             gameLayer.add(column).pad(30f, 20f, 30f, 20f).grow()
-            with(column) {
+            column.apply {
                 horizontal = false
                 cardSize = CardActor.CARD_SIZE_NORMAL
                 alignment = Align.top
@@ -51,8 +78,11 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                 setDragListener(object : CardContainer.DragListener {
                     override fun onCardDragged(actor: CardActor): AnimationLayer.CardDragListener? {
                         val start = column.findIndexOfCardActor(actor)
-                        val actors = Array(column.size - start) { column.getCardActorAt(it + start) }
-                        return animationLayer.dragCards(*actors)
+                        val actors = ArrayList<CardActor>()
+                        for (i in start until column.size) {
+                            column.getCardActorAt(i)?.let { actors += it }
+                        }
+                        return animationLayer.dragCards(*actors.toTypedArray())
                     }
                 })
                 setPlayListener(object : CardContainer.PlayListener {
@@ -70,7 +100,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
             }
         }
 
-        /*
+/*
         val group1 = CardHand(cardLoader)
         val group2 = CardHand(cardLoader)
         val stack1 = CardStack(cardLoader)
@@ -85,11 +115,12 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         gameLayer.add(group1).pad(20f).fill()
         gameLayer.add(table).grow()
 
-        with(group1) {
+        group1.apply {
             sorter = PCard.DEFAULT_SORTER
             cardSize = CardActor.CARD_SIZE_SMALL
             horizontal = false
             setCards(deck.drawTop(3))
+            sort()
             addClickListener(object : CardContainer.ClickListener {
                 override fun onCardClicked(actor: CardActor, index: Int) {
                     animationLayer.moveCard(group1, stack2, index, stack2.size)
@@ -128,12 +159,13 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
             invalidate()
         }
 
-        with(group2) {
+        group2.apply {
             sorter = PCard.DEFAULT_SORTER
             cardSize = CardActor.CARD_SIZE_BIG
             alignment = Align.bottom
             clipPercent = 0.3f
             setCards(deck.drawTop(6))
+            sort()
             addClickListener(object : CardContainer.ClickListener {
                 override fun onCardClicked(actor: CardActor, index: Int) {
                     animationLayer.moveCard(group2, group1, index, 0)
@@ -148,7 +180,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
             invalidate()
         }
 
-        with(stack1) {
+        stack1.apply {
             val cards = PCard.fullDeck(false)
             PCard.DEFAULT_SORTER.initialize(cards)
             cards.sortWith(PCard.DEFAULT_SORTER)
@@ -179,7 +211,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
             invalidate()
         }
 
-        with(stack2) {
+        stack2.apply {
             visibility = CardContainer.Visibility.ALL
             drawSlot = true
             cardSize = CardActor.CARD_SIZE_NORMAL
