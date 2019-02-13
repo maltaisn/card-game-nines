@@ -16,14 +16,13 @@
 
 package io.github.maltaisn.cardenginetest.core
 
-import com.badlogic.gdx.math.Vector2
-import com.badlogic.gdx.utils.Align
+import com.badlogic.gdx.Input
+import com.badlogic.gdx.scenes.scene2d.InputEvent
+import com.badlogic.gdx.scenes.scene2d.InputListener
 import io.github.maltaisn.cardengine.CardGameScreen
 import io.github.maltaisn.cardengine.PCardSpriteLoader
+import io.github.maltaisn.cardengine.core.Card
 import io.github.maltaisn.cardengine.core.PCard
-import io.github.maltaisn.cardengine.widget.AnimationLayer
-import io.github.maltaisn.cardengine.widget.CardActor
-import io.github.maltaisn.cardengine.widget.CardContainer
 import io.github.maltaisn.cardengine.widget.CardHand
 
 
@@ -34,12 +33,12 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         assetManager.finishLoading()
         cardLoader.initialize()
 
-        //isDebugAll = true
+        isDebugAll = true
 
         val deck = PCard.fullDeck(true)
         deck.shuffle()
 
-        /*
+
         val count = 16
 
         val hand1 = CardHand(cardLoader)
@@ -53,11 +52,13 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         addListener(object : InputListener() {
             override fun keyUp(event: InputEvent, keycode: Int): Boolean {
                 if (keycode == Input.Keys.A) {
-                    repeat(count) {
-                        animationLayer.moveCardDelayed(hand1, hand2,
-                                count - it - 1, it, true, it * 0.5f + 1f) {
-                            animationLayer.update()
-                        }
+                    if (animationLayer.animationRunning) {
+                        animationLayer.completeAnimation(true)
+                    }
+                    if (hand1.getCardActorAt(0) != null) {
+                        animationLayer.deal(hand1, hand2, count, replaceSrc = true, replaceDst = true)
+                    } else {
+                        animationLayer.deal(hand2, hand1, count, replaceSrc = true, replaceDst = true)
                     }
                     return true
                 }
@@ -65,8 +66,8 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
 
             }
         })
-        */
 
+/*
         repeat(4) {
             val column = CardHand(cardLoader)
             gameLayer.add(column).pad(30f, 20f, 30f, 20f).grow()
@@ -99,7 +100,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                 })
             }
         }
-
+*/
 /*
         val group1 = CardHand(cardLoader)
         val group2 = CardHand(cardLoader)
