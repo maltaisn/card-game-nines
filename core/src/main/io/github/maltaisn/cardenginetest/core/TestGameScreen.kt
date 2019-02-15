@@ -44,6 +44,9 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         isDebugAll = true
 
         setupTrick()
+        //setupSolitaire()
+        //setupNullDeal()
+        //setupCardLoop()
     }
 
     private fun setupTrick() {
@@ -58,11 +61,18 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
 
             override fun onCardsPlayed(actors: Array<CardActor>, src: CardContainer, pos: Vector2) {
                 val index = trick.findInsertPositionForCoordinates(pos.x, pos.y)
-                if (trick.getCardActorAt(index) == null) {
+                if (trick.actors[index] == null) {
                     animationLayer.moveCard(src, trick,
-                            src.findIndexOfCardActor(actors.first()), index,
+                            src.actors.indexOf(actors.first()), index,
                             replaceDst = true)
                 }
+            }
+        })
+        trick.setDragListener(object : CardContainer.DragListener {
+            override fun onCardDragged(actor: CardActor): AnimationLayer.CardDragger? {
+                val dragger = animationLayer.dragCards(actor)
+                dragger?.rearrangeable = true
+                return dragger
             }
         })
         trick.addClickListener(object : CardContainer.ClickListener {
@@ -78,7 +88,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                         trick.invalidate()
                         if (progress >= 1) {
                             for (i in 0 until trick.size) {
-                                if (trick.getCardActorAt(i) != null) {
+                                if (trick.actors[i] != null) {
                                     animationLayer.moveCard(trick, hand, i, hand.size, replaceSrc = true)
                                 }
                             }
@@ -91,12 +101,14 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
             }
         })
 
-        hand.setCards(deck.drawTop(12))
+        hand.cards = deck.drawTop(12)
         hand.alignment = Align.bottom
         hand.clipPercent = 0.3f
         hand.setDragListener(object : CardContainer.DragListener {
-            override fun onCardDragged(actor: CardActor): AnimationLayer.CardDragListener? {
-                return animationLayer.dragCards(actor)
+            override fun onCardDragged(actor: CardActor): AnimationLayer.CardDragger? {
+                val dragger = animationLayer.dragCards(actor)
+                dragger?.rearrangeable = true
+                return dragger
             }
         })
 
@@ -115,15 +127,17 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                 horizontal = false
                 cardSize = CardActor.CARD_SIZE_NORMAL
                 alignment = Align.top
-                setCards(deck.drawTop(5))
+                cards = deck.drawTop(5)
                 setDragListener(object : CardContainer.DragListener {
-                    override fun onCardDragged(actor: CardActor): AnimationLayer.CardDragListener? {
-                        val start = column.findIndexOfCardActor(actor)
+                    override fun onCardDragged(actor: CardActor): AnimationLayer.CardDragger? {
+                        val start = column.actors.indexOf(actor)
                         val actors = ArrayList<CardActor>()
                         for (i in start until column.size) {
-                            column.getCardActorAt(i)?.let { actors += it }
+                            column.actors[i]?.let { actors += it }
                         }
-                        return animationLayer.dragCards(*actors.toTypedArray())
+                        val dragger = animationLayer.dragCards(*actors.toTypedArray())
+                        dragger?.rearrangeable = true
+                        return dragger
                     }
                 })
                 setPlayListener(object : CardContainer.PlayListener {
@@ -133,7 +147,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                         var insertPos = column.findInsertPositionForCoordinates(pos.x, pos.y)
                         for (actor in actors) {
                             animationLayer.moveCard(src, column,
-                                    src.findIndexOfCardActor(actor), insertPos)
+                                    src.actors.indexOf(actor), insertPos)
                             insertPos++
                         }
                     }
@@ -150,10 +164,10 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
 
         val hand1 = CardHand(cardLoader)
         gameLayer.add(hand1).pad(30f).grow().row()
-        hand1.setCards(deck.drawTop(count))
+        hand1.cards = deck.drawTop(count)
 
         val hand2 = CardHand(cardLoader)
-        hand2.setCards(arrayOfNulls<Card>(count).toList())
+        hand2.cards = arrayOfNulls<Card>(count).toList()
         gameLayer.add(hand2).pad(30f).grow()
 
         addListener(object : InputListener() {
@@ -162,7 +176,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                     if (animationLayer.animationRunning) {
                         animationLayer.completeAnimation(true)
                     }
-                    if (hand1.getCardActorAt(0) != null) {
+                    if (hand1.actors.first() != null) {
                         animationLayer.deal(hand1, hand2, count, replaceSrc = true, replaceDst = true)
                     } else {
                         animationLayer.deal(hand2, hand1, count, replaceSrc = true, replaceDst = true)
@@ -197,7 +211,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
             sorter = PCard.DEFAULT_SORTER
             cardSize = CardActor.CARD_SIZE_SMALL
             horizontal = false
-            setCards(deck.drawTop(3))
+            cards = deck.drawTop(3)
             sort()
             addClickListener(object : CardContainer.ClickListener {
                 override fun onCardClicked(actor: CardActor, index: Int) {
@@ -229,7 +243,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
 
                 override fun onCardsPlayed(actors: Array<CardActor>, src: CardContainer, pos: Vector2) {
                     animationLayer.moveCard(src, group1,
-                            src.findIndexOfCardActor(actors.first()), 0)
+                            src.actors.indexOf(actors.first()), 0)
                     group1.sort()
                     (src as? CardHand)?.sort()
                 }
@@ -242,7 +256,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
             cardSize = CardActor.CARD_SIZE_BIG
             alignment = Align.bottom
             clipPercent = 0.3f
-            setCards(deck.drawTop(6))
+            cards = deck.drawTop(6)
             sort()
             addClickListener(object : CardContainer.ClickListener {
                 override fun onCardClicked(actor: CardActor, index: Int) {
@@ -259,12 +273,13 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         }
 
         stack1.apply {
-            val cards = PCard.fullDeck(false)
-            PCard.DEFAULT_SORTER.initialize(cards)
-            cards.sortWith(PCard.DEFAULT_SORTER)
-            cards.reverse()
+            val stackCards = PCard.fullDeck(false)
+            PCard.DEFAULT_SORTER.initialize(stackCards)
+            stackCards.sortWith(PCard.DEFAULT_SORTER)
+            stackCards.reverse()
+
             visibility = CardContainer.Visibility.NONE
-            setCards(cards)
+            cards = stackCards
             addClickListener(object : CardContainer.ClickListener {
                 override fun onCardClicked(actor: CardActor, index: Int) {
                     animationLayer.moveCard(stack1, group2, index, 0)
@@ -282,7 +297,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
 
                 override fun onCardsPlayed(actors: Array<CardActor>, src: CardContainer, pos: Vector2) {
                     animationLayer.moveCard(src, stack1,
-                            src.findIndexOfCardActor(actors.first()), stack1.size)
+                            src.actors.indexOf(actors.first()), stack1.size)
                     (src as? CardHand)?.sort()
                 }
             })
@@ -293,7 +308,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
             visibility = CardContainer.Visibility.ALL
             drawSlot = true
             cardSize = CardActor.CARD_SIZE_NORMAL
-            setCards(deck.drawTop(1))
+            cards = deck.drawTop(1)
             addClickListener(object : CardContainer.ClickListener {
                 override fun onCardClicked(actor: CardActor, index: Int) {
                     animationLayer.moveCard(stack2, stack1, index, stack1.size)
@@ -307,7 +322,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
 
                 override fun onCardsPlayed(actors: Array<CardActor>, src: CardContainer, pos: Vector2) {
                     animationLayer.moveCard(src, stack2,
-                            src.findIndexOfCardActor(actors.first()), stack2.size)
+                            src.actors.indexOf(actors.first()), stack2.size)
                     (src as? CardHand)?.sort()
                 }
             })
