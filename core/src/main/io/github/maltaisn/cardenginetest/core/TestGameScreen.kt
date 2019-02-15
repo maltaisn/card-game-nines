@@ -248,7 +248,6 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                     (src as? CardHand)?.sort()
                 }
             })
-            invalidate()
         }
 
         group2.apply {
@@ -269,7 +268,6 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
             setDragListener(object : CardContainer.DragListener {
                 override fun onCardDragged(actor: CardActor) = animationLayer.dragCards(actor)
             })
-            invalidate()
         }
 
         stack1.apply {
@@ -301,7 +299,6 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                     (src as? CardHand)?.sort()
                 }
             })
-            invalidate()
         }
 
         stack2.apply {
@@ -326,7 +323,6 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                     (src as? CardHand)?.sort()
                 }
             })
-            invalidate()
         }
 
         addListener(object : InputListener() {
