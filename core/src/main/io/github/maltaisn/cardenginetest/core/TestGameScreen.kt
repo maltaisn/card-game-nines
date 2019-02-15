@@ -17,57 +17,97 @@
 package io.github.maltaisn.cardenginetest.core
 
 import com.badlogic.gdx.Input
+import com.badlogic.gdx.math.Interpolation
+import com.badlogic.gdx.math.Vector2
+import com.badlogic.gdx.scenes.scene2d.Action
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
+import com.badlogic.gdx.scenes.scene2d.ui.Table
+import com.badlogic.gdx.utils.Align
 import io.github.maltaisn.cardengine.CardGameScreen
 import io.github.maltaisn.cardengine.PCardSpriteLoader
+import io.github.maltaisn.cardengine.applyBounded
 import io.github.maltaisn.cardengine.core.Card
 import io.github.maltaisn.cardengine.core.PCard
-import io.github.maltaisn.cardengine.widget.CardHand
+import io.github.maltaisn.cardengine.widget.*
+import kotlin.math.PI
 
 
 class TestGameScreen(game: TestGame) : CardGameScreen(game) {
 
+    private val cardLoader = PCardSpriteLoader(assetManager)
+
     init {
-        val cardLoader = PCardSpriteLoader(assetManager)
         assetManager.finishLoading()
         cardLoader.initialize()
 
         isDebugAll = true
 
+        setupTrick()
+    }
+
+    private fun setupTrick() {
         val deck = PCard.fullDeck(true)
         deck.shuffle()
 
+        val trick = CardTrick(cardLoader, 4)
+        val hand = CardHand(cardLoader)
 
-        val count = 16
+        trick.setPlayListener(object : CardContainer.PlayListener {
+            override fun canCardsBePlayed(actors: Array<CardActor>, src: CardContainer) = true
 
-        val hand1 = CardHand(cardLoader)
-        gameLayer.add(hand1).pad(30f).grow().row()
-        hand1.setCards(deck.drawTop(count))
-
-        val hand2 = CardHand(cardLoader)
-        hand2.setCards(arrayOfNulls<Card>(count).toList())
-        gameLayer.add(hand2).pad(30f).grow()
-
-        addListener(object : InputListener() {
-            override fun keyUp(event: InputEvent, keycode: Int): Boolean {
-                if (keycode == Input.Keys.A) {
-                    if (animationLayer.animationRunning) {
-                        animationLayer.completeAnimation(true)
-                    }
-                    if (hand1.getCardActorAt(0) != null) {
-                        animationLayer.deal(hand1, hand2, count, replaceSrc = true, replaceDst = true)
-                    } else {
-                        animationLayer.deal(hand2, hand1, count, replaceSrc = true, replaceDst = true)
-                    }
-                    return true
+            override fun onCardsPlayed(actors: Array<CardActor>, src: CardContainer, pos: Vector2) {
+                val index = trick.findInsertPositionForCoordinates(pos.x, pos.y)
+                if (trick.getCardActorAt(index) == null) {
+                    animationLayer.moveCard(src, trick,
+                            src.findIndexOfCardActor(actors.first()), index,
+                            replaceDst = true)
                 }
-                return false
+            }
+        })
+        trick.addClickListener(object : CardContainer.ClickListener {
+            override fun onCardClicked(actor: CardActor, index: Int) {
+                trick.addAction(object : Action() {
+                    private var elapsed = 0f
+                    private val startAngle = trick.startAngle
 
+                    override fun act(delta: Float): Boolean {
+                        elapsed += delta
+                        val progress = Interpolation.smooth.applyBounded(elapsed / 1.0f)
+                        trick.startAngle = startAngle + progress * PI.toFloat() / 3
+                        trick.invalidate()
+                        if (progress >= 1) {
+                            for (i in 0 until trick.size) {
+                                if (trick.getCardActorAt(i) != null) {
+                                    animationLayer.moveCard(trick, hand, i, hand.size, replaceSrc = true)
+                                }
+                            }
+                            animationLayer.update()
+                            return true
+                        }
+                        return false
+                    }
+                })
             }
         })
 
-/*
+        hand.setCards(deck.drawTop(12))
+        hand.alignment = Align.bottom
+        hand.clipPercent = 0.3f
+        hand.setDragListener(object : CardContainer.DragListener {
+            override fun onCardDragged(actor: CardActor): AnimationLayer.CardDragListener? {
+                return animationLayer.dragCards(actor)
+            }
+        })
+
+        gameLayer.add(trick).grow().pad(30f).row()
+        gameLayer.add(hand).grow().pad(0f, 30f, 0f, 30f)
+    }
+
+    fun setupSolitaire() {
+        val deck = PCard.fullDeck(false)
+        deck.shuffle()
+
         repeat(4) {
             val column = CardHand(cardLoader)
             gameLayer.add(column).pad(30f, 20f, 30f, 20f).grow()
@@ -100,8 +140,45 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                 })
             }
         }
-*/
-/*
+    }
+
+    fun setupNullDeal() {
+        val deck = PCard.fullDeck(false)
+        deck.shuffle()
+
+        val count = 16
+
+        val hand1 = CardHand(cardLoader)
+        gameLayer.add(hand1).pad(30f).grow().row()
+        hand1.setCards(deck.drawTop(count))
+
+        val hand2 = CardHand(cardLoader)
+        hand2.setCards(arrayOfNulls<Card>(count).toList())
+        gameLayer.add(hand2).pad(30f).grow()
+
+        addListener(object : InputListener() {
+            override fun keyUp(event: InputEvent, keycode: Int): Boolean {
+                if (keycode == Input.Keys.A) {
+                    if (animationLayer.animationRunning) {
+                        animationLayer.completeAnimation(true)
+                    }
+                    if (hand1.getCardActorAt(0) != null) {
+                        animationLayer.deal(hand1, hand2, count, replaceSrc = true, replaceDst = true)
+                    } else {
+                        animationLayer.deal(hand2, hand1, count, replaceSrc = true, replaceDst = true)
+                    }
+                    return true
+                }
+                return false
+
+            }
+        })
+    }
+
+    fun setupCardLoop() {
+        val deck = PCard.fullDeck(false)
+        deck.shuffle()
+
         val group1 = CardHand(cardLoader)
         val group2 = CardHand(cardLoader)
         val stack1 = CardStack(cardLoader)
@@ -145,7 +222,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                             null
                         }
             })
-            setPlayListener(object: CardContainer.PlayListener {
+            setPlayListener(object : CardContainer.PlayListener {
                 override fun canCardsBePlayed(actors: Array<CardActor>, src: CardContainer): Boolean {
                     return src === group2 && (actors.first().card as PCard).color == PCard.BLACK
                 }
@@ -198,7 +275,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
             setDragListener(object : CardContainer.DragListener {
                 override fun onCardDragged(actor: CardActor) = animationLayer.dragCards(actor)
             })
-            setPlayListener(object: CardContainer.PlayListener {
+            setPlayListener(object : CardContainer.PlayListener {
                 override fun canCardsBePlayed(actors: Array<CardActor>, src: CardContainer): Boolean {
                     return src === group1
                 }
@@ -223,7 +300,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                     animationLayer.update()
                 }
             })
-            setPlayListener(object: CardContainer.PlayListener {
+            setPlayListener(object : CardContainer.PlayListener {
                 override fun canCardsBePlayed(actors: Array<CardActor>, src: CardContainer): Boolean {
                     return src === group1 || src === stack1
                 }
@@ -248,7 +325,6 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                 return false
             }
         })
-        */
     }
 
 }
