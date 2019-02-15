@@ -20,7 +20,6 @@ import io.github.maltaisn.cardengine.core.BaseGameState
 import io.github.maltaisn.cardengine.core.BaseMove
 import io.github.maltaisn.cardengine.core.Deck
 import io.github.maltaisn.cardengine.core.PCard
-import java.util.*
 import kotlin.random.Random
 
 /**
@@ -151,7 +150,7 @@ class GameState : BaseGameState<Player> {
     }
 
     override fun getMoves(): MutableList<BaseMove> {
-        val moves = ArrayList<BaseMove>()
+        val moves = mutableListOf<BaseMove>()
         if (isGameDone()) return moves
 
         val player = players[playerToMove]
@@ -220,7 +219,7 @@ class GameState : BaseGameState<Player> {
         player as MctsPlayer
 
         // Create a list of all hands unknown to the observer.
-        val hands = ArrayList<Hand>()
+        val hands = mutableListOf<Hand>()
         for (p in state.players) {
             if (p.hand.id !in player.knownHands) {
                 hands += p.hand

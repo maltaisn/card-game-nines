@@ -25,12 +25,13 @@ import io.github.maltaisn.cardengine.core.*
 class MctsPlayer : Player {
 
     /** IDs of known hands. They won't be randomized by [GameState.randomizedClone]. */
-    val knownHands = ArrayList<Int>()
+    val knownHands = mutableListOf<Int>()
 
     /**
      * Array indexed by hand ID. Each index is a list of
      * possible suits a hand can have. If the player with the hand cannot
      * follow the suit on a trick, a suit is removed from the list.
+     * TODO ArrayList<Int> can be replaced with bit field
      */
     lateinit var handSuits: Array<ArrayList<Int>>
         private set

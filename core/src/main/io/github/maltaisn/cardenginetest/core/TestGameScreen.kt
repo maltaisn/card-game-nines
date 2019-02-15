@@ -17,20 +17,16 @@
 package io.github.maltaisn.cardenginetest.core
 
 import com.badlogic.gdx.Input
-import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.math.Vector2
-import com.badlogic.gdx.scenes.scene2d.Action
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.utils.Align
 import io.github.maltaisn.cardengine.CardGameScreen
 import io.github.maltaisn.cardengine.PCardSpriteLoader
-import io.github.maltaisn.cardengine.applyBounded
 import io.github.maltaisn.cardengine.core.Card
 import io.github.maltaisn.cardengine.core.PCard
 import io.github.maltaisn.cardengine.widget.*
-import kotlin.math.PI
 
 
 class TestGameScreen(game: TestGame) : CardGameScreen(game) {
@@ -41,7 +37,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         assetManager.finishLoading()
         cardLoader.initialize()
 
-        isDebugAll = true
+        isDebugAll = false
 
         setupTrick()
         //setupSolitaire()
@@ -57,9 +53,9 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         val hand = CardHand(cardLoader)
 
         trick.setPlayListener(object : CardContainer.PlayListener {
-            override fun canCardsBePlayed(actors: Array<CardActor>, src: CardContainer) = true
+            override fun canCardsBePlayed(actors: List<CardActor>, src: CardContainer) = true
 
-            override fun onCardsPlayed(actors: Array<CardActor>, src: CardContainer, pos: Vector2) {
+            override fun onCardsPlayed(actors: List<CardActor>, src: CardContainer, pos: Vector2) {
                 val index = trick.findInsertPositionForCoordinates(pos.x, pos.y)
                 if (trick.actors[index] == null) {
                     animationLayer.moveCard(src, trick,
@@ -77,27 +73,12 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         })
         trick.addClickListener(object : CardContainer.ClickListener {
             override fun onCardClicked(actor: CardActor, index: Int) {
-                trick.addAction(object : Action() {
-                    private var elapsed = 0f
-                    private val startAngle = trick.startAngle
-
-                    override fun act(delta: Float): Boolean {
-                        elapsed += delta
-                        val progress = Interpolation.smooth.applyBounded(elapsed / 1.0f)
-                        trick.startAngle = startAngle + progress * PI.toFloat() / 3
-                        trick.invalidate()
-                        if (progress >= 1) {
-                            for (i in 0 until trick.size) {
-                                if (trick.actors[i] != null) {
-                                    animationLayer.moveCard(trick, hand, i, hand.size, replaceSrc = true)
-                                }
-                            }
-                            animationLayer.update()
-                            return true
-                        }
-                        return false
+                for (i in 0 until trick.size) {
+                    if (trick.actors[i] != null) {
+                        animationLayer.moveCard(trick, hand, i, hand.size, replaceSrc = true)
                     }
-                })
+                }
+                animationLayer.update()
             }
         })
 
@@ -131,7 +112,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                 setDragListener(object : CardContainer.DragListener {
                     override fun onCardDragged(actor: CardActor): AnimationLayer.CardDragger? {
                         val start = column.actors.indexOf(actor)
-                        val actors = ArrayList<CardActor>()
+                        val actors = mutableListOf<CardActor>()
                         for (i in start until column.size) {
                             column.actors[i]?.let { actors += it }
                         }
@@ -141,9 +122,9 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                     }
                 })
                 setPlayListener(object : CardContainer.PlayListener {
-                    override fun canCardsBePlayed(actors: Array<CardActor>, src: CardContainer) = true
+                    override fun canCardsBePlayed(actors: List<CardActor>, src: CardContainer) = true
 
-                    override fun onCardsPlayed(actors: Array<CardActor>, src: CardContainer, pos: Vector2) {
+                    override fun onCardsPlayed(actors: List<CardActor>, src: CardContainer, pos: Vector2) {
                         var insertPos = column.findInsertPositionForCoordinates(pos.x, pos.y)
                         for (actor in actors) {
                             animationLayer.moveCard(src, column,
@@ -237,11 +218,11 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                         }
             })
             setPlayListener(object : CardContainer.PlayListener {
-                override fun canCardsBePlayed(actors: Array<CardActor>, src: CardContainer): Boolean {
+                override fun canCardsBePlayed(actors: List<CardActor>, src: CardContainer): Boolean {
                     return src === group2 && (actors.first().card as PCard).color == PCard.BLACK
                 }
 
-                override fun onCardsPlayed(actors: Array<CardActor>, src: CardContainer, pos: Vector2) {
+                override fun onCardsPlayed(actors: List<CardActor>, src: CardContainer, pos: Vector2) {
                     animationLayer.moveCard(src, group1,
                             src.actors.indexOf(actors.first()), 0)
                     group1.sort()
@@ -289,11 +270,11 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                 override fun onCardDragged(actor: CardActor) = animationLayer.dragCards(actor)
             })
             setPlayListener(object : CardContainer.PlayListener {
-                override fun canCardsBePlayed(actors: Array<CardActor>, src: CardContainer): Boolean {
+                override fun canCardsBePlayed(actors: List<CardActor>, src: CardContainer): Boolean {
                     return src === group1
                 }
 
-                override fun onCardsPlayed(actors: Array<CardActor>, src: CardContainer, pos: Vector2) {
+                override fun onCardsPlayed(actors: List<CardActor>, src: CardContainer, pos: Vector2) {
                     animationLayer.moveCard(src, stack1,
                             src.actors.indexOf(actors.first()), stack1.size)
                     (src as? CardHand)?.sort()
@@ -313,11 +294,11 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                 }
             })
             setPlayListener(object : CardContainer.PlayListener {
-                override fun canCardsBePlayed(actors: Array<CardActor>, src: CardContainer): Boolean {
+                override fun canCardsBePlayed(actors: List<CardActor>, src: CardContainer): Boolean {
                     return src === group1 || src === stack1
                 }
 
-                override fun onCardsPlayed(actors: Array<CardActor>, src: CardContainer, pos: Vector2) {
+                override fun onCardsPlayed(actors: List<CardActor>, src: CardContainer, pos: Vector2) {
                     animationLayer.moveCard(src, stack2,
                             src.actors.indexOf(actors.first()), stack2.size)
                     (src as? CardHand)?.sort()

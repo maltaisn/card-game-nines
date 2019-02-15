@@ -30,7 +30,7 @@ abstract class Player : BasePlayer {
     /**
      * List of the tricks taken by a player.
      */
-    val tricksTaken = ArrayList<Trick>()
+    val tricksTaken = mutableListOf<Trick>()
 
 
     constructor() : super()
