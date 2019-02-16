@@ -37,12 +37,39 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         assetManager.finishLoading()
         cardLoader.initialize()
 
-        isDebugAll = false
+        isDebugAll = true
 
-        setupTrick()
+        //setupDeal()
+        //setupTrick()
         //setupSolitaire()
-        //setupNullDeal()
+        setupNullDeal()
         //setupCardLoop()
+    }
+
+    private fun setupDeal() {
+        val deck = PCard.fullDeck(true)
+        deck.shuffle()
+
+        val hand = CardHand(cardLoader)
+        hand.alignment = Align.bottom
+        hand.clipPercent = 0.3f
+
+        val stack = CardStack(cardLoader)
+        stack.isVisible = false
+        stack.cards = deck
+
+        gameLayer.centerTable.add(hand).grow()
+        gameLayer.bottomTable.add(stack).grow()
+
+        addListener(object : InputListener() {
+            override fun keyUp(event: InputEvent, keycode: Int): Boolean {
+                if (keycode == Input.Keys.A) {
+                    animationLayer.deal(stack, hand, 12)
+                    return true
+                }
+                return false
+            }
+        })
     }
 
     private fun setupTrick() {
@@ -93,8 +120,8 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
             }
         })
 
-        gameLayer.add(trick).grow().pad(30f).row()
-        gameLayer.add(hand).grow().pad(0f, 30f, 0f, 30f)
+        gameLayer.centerTable.add(trick).grow().pad(30f).row()
+        gameLayer.centerTable.add(hand).grow().pad(0f, 30f, 0f, 30f)
     }
 
     fun setupSolitaire() {
@@ -103,7 +130,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
 
         repeat(4) {
             val column = CardHand(cardLoader)
-            gameLayer.add(column).pad(30f, 20f, 30f, 20f).grow()
+            gameLayer.centerTable.add(column).pad(30f, 20f, 30f, 20f).grow()
             column.apply {
                 horizontal = false
                 cardSize = CardActor.CARD_SIZE_NORMAL
@@ -144,12 +171,12 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         val count = 16
 
         val hand1 = CardHand(cardLoader)
-        gameLayer.add(hand1).pad(30f).grow().row()
+        gameLayer.centerTable.add(hand1).pad(30f).grow().row()
         hand1.cards = deck.drawTop(count)
 
         val hand2 = CardHand(cardLoader)
         hand2.cards = arrayOfNulls<Card>(count).toList()
-        gameLayer.add(hand2).pad(30f).grow()
+        gameLayer.centerTable.add(hand2).pad(30f).grow()
 
         addListener(object : InputListener() {
             override fun keyUp(event: InputEvent, keycode: Int): Boolean {
@@ -185,8 +212,8 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         table.add(stack2).pad(20f).grow()
         table.row()
         table.add(group2).colspan(2).pad(20f).padBottom(0f).grow()
-        gameLayer.add(group1).pad(20f).fill()
-        gameLayer.add(table).grow()
+        gameLayer.centerTable.add(group1).pad(20f).fill()
+        gameLayer.centerTable.add(table).grow()
 
         group1.apply {
             sorter = PCard.DEFAULT_SORTER
