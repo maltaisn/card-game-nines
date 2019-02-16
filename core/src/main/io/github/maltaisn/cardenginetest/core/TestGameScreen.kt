@@ -42,8 +42,8 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         //setupDeal()
         //setupTrick()
         //setupSolitaire()
-        setupNullDeal()
-        //setupCardLoop()
+        //setupNullDeal()
+        setupCardLoop()
     }
 
     private fun setupDeal() {
