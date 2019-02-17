@@ -17,13 +17,17 @@
 package io.github.maltaisn.cardenginetest.core
 
 import com.badlogic.gdx.Input
+import com.badlogic.gdx.assets.loaders.SkinLoader
+import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
+import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.utils.Align
+import com.gmail.blueboxware.libgdxplugin.annotations.GDXAssets
 import io.github.maltaisn.cardengine.CardGameScreen
-import io.github.maltaisn.cardengine.PCardSpriteLoader
+import io.github.maltaisn.cardengine.Resources
 import io.github.maltaisn.cardengine.core.Card
 import io.github.maltaisn.cardengine.core.PCard
 import io.github.maltaisn.cardengine.widget.*
@@ -31,13 +35,18 @@ import io.github.maltaisn.cardengine.widget.*
 
 class TestGameScreen(game: TestGame) : CardGameScreen(game) {
 
-    private val cardLoader = PCardSpriteLoader(assetManager)
+    @GDXAssets(skinFiles = ["assets/engine/pcard/pcard.skin"],
+            atlasFiles = ["assets/engine/pcard/pcard.atlas"])
+    private val cardSkin: Skin
 
     init {
+        assetManager.load(Resources.PCARD_ATLAS, TextureAtlas::class.java)
+        assetManager.load(Resources.PCARD_SKIN, Skin::class.java, SkinLoader.SkinParameter(Resources.PCARD_ATLAS))
         assetManager.finishLoading()
-        cardLoader.initialize()
 
-        isDebugAll = true
+        cardSkin = assetManager.get(Resources.PCARD_SKIN, Skin::class.java)
+
+        //isDebugAll = true
 
         //setupDeal()
         //setupTrick()
@@ -50,11 +59,11 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         val deck = PCard.fullDeck(true)
         deck.shuffle()
 
-        val hand = CardHand(cardLoader)
+        val hand = CardHand(cardSkin)
         hand.alignment = Align.bottom
         hand.clipPercent = 0.3f
 
-        val stack = CardStack(cardLoader)
+        val stack = CardStack(cardSkin)
         stack.isVisible = false
         stack.cards = deck
 
@@ -76,8 +85,8 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         val deck = PCard.fullDeck(true)
         deck.shuffle()
 
-        val trick = CardTrick(cardLoader, 4)
-        val hand = CardHand(cardLoader)
+        val trick = CardTrick(cardSkin, 4)
+        val hand = CardHand(cardSkin)
 
         trick.setPlayListener(object : CardContainer.PlayListener {
             override fun canCardsBePlayed(actors: List<CardActor>, src: CardContainer) = true
@@ -129,7 +138,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         deck.shuffle()
 
         repeat(4) {
-            val column = CardHand(cardLoader)
+            val column = CardHand(cardSkin)
             gameLayer.centerTable.add(column).pad(30f, 20f, 30f, 20f).grow()
             column.apply {
                 horizontal = false
@@ -170,11 +179,11 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
 
         val count = 16
 
-        val hand1 = CardHand(cardLoader)
+        val hand1 = CardHand(cardSkin)
         gameLayer.centerTable.add(hand1).pad(30f).grow().row()
         hand1.cards = deck.drawTop(count)
 
-        val hand2 = CardHand(cardLoader)
+        val hand2 = CardHand(cardSkin)
         hand2.cards = arrayOfNulls<Card>(count).toList()
         gameLayer.centerTable.add(hand2).pad(30f).grow()
 
@@ -201,10 +210,10 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         val deck = PCard.fullDeck(false)
         deck.shuffle()
 
-        val group1 = CardHand(cardLoader)
-        val group2 = CardHand(cardLoader)
-        val stack1 = CardStack(cardLoader)
-        val stack2 = CardStack(cardLoader)
+        val group1 = CardHand(cardSkin)
+        val group2 = CardHand(cardSkin)
+        val stack1 = CardStack(cardSkin)
+        val stack2 = CardStack(cardSkin)
 
         // Do the layout
         val table = Table()

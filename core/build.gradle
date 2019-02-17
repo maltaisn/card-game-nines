@@ -8,6 +8,7 @@ dependencies {
     implementation "io.github.libktx:ktx-collections:$ktxVersion"
     implementation "io.github.libktx:ktx-graphics:$ktxVersion"
     implementation "io.github.libktx:ktx-assets:$ktxVersion"
+    implementation 'com.gmail.blueboxware:libgdxpluginannotations:1.16'
 
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion"
     testImplementation "junit:junit:$junitVersion"
