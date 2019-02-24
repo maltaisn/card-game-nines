@@ -40,8 +40,9 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
     private val cardSkin: Skin
 
     init {
-        assetManager.load(Resources.PCARD_ATLAS, TextureAtlas::class.java)
-        assetManager.load(Resources.PCARD_SKIN, Skin::class.java, SkinLoader.SkinParameter(Resources.PCARD_ATLAS))
+        assetManager.load(Resources.PCARD_SKIN_ATLAS, TextureAtlas::class.java)
+        assetManager.load(Resources.PCARD_SKIN, Skin::class.java,
+                SkinLoader.SkinParameter(Resources.PCARD_SKIN_ATLAS))
         assetManager.finishLoading()
 
         cardSkin = assetManager.get(Resources.PCARD_SKIN, Skin::class.java)
@@ -49,10 +50,10 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         //isDebugAll = true
 
         //setupDeal()
-        //setupTrick()
+        setupTrick()
         //setupSolitaire()
         //setupNullDeal()
-        setupCardLoop()
+        //setupCardLoop()
     }
 
     private fun setupDeal() {
@@ -129,8 +130,29 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
             }
         })
 
-        gameLayer.centerTable.add(trick).grow().pad(30f).row()
+        gameLayer.centerTable.add(trick).growY().pad(30f).row()
         gameLayer.centerTable.add(hand).grow().pad(0f, 30f, 0f, 30f)
+
+        val popup = Popup(coreSkin)
+        popup.add(CardHand(cardSkin).apply {
+            cards = deck.drawTop(5)
+            cardSize = CardActor.SIZE_TINY
+        }).pad(5f)
+        popupLayer.addActor(popup)
+
+        addListener(object : InputListener() {
+            override fun keyUp(event: InputEvent, keycode: Int): Boolean {
+                if (keycode == Input.Keys.A) {
+                    if (!popup.shown) {
+                        popup.show(hand, Popup.Side.TOP)
+                    } else {
+                        popup.hide()
+                    }
+                    return true
+                }
+                return false
+            }
+        })
     }
 
     fun setupSolitaire() {
@@ -142,7 +164,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
             gameLayer.centerTable.add(column).pad(30f, 20f, 30f, 20f).grow()
             column.apply {
                 horizontal = false
-                cardSize = CardActor.CARD_SIZE_NORMAL
+                cardSize = CardActor.SIZE_NORMAL
                 alignment = Align.top
                 cards = deck.drawTop(5)
                 setDragListener(object : CardContainer.DragListener {
@@ -226,7 +248,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
 
         group1.apply {
             sorter = PCard.DEFAULT_SORTER
-            cardSize = CardActor.CARD_SIZE_SMALL
+            cardSize = CardActor.SIZE_SMALL
             horizontal = false
             cards = deck.drawTop(3)
             sort()
@@ -269,7 +291,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
 
         group2.apply {
             sorter = PCard.DEFAULT_SORTER
-            cardSize = CardActor.CARD_SIZE_BIG
+            cardSize = CardActor.SIZE_BIG
             alignment = Align.bottom
             clipPercent = 0.3f
             cards = deck.drawTop(6)
@@ -321,7 +343,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         stack2.apply {
             visibility = CardContainer.Visibility.ALL
             drawSlot = true
-            cardSize = CardActor.CARD_SIZE_NORMAL
+            cardSize = CardActor.SIZE_NORMAL
             cards = deck.drawTop(1)
             addClickListener(object : CardContainer.ClickListener {
                 override fun onCardClicked(actor: CardActor, index: Int) {
