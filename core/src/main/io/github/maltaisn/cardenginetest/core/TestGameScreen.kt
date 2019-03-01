@@ -31,6 +31,9 @@ import io.github.maltaisn.cardengine.Resources
 import io.github.maltaisn.cardengine.core.Card
 import io.github.maltaisn.cardengine.core.PCard
 import io.github.maltaisn.cardengine.widget.*
+import ktx.actors.plusAssign
+import ktx.assets.getAsset
+import ktx.assets.load
 
 
 class TestGameScreen(game: TestGame) : CardGameScreen(game) {
@@ -40,12 +43,11 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
     private val cardSkin: Skin
 
     init {
-        assetManager.load(Resources.PCARD_SKIN_ATLAS, TextureAtlas::class.java)
-        assetManager.load(Resources.PCARD_SKIN, Skin::class.java,
-                SkinLoader.SkinParameter(Resources.PCARD_SKIN_ATLAS))
+        assetManager.load<TextureAtlas>(Resources.PCARD_SKIN_ATLAS)
+        assetManager.load<Skin>(Resources.PCARD_SKIN, SkinLoader.SkinParameter(Resources.PCARD_SKIN_ATLAS))
         assetManager.finishLoading()
 
-        cardSkin = assetManager.get(Resources.PCARD_SKIN, Skin::class.java)
+        cardSkin = assetManager.getAsset(Resources.PCARD_SKIN)
 
         //isDebugAll = true
 
@@ -139,7 +141,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
             cards = deck.drawTop(5)
             cardSize = CardActor.SIZE_TINY
         }).pad(5f)
-        popupLayer.addActor(popup)
+        popupLayer += popup
 
         addListener(object : InputListener() {
             override fun keyUp(event: InputEvent, keycode: Int): Boolean {

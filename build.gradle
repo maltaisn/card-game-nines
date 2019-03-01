@@ -5,7 +5,7 @@ buildscript {
         appVersion = "0.0.1"
         appVersionCode = 1
         gdxVersion = "1.9.9"
-        ktxVersion = "1.9.8-b5"
+        ktxVersion = "1.9.9-b1"
         junitVersion = "4.12"
     }
     repositories {
