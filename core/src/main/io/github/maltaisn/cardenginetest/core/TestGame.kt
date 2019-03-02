@@ -21,6 +21,7 @@ import io.github.maltaisn.cardengine.CardGame
 class TestGame : CardGame() {
 
     override fun create() {
+        super.create()
         setScreen(TestGameScreen(this))
     }
 
