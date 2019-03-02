@@ -148,15 +148,16 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
 
         addListener(object : InputListener() {
             override fun keyUp(event: InputEvent, keycode: Int): Boolean {
-                if (keycode == Input.Keys.A) {
-                    if (!popup.shown) {
-                        popup.show(hand, Popup.Side.TOP)
-                    } else {
-                        popup.hide()
-                    }
-                    return true
+                when (keycode) {
+                    Input.Keys.P -> if (popup.shown) popup.hide() else popup.show(hand, Popup.Side.ABOVE)
+                    Input.Keys.F -> hand.fade(!hand.shown)
+                    Input.Keys.UP -> hand.slide(!hand.shown, CardContainer.Direction.UP)
+                    Input.Keys.DOWN -> hand.slide(!hand.shown, CardContainer.Direction.DOWN)
+                    Input.Keys.LEFT -> hand.slide(!hand.shown, CardContainer.Direction.LEFT)
+                    Input.Keys.RIGHT -> hand.slide(!hand.shown, CardContainer.Direction.RIGHT)
+                    else -> return false
                 }
-                return false
+                return true
             }
         })
     }
