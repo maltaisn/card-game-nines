@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package io.github.maltaisn.cardenginetest.core.core
+package io.github.maltaisn.cardgametest.core.core
 
-import io.github.maltaisn.cardengine.core.Deck
-import io.github.maltaisn.cardengine.core.PCard
+import io.github.maltaisn.cardgame.core.Deck
+import io.github.maltaisn.cardgame.core.PCard
 
 
 /**

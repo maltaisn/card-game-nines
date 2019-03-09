@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package io.github.maltaisn.cardenginetest.core
+package io.github.maltaisn.cardgametest.core
 
 import com.badlogic.gdx.Input
-import com.badlogic.gdx.assets.loaders.SkinLoader
 import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
@@ -27,31 +25,27 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.utils.Align
 import com.gmail.blueboxware.libgdxplugin.annotations.GDXAssets
-import io.github.maltaisn.cardengine.CardGameScreen
-import io.github.maltaisn.cardengine.Resources
-import io.github.maltaisn.cardengine.core.Card
-import io.github.maltaisn.cardengine.core.PCard
-import io.github.maltaisn.cardengine.widget.Popup
-import io.github.maltaisn.cardengine.widget.PopupButton
-import io.github.maltaisn.cardengine.widget.SdfLabel
-import io.github.maltaisn.cardengine.widget.card.*
+import io.github.maltaisn.cardgame.CardGameScreen
+import io.github.maltaisn.cardgame.Resources
+import io.github.maltaisn.cardgame.core.Card
+import io.github.maltaisn.cardgame.core.PCard
+import io.github.maltaisn.cardgame.widget.Popup
+import io.github.maltaisn.cardgame.widget.PopupButton
+import io.github.maltaisn.cardgame.widget.SdfLabel
+import io.github.maltaisn.cardgame.widget.card.*
 import ktx.actors.plusAssign
 import ktx.assets.getAsset
-import ktx.assets.load
 
 
 class TestGameScreen(game: TestGame) : CardGameScreen(game) {
 
-    @GDXAssets(skinFiles = ["assets/engine/pcard/pcard.skin"],
-            atlasFiles = ["assets/engine/pcard/pcard.atlas"])
+    @GDXAssets(skinFiles = ["assets/core/pcard/pcard.skin"],
+            atlasFiles = ["assets/core/pcard/pcard.atlas"])
     private val cardSkin: Skin
 
     init {
-        assetManager.apply {
-            load<TextureAtlas>(Resources.PCARD_SKIN_ATLAS)
-            load<Skin>(Resources.PCARD_SKIN, SkinLoader.SkinParameter(Resources.PCARD_SKIN_ATLAS))
-            finishLoading()
-        }
+        loadPCardSkin()
+        assetManager.finishLoading()
 
         cardSkin = assetManager.getAsset(Resources.PCARD_SKIN)
 
@@ -176,6 +170,15 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                 }
             }
         })
+        /*
+        popup.add(PopupButton(coreSkin, "Last two")).fillX()
+        popup.add(PopupButton(coreSkin, "Hearts")).fillX().row()
+        popup.add(PopupButton(coreSkin, "Barbu")).fillX()
+        popup.add(PopupButton(coreSkin, "Queens")).fillX().row()
+        popup.add(PopupButton(coreSkin, "Domino")).fillX()
+        popup.add(PopupButton(coreSkin, "Tricks")).fillX().row()
+        popup.add(PopupButton(coreSkin, "Trump")).colspan(2)
+        */
         popupGroup += popup
 
         // Transition tests

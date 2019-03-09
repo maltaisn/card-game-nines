@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package io.github.maltaisn.cardenginetest.core.core
+package io.github.maltaisn.cardgametest.core.core
 
-import io.github.maltaisn.cardengine.core.BaseGameState
-import io.github.maltaisn.cardengine.core.BaseMove
-import io.github.maltaisn.cardengine.core.BasePlayer
-import io.github.maltaisn.cardengine.core.PCard
+import io.github.maltaisn.cardgame.core.BaseGameState
+import io.github.maltaisn.cardgame.core.BaseMove
+import io.github.maltaisn.cardgame.core.BasePlayer
+import io.github.maltaisn.cardgame.core.PCard
 import kotlin.math.max
 
 

@@ -14,22 +14,23 @@
  * limitations under the License.
  */
 
-package io.github.maltaisn.cardenginetest.core.core
+package io.github.maltaisn.cardgametest.android
 
-import io.github.maltaisn.cardengine.core.BaseMove
+import android.os.Bundle
+import com.badlogic.gdx.backends.android.AndroidApplication
+import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration
+import io.github.maltaisn.cardgametest.core.TestGame
 
+class AndroidLauncher : AndroidApplication() {
 
-/**
- * A move representing a player trading his hand with the extra hand
- */
-@Suppress("EqualsOrHashCode")
-class TradeHandMove(player: Int, val trade: Boolean) : BaseMove(player) {
+    override fun onCreate(state: Bundle?) {
+        super.onCreate(state)
 
-    override fun toString() = if (trade) "Trade hand" else "Don't trade hand"
+        val config = AndroidApplicationConfiguration()
+        config.useAccelerometer = false
+        config.useCompass = false
 
-    override fun equals(other: Any?): Boolean {
-        if (other !is TradeHandMove) return false
-        return super.equals(other) && trade == other.trade
+        initialize(TestGame(), config)
     }
 
 }

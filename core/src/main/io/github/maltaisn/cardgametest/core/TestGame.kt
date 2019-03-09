@@ -14,23 +14,15 @@
  * limitations under the License.
  */
 
-package io.github.maltaisn.cardenginetest.android
+package io.github.maltaisn.cardgametest.core
 
-import android.os.Bundle
-import com.badlogic.gdx.backends.android.AndroidApplication
-import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration
-import io.github.maltaisn.cardenginetest.core.TestGame
+import io.github.maltaisn.cardgame.CardGame
 
-class AndroidLauncher : AndroidApplication() {
+class TestGame : CardGame() {
 
-    override fun onCreate(state: Bundle?) {
-        super.onCreate(state)
-
-        val config = AndroidApplicationConfiguration()
-        config.useAccelerometer = false
-        config.useCompass = false
-
-        initialize(TestGame(), config)
+    override fun create() {
+        super.create()
+        setScreen(TestGameScreen(this))
     }
 
 }

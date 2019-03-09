@@ -1,4 +1,4 @@
-todo.txt
+/todo.txt
 META-INF/
 
 ## Android Studio and Intellij and Android in general
@@ -18,7 +18,7 @@ META-INF/
 build/
 
 ## Copied assets
-/assets/engine/
+/assets/core/
 
 ## OS Specific
 .DS_Store

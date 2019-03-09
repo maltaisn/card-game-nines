@@ -14,15 +14,21 @@
  * limitations under the License.
  */
 
-package io.github.maltaisn.cardenginetest.core
+package io.github.maltaisn.cardgametest.desktop
 
-import io.github.maltaisn.cardengine.CardGame
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration
+import io.github.maltaisn.cardgametest.core.TestGame
 
-class TestGame : CardGame() {
 
-    override fun create() {
-        super.create()
-        setScreen(TestGameScreen(this))
+object DesktopLauncher {
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        val config = Lwjgl3ApplicationConfiguration()
+        config.setTitle("Cards")
+        config.setWindowSizeLimits(960, 540, -1, -1)
+
+        Lwjgl3Application(TestGame(), config)
     }
-
 }

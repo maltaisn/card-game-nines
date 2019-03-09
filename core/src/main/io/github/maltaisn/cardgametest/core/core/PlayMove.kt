@@ -14,9 +14,24 @@
  * limitations under the License.
  */
 
-package io.github.maltaisn.cardenginetest.core.core
+package io.github.maltaisn.cardgametest.core.core
 
-import io.github.maltaisn.cardengine.core.BaseResult
+import io.github.maltaisn.cardgame.core.BaseMove
+import io.github.maltaisn.cardgame.core.PCard
 
 
-class Result(playerResults: List<Double>) : BaseResult(playerResults)
+/**
+ * A move representing a player playing a card in a trick
+ */
+@Suppress("EqualsOrHashCode")
+class PlayMove(player: Int, val card: PCard) : BaseMove(player) {
+
+    override fun toString() = "Play $card"
+
+    override fun equals(other: Any?): Boolean {
+        if (other === this) return true
+        if (other !is PlayMove) return false
+        return super.equals(other) && card == other.card
+    }
+
+}

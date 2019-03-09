@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package io.github.maltaisn.cardenginetest.core
+package io.github.maltaisn.cardgametest.core
 
-import io.github.maltaisn.cardengine.core.Mcts
-import io.github.maltaisn.cardenginetest.core.core.Game
-import io.github.maltaisn.cardenginetest.core.core.MctsPlayer
-import io.github.maltaisn.cardenginetest.core.core.Player
+import io.github.maltaisn.cardgame.core.Mcts
+import io.github.maltaisn.cardgametest.core.core.Game
+import io.github.maltaisn.cardgametest.core.core.MctsPlayer
+import io.github.maltaisn.cardgametest.core.core.Player
 import org.junit.Test
 import kotlin.random.Random
 

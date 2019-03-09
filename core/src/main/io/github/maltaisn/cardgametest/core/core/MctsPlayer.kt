@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package io.github.maltaisn.cardenginetest.core.core
+package io.github.maltaisn.cardgametest.core.core
 
-import io.github.maltaisn.cardengine.core.*
+import io.github.maltaisn.cardgame.core.*
 
 
 /**
