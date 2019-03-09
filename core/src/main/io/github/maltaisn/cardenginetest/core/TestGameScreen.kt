@@ -16,7 +16,6 @@
 
 package io.github.maltaisn.cardenginetest.core
 
-import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.assets.loaders.SkinLoader
 import com.badlogic.gdx.graphics.Color
@@ -24,7 +23,6 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
-import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.utils.Align
@@ -34,6 +32,8 @@ import io.github.maltaisn.cardengine.Resources
 import io.github.maltaisn.cardengine.core.Card
 import io.github.maltaisn.cardengine.core.PCard
 import io.github.maltaisn.cardengine.widget.Popup
+import io.github.maltaisn.cardengine.widget.PopupButton
+import io.github.maltaisn.cardengine.widget.SdfLabel
 import io.github.maltaisn.cardengine.widget.card.*
 import ktx.actors.plusAssign
 import ktx.assets.getAsset
@@ -57,9 +57,9 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
 
         //isDebugAll = true
 
-        setupFontTest()
+        //setupFontTest()
         //setupDeal()
-        //setupTrick()
+        setupTrick()
         //setupSolitaire()
         //setupNullDeal()
         //setupCardLoop()
@@ -67,19 +67,16 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
 
     private fun setupFontTest() {
         val text = "The quick brown fox jumps over a lazy dog."
+        //val text = "!\"#\$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz" +
+        //        "{|}~\u007F¡¢£¤¥¦§¨©ª«¬\u00AD®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
 
-        val white = Color(0.9f, 0.9f, 0.9f, 1f)
-        val fonts = arrayOf(
-                Resources.FONT_16_SHADOW to white,
-                Resources.FONT_22 to Color.BLACK,
-                Resources.FONT_22_BOLD to Color.BLACK,
-                Resources.FONT_24_BOLD_SHADOW to white,
-                Resources.FONT_24 to Color.BLACK,
-                Resources.FONT_32_BOLD to Color.BLACK,
-                Resources.FONT_40_SHADOW to white)
-        for ((font, color) in fonts) {
-            val label = Label(text, coreSkin, font, color)
-            label.setFontScale(width / Gdx.graphics.width)
+        repeat(10) {
+            val label = SdfLabel(text, coreSkin, SdfLabel.SdfLabelStyle().apply {
+                bold = false
+                drawShadow = true
+                shadowColor = Color.BLACK
+                fontSize = 12f + it * 4f
+            })
             gameLayer.centerTable.add(label).expand().center().row()
         }
     }
@@ -116,6 +113,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
 
         val trick = CardTrick(coreSkin, cardSkin, 4)
         val hand = CardHand(coreSkin, cardSkin)
+        val popup = Popup(coreSkin)
 
         trick.setPlayListener(object : CardContainer.PlayListener {
             override fun canCardsBePlayed(actors: List<CardActor>, src: CardContainer, pos: Vector2): Boolean {
@@ -158,17 +156,23 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                 return dragger
             }
         })
+        hand.highlightListener = object : CardHand.HighlightListener {
+            override fun onCardActorHighlighted(actor: CardActor, highlighted: Boolean): Boolean {
+                if ((actor.card as PCard).color == PCard.RED) {
+                    if (popup.shown) popup.hide() else popup.show(hand, Popup.Side.ABOVE)
+                    return true
+                }
+                return false
+            }
+        }
 
         gameLayer.centerTable.add(trick).growY().pad(30f).row()
         gameLayer.centerTable.add(hand).grow().pad(0f, 30f, 0f, 30f)
 
-        val popup = Popup(coreSkin)
-        popup.add(CardHand(coreSkin, cardSkin).apply {
-            cards = deck.drawTop(5)
-            cardSize = CardActor.SIZE_TINY
-        }).pad(5f)
+        popup.add(PopupButton(coreSkin, "Draw a card"))
         popupGroup += popup
 
+        // Transition tests
         addListener(object : InputListener() {
             override fun keyUp(event: InputEvent, keycode: Int): Boolean {
                 when (keycode) {
