@@ -169,7 +169,13 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         gameLayer.centerTable.add(trick).growY().pad(30f).row()
         gameLayer.centerTable.add(hand).grow().pad(0f, 30f, 0f, 30f)
 
-        popup.add(PopupButton(coreSkin, "Draw a card"))
+        popup.add(PopupButton(coreSkin, "Draw a card").apply {
+            clickListener = object : PopupButton.ClickListener {
+                override fun onButtonClicked(button: PopupButton) {
+                    popup.hide()
+                }
+            }
+        })
         popupGroup += popup
 
         // Transition tests
