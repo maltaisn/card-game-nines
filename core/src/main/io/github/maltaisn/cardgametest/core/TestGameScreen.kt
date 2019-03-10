@@ -62,14 +62,14 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         val icons = coreSkin.get(CardGameIcons::class.java)
         val newGameBtn = MenuButton(coreSkin).apply {
             icon = icons.cards
-            text = "NEW GAME"
+            text = "New Game"
             anchorSide = MenuButton.Side.BOTTOM
             iconSide = MenuButton.Side.LEFT
             iconSize = 48f
         }
         val continueBtn = MenuButton(coreSkin).apply {
             icon = icons.arrowRight
-            text = "CONTINUE"
+            text = "Continue"
             anchorSide = MenuButton.Side.BOTTOM
             iconSide = MenuButton.Side.LEFT
             iconSize = 48f
@@ -77,28 +77,28 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         }
         val settingsBtn = MenuButton(coreSkin).apply {
             icon = icons.settings
-            text = "SETTINGS"
+            text = "Settings"
             anchorSide = MenuButton.Side.BOTTOM
             iconSide = MenuButton.Side.LEFT
             iconSize = 48f
         }
         val rulesBtn = MenuButton(coreSkin).apply {
             icon = icons.book
-            text = "RULES"
+            text = "Rules"
             anchorSide = MenuButton.Side.TOP
             iconSide = MenuButton.Side.LEFT
             iconSize = 48f
         }
         val statsBtn = MenuButton(coreSkin).apply {
             icon = icons.list
-            text = "STATISTICS"
+            text = "Statistics"
             anchorSide = MenuButton.Side.TOP
             iconSide = MenuButton.Side.LEFT
             iconSize = 48f
         }
         val aboutBtn = MenuButton(coreSkin).apply {
             icon = icons.info
-            text = "ABOUT"
+            text = "About"
             anchorSide = MenuButton.Side.TOP
             iconSide = MenuButton.Side.LEFT
             iconSize = 48f
