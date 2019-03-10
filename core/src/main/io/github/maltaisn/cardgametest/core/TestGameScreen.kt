@@ -62,56 +62,56 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         val icons = coreSkin.get(CardGameIcons::class.java)
         val newGameBtn = MenuButton(coreSkin).apply {
             icon = icons.cards
-            text = "New game"
-            anchorSide = MenuButton.Side.TOP
+            text = "NEW GAME"
+            anchorSide = MenuButton.Side.BOTTOM
             iconSide = MenuButton.Side.LEFT
-            iconSize = 64f
+            iconSize = 48f
         }
         val continueBtn = MenuButton(coreSkin).apply {
             icon = icons.arrowRight
-            text = "Continue"
-            anchorSide = MenuButton.Side.TOP
+            text = "CONTINUE"
+            anchorSide = MenuButton.Side.BOTTOM
             iconSide = MenuButton.Side.LEFT
-            iconSize = 64f
+            iconSize = 48f
             enabled = false
         }
         val settingsBtn = MenuButton(coreSkin).apply {
             icon = icons.settings
-            text = "Settings"
-            anchorSide = MenuButton.Side.TOP
+            text = "SETTINGS"
+            anchorSide = MenuButton.Side.BOTTOM
             iconSide = MenuButton.Side.LEFT
-            iconSize = 64f
+            iconSize = 48f
         }
         val rulesBtn = MenuButton(coreSkin).apply {
             icon = icons.book
-            text = "Rules"
-            anchorSide = MenuButton.Side.BOTTOM
+            text = "RULES"
+            anchorSide = MenuButton.Side.TOP
             iconSide = MenuButton.Side.LEFT
-            iconSize = 64f
+            iconSize = 48f
         }
         val statsBtn = MenuButton(coreSkin).apply {
             icon = icons.list
-            text = "Statistics"
-            anchorSide = MenuButton.Side.BOTTOM
+            text = "STATISTICS"
+            anchorSide = MenuButton.Side.TOP
             iconSide = MenuButton.Side.LEFT
-            iconSize = 64f
+            iconSize = 48f
         }
         val aboutBtn = MenuButton(coreSkin).apply {
             icon = icons.info
-            text = "About"
-            anchorSide = MenuButton.Side.BOTTOM
+            text = "ABOUT"
+            anchorSide = MenuButton.Side.TOP
             iconSide = MenuButton.Side.LEFT
-            iconSize = 64f
+            iconSize = 48f
         }
 
         val table = gameLayer.centerTable
-        table.add(newGameBtn).expandX().size(250f, 110f)
-        table.add(continueBtn).expandX().size(250f, 110f)
-        table.add(settingsBtn).expandX().size(250f, 110f).row()
+        table.add(rulesBtn).expandX().minSize(250f, 100f)
+        table.add(statsBtn).expandX().minSize(250f, 100f)
+        table.add(aboutBtn).expandX().minSize(250f, 100f).row()
         table.add().expand().row()
-        table.add(rulesBtn).expandX().size(250f, 110f)
-        table.add(statsBtn).expandX().size(250f, 110f)
-        table.add(aboutBtn).expandX().size(250f, 110f)
+        table.add(newGameBtn).expandX().minSize(250f, 100f)
+        table.add(continueBtn).expandX().minSize(250f, 100f)
+        table.add(settingsBtn).expandX().minSize(250f, 100f)
     }
 
     private fun setupFontTest() {
