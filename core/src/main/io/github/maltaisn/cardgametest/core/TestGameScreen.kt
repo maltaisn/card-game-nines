@@ -29,9 +29,7 @@ import io.github.maltaisn.cardgame.CardGameScreen
 import io.github.maltaisn.cardgame.Resources
 import io.github.maltaisn.cardgame.core.Card
 import io.github.maltaisn.cardgame.core.PCard
-import io.github.maltaisn.cardgame.widget.Popup
-import io.github.maltaisn.cardgame.widget.PopupButton
-import io.github.maltaisn.cardgame.widget.SdfLabel
+import io.github.maltaisn.cardgame.widget.*
 import io.github.maltaisn.cardgame.widget.card.*
 import ktx.actors.plusAssign
 import ktx.assets.getAsset
@@ -51,12 +49,69 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
 
         //isDebugAll = true
 
+        setupMenuTest()
         //setupFontTest()
         //setupDeal()
-        setupTrick()
+        //setupTrick()
         //setupSolitaire()
         //setupNullDeal()
         //setupCardLoop()
+    }
+
+    private fun setupMenuTest() {
+        val icons = coreSkin.get(CardGameIcons::class.java)
+        val newGameBtn = MenuButton(coreSkin).apply {
+            icon = icons.cards
+            text = "New game"
+            anchorSide = MenuButton.Side.TOP
+            iconSide = MenuButton.Side.LEFT
+            iconSize = 64f
+        }
+        val continueBtn = MenuButton(coreSkin).apply {
+            icon = icons.arrowRight
+            text = "Continue"
+            anchorSide = MenuButton.Side.TOP
+            iconSide = MenuButton.Side.LEFT
+            iconSize = 64f
+            enabled = false
+        }
+        val settingsBtn = MenuButton(coreSkin).apply {
+            icon = icons.settings
+            text = "Settings"
+            anchorSide = MenuButton.Side.TOP
+            iconSide = MenuButton.Side.LEFT
+            iconSize = 64f
+        }
+        val rulesBtn = MenuButton(coreSkin).apply {
+            icon = icons.book
+            text = "Rules"
+            anchorSide = MenuButton.Side.BOTTOM
+            iconSide = MenuButton.Side.LEFT
+            iconSize = 64f
+        }
+        val statsBtn = MenuButton(coreSkin).apply {
+            icon = icons.list
+            text = "Statistics"
+            anchorSide = MenuButton.Side.BOTTOM
+            iconSide = MenuButton.Side.LEFT
+            iconSize = 64f
+        }
+        val aboutBtn = MenuButton(coreSkin).apply {
+            icon = icons.info
+            text = "About"
+            anchorSide = MenuButton.Side.BOTTOM
+            iconSide = MenuButton.Side.LEFT
+            iconSize = 64f
+        }
+
+        val table = gameLayer.centerTable
+        table.add(newGameBtn).expandX().size(250f, 110f)
+        table.add(continueBtn).expandX().size(250f, 110f)
+        table.add(settingsBtn).expandX().size(250f, 110f).row()
+        table.add().expand().row()
+        table.add(rulesBtn).expandX().size(250f, 110f)
+        table.add(statsBtn).expandX().size(250f, 110f)
+        table.add(aboutBtn).expandX().size(250f, 110f)
     }
 
     private fun setupFontTest() {
@@ -165,7 +220,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
 
         popup.add(PopupButton(coreSkin, "Draw a card").apply {
             clickListener = object : PopupButton.ClickListener {
-                override fun onButtonClicked(button: PopupButton) {
+                override fun onPopupButtonClicked(button: PopupButton) {
                     popup.hide()
                 }
             }
