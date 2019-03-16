@@ -52,10 +52,10 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         //isDebugAll = true
 
         //setupMainMenuTest()
-        setupSubMenuTest()
+        //setupSubMenuTest()
         //setupFontTest()
         //setupDeal()
-        //setupTrick()
+        setupTrick()
         //setupSolitaire()
         //setupNullDeal()
         //setupCardLoop()
@@ -191,54 +191,41 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                         replaceDst = true)
             }
         }
-        trick.dragListener = object : CardContainer.DragListener {
-            override fun onCardDragged(actor: CardActor): CardAnimationLayer.CardDragger? {
-                val dragger = cardAnimationLayer.dragCards(actor)
-                dragger?.rearrangeable = true
-                return dragger
-            }
+        trick.dragListener = { actor ->
+            val dragger = cardAnimationLayer.dragCards(actor)
+            dragger?.rearrangeable = true
+            dragger
         }
-        trick.clickListener = object : CardContainer.ClickListener {
-            override fun onCardClicked(actor: CardActor, index: Int) {
-                for (i in 0 until trick.size) {
-                    if (trick.actors[i] != null) {
-                        cardAnimationLayer.moveCard(trick, hand, i, hand.size, replaceSrc = true)
-                    }
+        trick.clickListener = { _, _ ->
+            for (i in 0 until trick.size) {
+                if (trick.actors[i] != null) {
+                    cardAnimationLayer.moveCard(trick, hand, i, hand.size, replaceSrc = true)
                 }
-                cardAnimationLayer.update()
             }
+            cardAnimationLayer.update()
         }
 
         hand.cards = deck.drawTop(12)
         hand.alignment = Align.bottom
         hand.clipPercent = 0.3f
-        hand.dragListener = object : CardContainer.DragListener {
-            override fun onCardDragged(actor: CardActor): CardAnimationLayer.CardDragger? {
-                val dragger = cardAnimationLayer.dragCards(actor)
-                dragger?.rearrangeable = true
-                return dragger
-            }
+        hand.dragListener = { actor ->
+            val dragger = cardAnimationLayer.dragCards(actor)
+            dragger?.rearrangeable = true
+            dragger
         }
-        hand.highlightListener = object : CardHand.HighlightListener {
-            override fun onCardActorHighlighted(actor: CardActor, highlighted: Boolean): Boolean {
-                if ((actor.card as PCard).color == PCard.RED) {
-                    if (popup.shown) popup.hide() else popup.show(hand, Popup.Side.ABOVE)
-                    return true
-                }
-                return false
+        hand.highlightListener = { actor, _ ->
+            if ((actor.card as PCard).color == PCard.RED) {
+                if (popup.shown) popup.hide() else popup.show(hand, Popup.Side.ABOVE)
+                true
+            } else {
+                false
             }
         }
 
         gameLayer.centerTable.add(trick).growY().pad(30f).row()
         gameLayer.centerTable.add(hand).grow().pad(0f, 30f, 0f, 30f)
 
-        popup.add(PopupButton(coreSkin, "Draw a card").apply {
-            clickListener = object : PopupButton.ClickListener {
-                override fun onPopupButtonClicked(button: PopupButton) {
-                    popup.hide()
-                }
-            }
-        })
+        popup.add(PopupButton(coreSkin, "Draw a card").apply { clickListener = { popup.hide() } })
         /*
         popup.add(PopupButton(coreSkin, "Last two")).fillX()
         popup.add(PopupButton(coreSkin, "Hearts")).fillX().row()
@@ -279,17 +266,15 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
                 cardSize = CardActor.SIZE_NORMAL
                 alignment = Align.top
                 cards = deck.drawTop(5)
-                dragListener = object : CardContainer.DragListener {
-                    override fun onCardDragged(actor: CardActor): CardAnimationLayer.CardDragger? {
-                        val start = column.actors.indexOf(actor)
-                        val actors = mutableListOf<CardActor>()
-                        for (i in start until column.size) {
-                            column.actors[i]?.let { actors += it }
-                        }
-                        val dragger = cardAnimationLayer.dragCards(*actors.toTypedArray())
-                        dragger?.rearrangeable = true
-                        return dragger
+                dragListener = { actor ->
+                    val start = column.actors.indexOf(actor)
+                    val actors = mutableListOf<CardActor>()
+                    for (i in start until column.size) {
+                        column.actors[i]?.let { actors += it }
                     }
+                    val dragger = cardAnimationLayer.dragCards(*actors.toTypedArray())
+                    dragger?.rearrangeable = true
+                    dragger
                 }
                 playListener = object : CardContainer.PlayListener {
                     override fun canCardsBePlayed(actors: List<CardActor>, src: CardContainer, pos: Vector2) = true
@@ -364,28 +349,23 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
             horizontal = false
             cards = deck.drawTop(3)
             sort()
-            clickListener = object : CardContainer.ClickListener {
-                override fun onCardClicked(actor: CardActor, index: Int) {
-                    cardAnimationLayer.moveCard(group1, stack2, index, stack2.size)
-                    group1.sort()
-                    cardAnimationLayer.update()
-                }
+            clickListener = { _, index ->
+                cardAnimationLayer.moveCard(group1, stack2, index, stack2.size)
+                group1.sort()
+                cardAnimationLayer.update()
             }
-            longClickListener = object : CardContainer.LongClickListener {
-                override fun onCardLongClicked(actor: CardActor, index: Int) {
-                    cardAnimationLayer.moveCard(group1, group2, index, 0)
-                    group1.sort()
-                    group2.sort()
-                    cardAnimationLayer.update()
-                }
+            longClickListener = { _, index ->
+                cardAnimationLayer.moveCard(group1, group2, index, 0)
+                group1.sort()
+                group2.sort()
+                cardAnimationLayer.update()
             }
-            dragListener = object : CardContainer.DragListener {
-                override fun onCardDragged(actor: CardActor) =
-                        if ((actor.card as PCard).color == PCard.RED) {
-                            cardAnimationLayer.dragCards(actor)
-                        } else {
-                            null
-                        }
+            dragListener = { actor ->
+                if ((actor.card as PCard).color == PCard.RED) {
+                    cardAnimationLayer.dragCards(actor)
+                } else {
+                    null
+                }
             }
             playListener = object : CardContainer.PlayListener {
                 override fun canCardsBePlayed(actors: List<CardActor>, src: CardContainer, pos: Vector2): Boolean {
@@ -408,16 +388,14 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
             clipPercent = 0.3f
             cards = deck.drawTop(6)
             sort()
-            clickListener = object : CardContainer.ClickListener {
-                override fun onCardClicked(actor: CardActor, index: Int) {
-                    cardAnimationLayer.moveCard(group2, group1, index, 0)
-                    group1.sort()
-                    group2.sort()
-                    cardAnimationLayer.update()
-                }
+            clickListener = { actor, index ->
+                cardAnimationLayer.moveCard(group2, group1, index, 0)
+                group1.sort()
+                group2.sort()
+                cardAnimationLayer.update()
             }
-            dragListener = object : CardContainer.DragListener {
-                override fun onCardDragged(actor: CardActor) = cardAnimationLayer.dragCards(actor)
+            dragListener = { actor ->
+                cardAnimationLayer.dragCards(actor)
             }
         }
 
@@ -429,16 +407,12 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
 
             visibility = CardContainer.Visibility.NONE
             cards = stackCards
-            clickListener = object : CardContainer.ClickListener {
-                override fun onCardClicked(actor: CardActor, index: Int) {
-                    cardAnimationLayer.moveCard(stack1, group2, index, 0)
-                    group2.sort()
-                    cardAnimationLayer.update()
-                }
+            clickListener = { _, index ->
+                cardAnimationLayer.moveCard(stack1, group2, index, 0)
+                group2.sort()
+                cardAnimationLayer.update()
             }
-            dragListener = object : CardContainer.DragListener {
-                override fun onCardDragged(actor: CardActor) = cardAnimationLayer.dragCards(actor)
-            }
+            dragListener = { actor -> cardAnimationLayer.dragCards(actor) }
             playListener = object : CardContainer.PlayListener {
                 override fun canCardsBePlayed(actors: List<CardActor>, src: CardContainer, pos: Vector2): Boolean {
                     return src === group1
@@ -457,11 +431,9 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
             drawSlot = true
             cardSize = CardActor.SIZE_NORMAL
             cards = deck.drawTop(1)
-            clickListener = object : CardContainer.ClickListener {
-                override fun onCardClicked(actor: CardActor, index: Int) {
-                    cardAnimationLayer.moveCard(stack2, stack1, index, stack1.size)
-                    cardAnimationLayer.update()
-                }
+            clickListener = { actor, index ->
+                cardAnimationLayer.moveCard(stack2, stack1, index, stack1.size)
+                cardAnimationLayer.update()
             }
             playListener = object : CardContainer.PlayListener {
                 override fun canCardsBePlayed(actors: List<CardActor>, src: CardContainer, pos: Vector2): Boolean {
