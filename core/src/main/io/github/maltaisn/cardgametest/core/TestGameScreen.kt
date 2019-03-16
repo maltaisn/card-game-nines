@@ -185,6 +185,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
             }
 
             override fun onCardsPlayed(actors: List<CardActor>, src: CardContainer, pos: Vector2) {
+                actors.first().highlighted = false
                 val index = trick.findInsertPositionForCoordinates(pos.x, pos.y)
                 cardAnimationLayer.moveCard(src, trick,
                         src.actors.indexOf(actors.first()), index,
