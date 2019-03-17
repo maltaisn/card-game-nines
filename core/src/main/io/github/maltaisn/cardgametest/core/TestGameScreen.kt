@@ -24,17 +24,18 @@ import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.utils.Align
-import com.badlogic.gdx.utils.I18NBundle
 import com.gmail.blueboxware.libgdxplugin.annotations.GDXAssets
 import io.github.maltaisn.cardgame.CardGameScreen
 import io.github.maltaisn.cardgame.Resources
 import io.github.maltaisn.cardgame.core.Card
 import io.github.maltaisn.cardgame.core.PCard
-import io.github.maltaisn.cardgame.widget.*
+import io.github.maltaisn.cardgame.widget.DefaultGameMenu
+import io.github.maltaisn.cardgame.widget.Popup
+import io.github.maltaisn.cardgame.widget.PopupButton
+import io.github.maltaisn.cardgame.widget.SdfLabel
 import io.github.maltaisn.cardgame.widget.card.*
 import ktx.actors.plusAssign
 import ktx.assets.getAsset
-import ktx.style.get
 
 
 class TestGameScreen(game: TestGame) : CardGameScreen(game) {
@@ -51,71 +52,21 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
 
         //isDebugAll = true
 
-        //setupMainMenuTest()
-        //setupSubMenuTest()
+        setupMenuTest()
         //setupFontTest()
         //setupDeal()
-        setupTrick()
+        //setupTrick()
         //setupSolitaire()
         //setupNullDeal()
         //setupCardLoop()
     }
 
-    private fun setupMainMenuTest() {
-        val menu = MainMenu(coreSkin)
-
-        @GDXAssets(propertiesFiles = ["assets/core/strings.properties"])
-        val bundle: I18NBundle = coreSkin[Resources.CORE_STRINGS_NAME]
-        val icons = coreSkin.get(MenuIcons::class.java)
-
+    private fun setupMenuTest() {
+        val menu = DefaultGameMenu(coreSkin)
+        gameMenu = menu
         menu.shown = true
-        menu.items += MenuItem(0, bundle.get("mainmenu_rules"), icons.book, MainMenu.SIDE_TOP)
-        menu.items += MenuItem(1, bundle.get("mainmenu_stats"), icons.list, MainMenu.SIDE_TOP)
-        menu.items += MenuItem(2, bundle.get("mainmenu_about"), icons.info, MainMenu.SIDE_TOP)
-        menu.items += MenuItem(3, bundle.get("mainmenu_new_game"), icons.cards, MainMenu.SIDE_BOTTOM)
-        menu.items += MenuItem(4, bundle.get("mainmenu_continue"), icons.arrowRight, MainMenu.SIDE_BOTTOM)
-        menu.items += MenuItem(5, bundle.get("mainmenu_settings"), icons.settings, MainMenu.SIDE_BOTTOM)
 
-        menu.invalidateLayout()
-        gameLayer.centerTable.add(menu).grow()
-
-        addListener(object : InputListener() {
-            override fun keyUp(event: InputEvent, keycode: Int): Boolean {
-                if (keycode == Input.Keys.M) {
-                    menu.shown = !menu.shown
-                    return true
-                }
-                return false
-            }
-        })
-    }
-
-    private fun setupSubMenuTest() {
-        val menu = SubMenu(coreSkin)
-        val icons = coreSkin.get(MenuIcons::class.java)
-
-        menu.shown = true
-        menu.title = "Settings"
-        menu.items += MenuItem(0, "Game", icons.cards)
-        menu.items += MenuItem(1, "Scoring", icons.book)
-        menu.items += MenuItem(2, "Contracts", icons.list)
-
-        menu.backArrowClickListener = {
-            menu.shown = false
-        }
-
-        repeat(12) {
-            val label = SdfLabel("The quick brown fox jumps over a lazy dog.",
-                    coreSkin, SdfLabel.SdfLabelStyle().apply {
-                fontColor = Color.BLACK
-                fontSize = 12f + it * 4f
-            })
-            label.setWrap(true)
-            menu.content.add(label).growX().pad(5f, 0f, 5f, 0f).row()
-        }
-
-        menu.invalidateLayout()
-        gameLayer.centerTable.add(menu).grow()
+        menu.continueItem.enabled = false
 
         addListener(object : InputListener() {
             override fun keyUp(event: InputEvent, keycode: Int): Boolean {
@@ -149,7 +100,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         deck.shuffle()
 
         val hand = CardHand(coreSkin, cardSkin)
-        hand.alignment = Align.bottom
+        hand.align = Align.bottom
         hand.clipPercent = 0.3f
 
         val stack = CardStack(coreSkin, cardSkin)
@@ -207,7 +158,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         }
 
         hand.cards = deck.drawTop(12)
-        hand.alignment = Align.bottom
+        hand.align = Align.bottom
         hand.clipPercent = 0.3f
         hand.dragListener = { actor ->
             val dragger = cardAnimationLayer.dragCards(actor)
@@ -255,7 +206,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         })
     }
 
-    fun setupSolitaire() {
+    private fun setupSolitaire() {
         val deck = PCard.fullDeck(false)
         deck.shuffle()
 
@@ -265,7 +216,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
             column.apply {
                 horizontal = false
                 cardSize = CardActor.SIZE_NORMAL
-                alignment = Align.top
+                align = Align.top
                 cards = deck.drawTop(5)
                 dragListener = { actor ->
                     val start = column.actors.indexOf(actor)
@@ -293,7 +244,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         }
     }
 
-    fun setupNullDeal() {
+    private fun setupNullDeal() {
         val deck = PCard.fullDeck(false)
         deck.shuffle()
 
@@ -326,7 +277,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         })
     }
 
-    fun setupCardLoop() {
+    private fun setupCardLoop() {
         val deck = PCard.fullDeck(false)
         deck.shuffle()
 
@@ -385,11 +336,11 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
         group2.apply {
             sorter = PCard.DEFAULT_SORTER
             cardSize = CardActor.SIZE_BIG
-            alignment = Align.bottom
+            align = Align.bottom
             clipPercent = 0.3f
             cards = deck.drawTop(6)
             sort()
-            clickListener = { actor, index ->
+            clickListener = { _, index ->
                 cardAnimationLayer.moveCard(group2, group1, index, 0)
                 group1.sort()
                 group2.sort()
@@ -432,7 +383,7 @@ class TestGameScreen(game: TestGame) : CardGameScreen(game) {
             drawSlot = true
             cardSize = CardActor.SIZE_NORMAL
             cards = deck.drawTop(1)
-            clickListener = { actor, index ->
+            clickListener = { _, index ->
                 cardAnimationLayer.moveCard(stack2, stack1, index, stack1.size)
                 cardAnimationLayer.update()
             }
