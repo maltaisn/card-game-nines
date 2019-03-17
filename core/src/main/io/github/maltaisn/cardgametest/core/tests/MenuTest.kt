@@ -19,7 +19,7 @@ package io.github.maltaisn.cardgametest.core.tests
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
-import io.github.maltaisn.cardgame.widget.DefaultGameMenu
+import io.github.maltaisn.cardgame.widget.menu.DefaultGameMenu
 import io.github.maltaisn.cardgametest.core.TestGame
 
 
