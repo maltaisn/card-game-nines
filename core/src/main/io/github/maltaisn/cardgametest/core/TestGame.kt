@@ -24,6 +24,7 @@ class TestGame : CardGame() {
     override fun create() {
         super.create()
 
+
         setScreen(MenuTest(this))
         //setScreen(CardLoopTest(this))
         //setScreen(DealTest(this))
@@ -31,6 +32,7 @@ class TestGame : CardGame() {
         //setScreen(NullDealTest(this))
         //setScreen(SolitaireTest(this))
         //setScreen(TrickTest(this))
+        //setScreen(SwitchTest(this))
     }
 
 }
