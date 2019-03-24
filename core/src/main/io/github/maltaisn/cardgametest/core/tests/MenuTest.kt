@@ -17,20 +17,31 @@
 package io.github.maltaisn.cardgametest.core.tests
 
 import com.badlogic.gdx.Input
+import com.badlogic.gdx.assets.AssetDescriptor
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
 import io.github.maltaisn.cardgame.widget.menu.DefaultGameMenu
+import io.github.maltaisn.cardgame.widget.prefs.GamePrefs
 import io.github.maltaisn.cardgametest.core.TestGame
 
 
 class MenuTest(game: TestGame) : CardGameTest(game) {
 
     init {
-        val menu = DefaultGameMenu(coreSkin)
-        gameMenu = menu
-        menu.shown = true
+        //isDebugAll = true
 
+        // Menu
+        val menu = DefaultGameMenu(coreSkin)
         menu.continueItem.enabled = false
+        menu.shown = true
+        gameMenu = menu
+
+        // Settings
+        val prefsFile = AssetDescriptor("settings.json", GamePrefs::class.java)
+        assetManager.load(prefsFile)
+        assetManager.finishLoading()
+        gameSettings = assetManager.get(prefsFile)
+        menu.settings = gameSettings
 
         addListener(object : InputListener() {
             override fun keyUp(event: InputEvent, keycode: Int): Boolean {
