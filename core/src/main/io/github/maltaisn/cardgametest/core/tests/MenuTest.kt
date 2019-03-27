@@ -20,8 +20,8 @@ import com.badlogic.gdx.Input
 import com.badlogic.gdx.assets.AssetDescriptor
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
+import io.github.maltaisn.cardgame.prefs.GamePrefs
 import io.github.maltaisn.cardgame.widget.menu.DefaultGameMenu
-import io.github.maltaisn.cardgame.widget.prefs.GamePrefs
 import io.github.maltaisn.cardgametest.core.TestGame
 
 

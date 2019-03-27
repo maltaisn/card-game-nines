@@ -29,7 +29,7 @@ class FontTest(game: TestGame) : CardGameTest(game) {
         //        "{|}~\u007F¡¢£¤¥¦§¨©ª«¬\u00AD®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
 
         repeat(10) {
-            val label = SdfLabel(text, coreSkin, SdfLabel.SdfLabelStyle().apply {
+            val label = SdfLabel(text, coreSkin, SdfLabel.FontStyle().apply {
                 bold = false
                 drawShadow = true
                 shadowColor = Color.BLACK
