@@ -3,7 +3,8 @@
   "prefs": {
     "interface_category": {
       "type": "category",
-      "title": "@string/pref_interface"
+      "title": "@string/pref_interface",
+      "icon": "icon-book"
     },
     "fullscreen": {
       "type": "switch",
@@ -30,6 +31,7 @@
       "type": "switch",
       "title": "Hearts can be played after queen of spade has been played. This setting has a somewhat long title than will hopefully span at least 2 lines.",
       "help": "No help!",
+      "helpTitle": "Hearts played",
       "defaultValue": true
     },
     "jack_variant": {
