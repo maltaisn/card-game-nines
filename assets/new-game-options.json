@@ -1,0 +1,33 @@
+{
+  "name": "io.github.maltaisn.cardgametest.new-game-settings",
+  "prefs": {
+    "player_count": {
+      "type": "slider",
+      "title": "@string/pref_player_count",
+      "minValue": 2,
+      "maxValue": 6,
+      "defaultValue": 4
+    },
+    "difficulty": {
+      "type": "slider",
+      "title": "@string/pref_difficulty",
+      "help": "@string/pref_difficulty_help",
+      "minValue": 0,
+      "maxValue": 3,
+      "defaultValue": 1
+    },
+    "game_speed": {
+      "type": "slider",
+      "title": "@string/pref_game_speed",
+      "minValue": 0,
+      "maxValue": 3,
+      "defaultValue": 1
+    },
+    "cheat_mode": {
+      "type": "switch",
+      "title": "@string/pref_cheat_mode",
+      "help": "@string/pref_cheat_mode_help",
+      "defaultValue": false
+    }
+  }
+}

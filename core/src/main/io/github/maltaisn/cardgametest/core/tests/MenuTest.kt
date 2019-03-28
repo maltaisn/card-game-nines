@@ -27,6 +27,8 @@ import io.github.maltaisn.cardgametest.core.TestGame
 
 class MenuTest(game: TestGame) : CardGameTest(game) {
 
+    private val prefs = mutableListOf<GamePrefs>()
+
     init {
         //isDebugAll = true
 
@@ -36,12 +38,13 @@ class MenuTest(game: TestGame) : CardGameTest(game) {
         menu.shown = true
         gameMenu = menu
 
+        // New game
+        val newGameOptions = loadPrefs("new-game-options.json")
+        menu.newGameOptions = newGameOptions
+
         // Settings
-        val prefsFile = AssetDescriptor("settings.json", GamePrefs::class.java)
-        assetManager.load(prefsFile)
-        assetManager.finishLoading()
-        gameSettings = assetManager.get(prefsFile)
-        menu.settings = gameSettings
+        val settings = loadPrefs("settings.json")
+        menu.settings = settings
 
         addListener(object : InputListener() {
             override fun keyUp(event: InputEvent, keycode: Int): Boolean {
@@ -52,6 +55,24 @@ class MenuTest(game: TestGame) : CardGameTest(game) {
                 return false
             }
         })
+    }
+
+    private fun loadPrefs(name: String): GamePrefs {
+        val file = AssetDescriptor(name, GamePrefs::class.java)
+        assetManager.load(file)
+        assetManager.finishLoading()
+        val prefs = assetManager.get(file)
+        this.prefs += prefs
+        return prefs
+    }
+
+    override fun pause() {
+        super.pause()
+
+        // Save all preferences when game is paused
+        for (pref in prefs) {
+            pref.save()
+        }
     }
 
 }
