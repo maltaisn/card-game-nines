@@ -12,6 +12,12 @@
       "type": "slider",
       "title": "@string/pref_difficulty",
       "help": "@string/pref_difficulty_help",
+      "enumValues": [
+        "@string/pref_difficulty_0",
+        "@string/pref_difficulty_1",
+        "@string/pref_difficulty_2",
+        "@string/pref_difficulty_3"
+      ],
       "minValue": 0,
       "maxValue": 3,
       "defaultValue": 1
@@ -19,8 +25,15 @@
     "game_speed": {
       "type": "slider",
       "title": "@string/pref_game_speed",
+      "enumValues": [
+        "@string/pref_game_speed_0",
+        "@string/pref_game_speed_1",
+        "@string/pref_game_speed_2",
+        "@string/pref_game_speed_3",
+        "@string/pref_game_speed_4"
+      ],
       "minValue": 0,
-      "maxValue": 3,
+      "maxValue": 4,
       "defaultValue": 1
     },
     "cheat_mode": {
