@@ -23,18 +23,16 @@
       "defaultValue": 1
     },
     "game_speed": {
-      "type": "slider",
+      "type": "list",
       "title": "@string/pref_game_speed",
-      "enumValues": [
-        "@string/pref_game_speed_0",
-        "@string/pref_game_speed_1",
-        "@string/pref_game_speed_2",
-        "@string/pref_game_speed_3",
-        "@string/pref_game_speed_4"
-      ],
-      "minValue": 0,
-      "maxValue": 4,
-      "defaultValue": 1
+      "entries": {
+        "very_slow": "@string/pref_game_speed_0",
+        "slow": "@string/pref_game_speed_1",
+        "normal": "@string/pref_game_speed_2",
+        "fast": "@string/pref_game_speed_3",
+        "very_fast": "@string/pref_game_speed_4"
+      },
+      "defaultValue": "normal"
     },
     "cheat_mode": {
       "type": "switch",

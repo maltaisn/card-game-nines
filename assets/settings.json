@@ -31,19 +31,19 @@
           "type": "switch",
           "title": "Hearts can be played after queen of spade has been played. This setting has a somewhat long title than will hopefully span at least 2 lines.",
           "help": "No help!",
-          "helpTitle": "Hearts played",
+          "shortTitle": "Hearts played",
           "defaultValue": true
         },
-        "jack_variant": {
-          "type": "switch",
-          "title": "Jack of diamond variant",
-          "defaultValue": false
-        },
-        "complex_variant": {
-          "type": "switch",
-          "title": "Complex scoring variant",
-          "defaultValue": false,
-          "dependency": "jack_variant"
+        "variant": {
+          "type": "list",
+          "title": "Game variant",
+          "entries": {
+            "normal": "Normal",
+            "complex": "Complex hearts",
+            "jack": "Jack of diamond"
+          },
+          "defaultValue": "normal",
+          "dependency": "spade_queen_allow_heart"
         },
         "enable_game_category": {
           "type": "switch",
