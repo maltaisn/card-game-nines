@@ -38,7 +38,7 @@ class SwitchTest(game: TestGame) : CardGameTest(game) {
         switch.checkListener = { checked ->
             debug { "Switch checked change to $checked" }
         }
-        content.add(switch).expand()
+        content.add(switch).size(300f, 300f).expand()
 
         gameLayer.centerTable.add(content).grow().pad(20f, 20f, 0f, 20f)
 

@@ -29,7 +29,7 @@ import io.github.maltaisn.cardgame.widget.card.CardContainer
 import io.github.maltaisn.cardgame.widget.card.CardHand
 import io.github.maltaisn.cardgame.widget.card.CardTrick
 import io.github.maltaisn.cardgametest.core.TestGame
-import ktx.actors.plusAssign
+import ktx.actors.onClick
 
 
 class TrickTest(game: TestGame) : CardGameTest(game) {
@@ -90,7 +90,11 @@ class TrickTest(game: TestGame) : CardGameTest(game) {
         gameLayer.centerTable.add(trick).growY().pad(30f).row()
         gameLayer.centerTable.add(hand).grow().pad(0f, 30f, 0f, 30f)
 
-        popup.add(PopupButton(coreSkin, "Draw a card").apply { clickListener = { popup.hide() } })
+        // Popup
+        val popupBtn = PopupButton(coreSkin, "Draw a card")
+        popupBtn.onClick { popup.hide() }
+        popup.add(popupBtn)
+
         /*
         popup.add(PopupButton(coreSkin, "Last two")).fillX()
         popup.add(PopupButton(coreSkin, "Hearts")).fillX().row()
@@ -100,7 +104,8 @@ class TrickTest(game: TestGame) : CardGameTest(game) {
         popup.add(PopupButton(coreSkin, "Tricks")).fillX().row()
         popup.add(PopupButton(coreSkin, "Trump")).colspan(2)
         */
-        popupGroup += popup
+
+        popupGroup.addActor(popup)
 
         // Transition tests
         addListener(object : InputListener() {
