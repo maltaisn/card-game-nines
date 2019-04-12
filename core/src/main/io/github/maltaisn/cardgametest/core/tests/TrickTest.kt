@@ -111,6 +111,7 @@ class TrickTest(game: TestGame) : CardGameTest(game) {
         addListener(object : InputListener() {
             override fun keyUp(event: InputEvent, keycode: Int): Boolean {
                 when (keycode) {
+                    Input.Keys.E -> popupBtn.enabled = !popupBtn.enabled
                     Input.Keys.P -> if (popup.shown) popup.hide() else popup.show(hand, Popup.Side.ABOVE)
                     Input.Keys.F -> hand.fade(!hand.shown)
                     Input.Keys.UP -> hand.slide(!hand.shown, CardContainer.Direction.UP)
