@@ -1,91 +1,91 @@
 {
-  "name": "io.github.maltaisn.cardgametest.settings",
-  "prefs": {
-    "interface_category": {
-      "type": "category",
-      "title": "@string/pref_interface",
-      "icon": "icon-book",
-      "prefs": {
-        "fullscreen": {
-          "type": "switch",
-          "title": "@string/pref_fullscreen",
-          "help": "@string/pref_fullscreen_help",
-          "defaultValue": true
-        },
-        "automatic_play": {
-          "type": "switch",
-          "title": "Enable automatic play",
-          "defaultValue": true
-        },
-        "auto_collect": {
-          "type": "switch",
-          "title": "Collect tricks automatically",
-          "defaultValue": true
-        },
-        "hearts_opening": {
-          "type": "switch",
-          "title": "Opening with hearts not allowed",
-          "defaultValue": true
-        },
-        "spade_queen_allow_heart": {
-          "type": "switch",
-          "title": "Hearts can be played after queen of spade has been played. This setting has a somewhat long title than will hopefully span at least 2 lines.",
-          "help": "No help!",
-          "shortTitle": "Hearts played",
-          "defaultValue": true
-        },
-        "variant": {
-          "type": "list",
-          "title": "Game variant",
-          "entries": {
-            "normal": "Normal",
-            "complex": "Complex hearts",
-            "jack": "Jack of diamond"
-          },
-          "defaultValue": "normal",
-          "dependency": "spade_queen_allow_heart"
-        },
-        "enable_game_category": {
-          "type": "switch",
-          "title": "Enable game category",
-          "defaultValue": true
+  name: "io.github.maltaisn.cardgametest.settings"
+  prefs: {
+    interface_category: {
+      type: "category"
+      title: "@string/pref_interface"
+      icon: "icon-book"
+      prefs: {
+        fullscreen: {
+          type: "switch"
+          title: "@string/pref_fullscreen"
+          help: "@string/pref_fullscreen_help"
+          defaultValue: true
+        }
+        automatic_play: {
+          type: "switch"
+          title: "Enable automatic play"
+          defaultValue: true
+        }
+        auto_collect: {
+          type: "switch"
+          title: "Collect tricks automatically"
+          defaultValue: true
+        }
+        hearts_opening: {
+          type: "switch"
+          title: "Opening with hearts not allowed"
+          defaultValue: true
+        }
+        spade_queen_allow_heart: {
+          type: "switch"
+          title: "Hearts can be played after queen of spade has been played. This setting has a somewhat long title than will hopefully span at least 2 lines."
+          help: "No help!"
+          shortTitle: "Hearts played"
+          defaultValue: true
+        }
+        variant: {
+          type: "list"
+          title: "Game variant"
+          entries: {
+            normal: "Normal"
+            complex: "Complex hearts"
+            jack: "Jack of diamond"
+          }
+          defaultValue: "normal"
+          dependency: "spade_queen_allow_heart"
+        }
+        enable_game_category: {
+          type: "switch"
+          title: "Enable game category"
+          defaultValue: true
         }
       }
-    },
-    "game_category": {
-      "type": "category",
-      "title": "@string/pref_game",
-      "dependency": "enable_game_category",
-      "prefs": {
-        "players": {
-          "type": "slider",
-          "title": "@string/pref_players",
-          "minValue": 2,
-          "maxValue": 6,
-          "step": 1,
-          "defaultValue": 4
-        },
-        "points_trick": {
-          "type": "slider",
-          "title": "Points per trick taken",
-          "minValue": -20,
-          "maxValue": 20,
-          "step": 2,
-          "defaultValue": 6
-        },
-        "points_queen": {
-          "type": "slider",
-          "title": "Points if queen of spade is taken",
-          "minValue": 0,
-          "maxValue": 50,
-          "step": 5,
-          "defaultValue": 15,
-          "dependency": "fullscreen"
-        },
-        "cheats": {
-          "type": "switch",
-          "title": "Enable cheats",
-          "defaultValue": false
+    }
+    game_category: {
+      type: "category"
+      title: "@string/pref_game"
+      dependency: "enable_game_category"
+      prefs: {
+        players: {
+          type: "slider"
+          title: "@string/pref_players"
+          minValue: 2
+          maxValue: 6
+          step: 1
+          defaultValue: 4
+        }
+        points_trick: {
+          type: "slider"
+          title: "Points per trick taken"
+          minValue: -20
+          maxValue: 20
+          step: 2
+          defaultValue: 6
+        }
+        points_queen: {
+          type: "slider"
+          title: "Points if queen of spade is taken"
+          minValue: 0
+          maxValue: 50
+          step: 5
+          defaultValue: 15
+          dependency: "fullscreen"
+        }
+        cheats: {
+          type: "switch"
+          title: "Enable cheats"
+          defaultValue: false
         }
       }
     }
