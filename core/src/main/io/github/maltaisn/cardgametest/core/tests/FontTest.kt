@@ -17,6 +17,7 @@
 package io.github.maltaisn.cardgametest.core.tests
 
 import com.badlogic.gdx.graphics.Color
+import io.github.maltaisn.cardgame.widget.FontStyle
 import io.github.maltaisn.cardgame.widget.SdfLabel
 import io.github.maltaisn.cardgametest.core.TestGame
 
@@ -29,12 +30,12 @@ class FontTest(game: TestGame) : CardGameTest(game) {
         //        "{|}~\u007F¡¢£¤¥¦§¨©ª«¬\u00AD®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
 
         repeat(10) {
-            val label = SdfLabel(text, coreSkin, SdfLabel.FontStyle().apply {
+            val label = SdfLabel(coreSkin, FontStyle().apply {
                 bold = false
                 drawShadow = true
                 shadowColor = Color.BLACK
                 fontSize = 12f + it * 4f
-            })
+            }, text)
             gameLayer.centerTable.add(label).expand().center().row()
         }
     }

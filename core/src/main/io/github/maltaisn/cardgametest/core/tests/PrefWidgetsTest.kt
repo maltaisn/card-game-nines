@@ -18,27 +18,48 @@ package io.github.maltaisn.cardgametest.core.tests
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
+import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.scenes.scene2d.ui.Table
+import io.github.maltaisn.cardgame.widget.FontStyle
+import io.github.maltaisn.cardgame.widget.SdfTextField
+import io.github.maltaisn.cardgame.widget.Slider
 import io.github.maltaisn.cardgame.widget.Switch
 import io.github.maltaisn.cardgametest.core.TestGame
 import ktx.log.debug
 
 
-class SwitchTest(game: TestGame) : CardGameTest(game) {
+class PrefWidgetsTest(game: TestGame) : CardGameTest(game) {
 
     init {
-        //isDebugAll = true
+        isDebugAll = true
 
         val content = Table()
         content.background = coreSkin.getDrawable("submenu-content-background")
 
+        // Switch
         val switch = Switch(coreSkin)
         switch.checkListener = { checked ->
             debug { "Switch checked change to $checked" }
         }
-        content.add(switch).size(300f, 300f).expand()
+        content.add(switch).size(300f, 100f).expand().row()
+
+        // Slider
+        val slider = Slider(coreSkin)
+        slider.progress = 50f
+        slider.changeListener = { value ->
+            debug { "Slider value changed to $value" }
+        }
+        content.add(slider).width(300f).expand().row()
+
+        // Text field
+        val textField = SdfTextField(coreSkin, FontStyle().apply {
+            fontSize = 24f
+            fontColor = Color.BLACK
+        }, "Text input")
+        textField.maxLength = 20
+        content.add(textField).width(300f).expand().row()
 
         gameLayer.centerTable.add(content).grow().pad(20f, 20f, 0f, 20f)
 
@@ -48,6 +69,7 @@ class SwitchTest(game: TestGame) : CardGameTest(game) {
                     switch.check(!switch.checked, !Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT))
                 } else if (keycode == Input.Keys.E) {
                     switch.enabled = !switch.enabled
+                    slider.enabled = !slider.enabled
                 }
                 return false
             }

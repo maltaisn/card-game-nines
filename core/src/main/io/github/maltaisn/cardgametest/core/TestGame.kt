@@ -17,22 +17,21 @@
 package io.github.maltaisn.cardgametest.core
 
 import io.github.maltaisn.cardgame.CardGame
-import io.github.maltaisn.cardgametest.core.tests.TrickTest
+import io.github.maltaisn.cardgametest.core.tests.MenuTest
 
 class TestGame : CardGame() {
 
     override fun create() {
         super.create()
 
-        //setScreen(MenuTest(this))
+        setScreen(MenuTest(this))
         //setScreen(CardLoopTest(this))
         //setScreen(DealTest(this))
         //setScreen(FontTest(this))
         //setScreen(NullDealTest(this))
         //setScreen(SolitaireTest(this))
-        setScreen(TrickTest(this))
-        //setScreen(SwitchTest(this))
-        //setScreen(SliderTest(this))
+        //setScreen(TrickTest(this))
+        //setScreen(PrefWidgetsTest(this))
     }
 
 }

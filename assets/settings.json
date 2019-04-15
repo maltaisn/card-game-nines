@@ -12,6 +12,20 @@
           help: "@string/pref_fullscreen_help"
           defaultValue: true
         }
+        player_name: {
+          type: "text"
+          title: "Player name"
+          help: "The player name can be set in this field."
+          maxLength: 20
+          defaultValue: "Player"
+          dependency: "fullscreen"
+        }
+        other_player_name: {
+          type: "text"
+          title: "Other player name"
+          maxLength: 20
+          defaultValue: "Other player"
+        }
         automatic_play: {
           type: "switch"
           title: "Enable automatic play"
