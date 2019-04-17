@@ -12,19 +12,25 @@
           help: "@string/pref_fullscreen_help"
           defaultValue: true
         }
-        player_name: {
+        game_name: {
           type: "text"
-          title: "Player name"
-          help: "The player name can be set in this field."
-          maxLength: 20
-          defaultValue: "Player"
+          title: "Game name"
+          help: "I don't know why but you can choose the game name."
+          maxLength: 30
+          defaultValue: "Card game"
           dependency: "fullscreen"
         }
-        other_player_name: {
-          type: "text"
-          title: "Other player name"
+        player_names: {
+          type: "player-names"
+          title: "Player names"
           maxLength: 20
-          defaultValue: "Other player"
+          defaultNames: [
+            "North",
+            "East",
+            "South",
+            "West"
+          ]
+          dependency: "fullscreen"
         }
         automatic_play: {
           type: "switch"
