@@ -20,6 +20,7 @@ import com.badlogic.gdx.Input
 import com.badlogic.gdx.assets.AssetDescriptor
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
+import io.github.maltaisn.cardgame.markdown.Markdown
 import io.github.maltaisn.cardgame.prefs.GamePrefs
 import io.github.maltaisn.cardgame.widget.menu.DefaultGameMenu
 import io.github.maltaisn.cardgametest.core.TestGame
@@ -38,13 +39,9 @@ class MenuTest(game: TestGame) : CardGameTest(game) {
         menu.shown = true
         gameMenu = menu
 
-        // New game
-        val newGameOptions = loadPrefs("new-game-options.json")
-        menu.newGameOptions = newGameOptions
-
-        // Settings
-        val settings = loadPrefs("settings.json")
-        menu.settings = settings
+        menu.newGameOptions = loadPrefs("new-game-options.json")
+        menu.settings = loadPrefs("settings.json")
+        menu.rules = loadMarkdown("rules")
 
         addListener(object : InputListener() {
             override fun keyUp(event: InputEvent, keycode: Int): Boolean {
@@ -64,6 +61,13 @@ class MenuTest(game: TestGame) : CardGameTest(game) {
         val prefs = assetManager.get(file)
         this.prefs += prefs
         return prefs
+    }
+
+    private fun loadMarkdown(name: String): Markdown {
+        val file = AssetDescriptor(name, Markdown::class.java)
+        assetManager.load(file)
+        assetManager.finishLoading()
+        return assetManager.get(file)
     }
 
     override fun pause() {

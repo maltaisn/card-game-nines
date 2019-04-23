@@ -16,7 +16,6 @@
           type: "text"
           title: "Game name"
           help: "I don't know why but you can choose the game name."
-          maxLength: 30
           defaultValue: "Card game"
           dependency: "fullscreen"
         }
