@@ -1,5 +1,5 @@
 {
-  name: "io.github.maltaisn.cardgametest.new-game-settings"
+  name: "com.maltaisn.cardgametest.newGameSettings"
   prefs: {
     player_count: {
       type: "slider"

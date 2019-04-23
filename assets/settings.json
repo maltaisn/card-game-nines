@@ -1,5 +1,5 @@
 {
-  name: "io.github.maltaisn.cardgametest.settings"
+  name: "com.maltaisn.cardgametest.settings"
   prefs: {
     interface_category: {
       type: "category"
