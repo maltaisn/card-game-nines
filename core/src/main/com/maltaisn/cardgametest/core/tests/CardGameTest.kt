@@ -28,11 +28,15 @@ abstract class CardGameTest(game: TestGame) : CardGameScreen(game) {
 
     @GDXAssets(skinFiles = ["assets/core/pcard/pcard.skin"],
             atlasFiles = ["assets/core/pcard/pcard.atlas"])
-    protected val cardSkin: Skin
+    protected lateinit var cardSkin: Skin
 
-    init {
+    override fun load() {
+        super.load()
         loadPCardSkin()
-        assetManager.finishLoading()
+    }
+
+    override fun start() {
+        super.start()
         cardSkin = assetManager.getAsset(Resources.PCARD_SKIN)
     }
 

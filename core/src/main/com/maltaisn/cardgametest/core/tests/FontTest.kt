@@ -24,7 +24,9 @@ import com.maltaisn.cardgametest.core.TestGame
 
 class FontTest(game: TestGame) : CardGameTest(game) {
 
-    init {
+    override fun start() {
+        super.start()
+
         val text = "The quick brown fox jumps over a lazy dog."
         //val text = "!\"#\$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz" +
         //        "{|}~\u007F¡¢£¤¥¦§¨©ª«¬\u00AD®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"

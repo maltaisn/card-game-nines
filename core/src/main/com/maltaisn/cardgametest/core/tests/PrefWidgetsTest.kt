@@ -32,7 +32,9 @@ import ktx.log.debug
 
 class PrefWidgetsTest(game: TestGame) : CardGameTest(game) {
 
-    init {
+    override fun start() {
+        super.start()
+
         isDebugAll = true
 
         val content = Table()

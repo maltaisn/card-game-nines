@@ -34,7 +34,9 @@ import ktx.actors.onClick
 
 class TrickTest(game: TestGame) : CardGameTest(game) {
 
-    init {
+    override fun start() {
+        super.start()
+
         val deck = PCard.fullDeck(true)
         deck.shuffle()
 

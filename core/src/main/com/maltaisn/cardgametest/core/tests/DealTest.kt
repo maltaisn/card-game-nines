@@ -28,7 +28,9 @@ import com.maltaisn.cardgametest.core.TestGame
 
 class DealTest(game: TestGame) : CardGameTest(game) {
 
-    init {
+    override fun start() {
+        super.start()
+
         val deck = PCard.fullDeck(true)
         deck.shuffle()
 
