@@ -22,18 +22,19 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.scenes.scene2d.ui.Table
+import com.maltaisn.cardgame.CardGameLayout
 import com.maltaisn.cardgame.widget.FontStyle
 import com.maltaisn.cardgame.widget.SdfTextField
 import com.maltaisn.cardgame.widget.Slider
 import com.maltaisn.cardgame.widget.Switch
-import com.maltaisn.cardgametest.core.TestGame
+import com.maltaisn.cardgametest.core.TestGameApp
 import ktx.log.debug
 
 
-class PrefWidgetsTest(game: TestGame) : CardGameTest(game) {
+class PrefWidgetsTest(game: TestGameApp) : CardGameTest(game) {
 
-    override fun start() {
-        super.start()
+    override fun layout(layout: CardGameLayout) {
+        super.layout(layout)
 
         isDebugAll = true
 
@@ -63,7 +64,7 @@ class PrefWidgetsTest(game: TestGame) : CardGameTest(game) {
         textField.maxLength = 20
         content.add(textField).width(300f).expand().row()
 
-        gameLayer.centerTable.add(content).grow().pad(20f, 20f, 0f, 20f)
+        layout.gameLayer.centerTable.add(content).grow().pad(20f, 20f, 0f, 20f)
 
         addListener(object : InputListener() {
             override fun keyUp(event: InputEvent, keycode: Int): Boolean {

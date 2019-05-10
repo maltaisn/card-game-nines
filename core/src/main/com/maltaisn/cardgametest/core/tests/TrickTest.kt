@@ -21,6 +21,7 @@ import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.utils.Align
+import com.maltaisn.cardgame.CardGameLayout
 import com.maltaisn.cardgame.core.PCard
 import com.maltaisn.cardgame.widget.Popup
 import com.maltaisn.cardgame.widget.PopupButton
@@ -28,14 +29,14 @@ import com.maltaisn.cardgame.widget.card.CardActor
 import com.maltaisn.cardgame.widget.card.CardContainer
 import com.maltaisn.cardgame.widget.card.CardHand
 import com.maltaisn.cardgame.widget.card.CardTrick
-import com.maltaisn.cardgametest.core.TestGame
+import com.maltaisn.cardgametest.core.TestGameApp
 import ktx.actors.onClick
 
 
-class TrickTest(game: TestGame) : CardGameTest(game) {
+class TrickTest(game: TestGameApp) : CardGameTest(game) {
 
-    override fun start() {
-        super.start()
+    override fun layout(layout: CardGameLayout) {
+        super.layout(layout)
 
         val deck = PCard.fullDeck(true)
         deck.shuffle()
@@ -53,30 +54,30 @@ class TrickTest(game: TestGame) : CardGameTest(game) {
             override fun onCardsPlayed(actors: List<CardActor>, src: CardContainer, pos: Vector2) {
                 actors.first().highlighted = false
                 val index = trick.findInsertPositionForCoordinates(pos.x, pos.y)
-                cardAnimationLayer.moveCard(src, trick,
+                layout.cardAnimationLayer.moveCard(src, trick,
                         src.actors.indexOf(actors.first()), index,
                         replaceDst = true)
             }
         }
         trick.dragListener = { actor ->
-            val dragger = cardAnimationLayer.dragCards(actor)
+            val dragger = layout.cardAnimationLayer.dragCards(actor)
             dragger?.rearrangeable = true
             dragger
         }
         trick.clickListener = { _, _ ->
             for (i in 0 until trick.size) {
                 if (trick.actors[i] != null) {
-                    cardAnimationLayer.moveCard(trick, hand, i, hand.size, replaceSrc = true)
+                    layout.cardAnimationLayer.moveCard(trick, hand, i, hand.size, replaceSrc = true)
                 }
             }
-            cardAnimationLayer.update()
+            layout.cardAnimationLayer.update()
         }
 
         hand.cards = deck.drawTop(12)
         hand.align = Align.bottom
         hand.clipPercent = 0.3f
         hand.dragListener = { actor ->
-            val dragger = cardAnimationLayer.dragCards(actor)
+            val dragger = layout.cardAnimationLayer.dragCards(actor)
             dragger?.rearrangeable = true
             dragger
         }
@@ -89,8 +90,8 @@ class TrickTest(game: TestGame) : CardGameTest(game) {
             }
         }
 
-        gameLayer.centerTable.add(trick).growY().pad(30f).row()
-        gameLayer.centerTable.add(hand).grow().pad(0f, 30f, 0f, 30f)
+        layout.gameLayer.centerTable.add(trick).growY().pad(30f).row()
+        layout.gameLayer.centerTable.add(hand).grow().pad(0f, 30f, 0f, 30f)
 
         // Popup
         val popupBtn = PopupButton(coreSkin, "Draw a card")
@@ -107,7 +108,7 @@ class TrickTest(game: TestGame) : CardGameTest(game) {
         popup.add(PopupButton(coreSkin, "Trump")).colspan(2)
         */
 
-        popupGroup.addActor(popup)
+        layout.popupGroup.addActor(popup)
 
         // Transition tests
         addListener(object : InputListener() {

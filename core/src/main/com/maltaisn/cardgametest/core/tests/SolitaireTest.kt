@@ -18,24 +18,25 @@ package com.maltaisn.cardgametest.core.tests
 
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.utils.Align
+import com.maltaisn.cardgame.CardGameLayout
 import com.maltaisn.cardgame.core.PCard
 import com.maltaisn.cardgame.widget.card.CardActor
 import com.maltaisn.cardgame.widget.card.CardContainer
 import com.maltaisn.cardgame.widget.card.CardHand
-import com.maltaisn.cardgametest.core.TestGame
+import com.maltaisn.cardgametest.core.TestGameApp
 
 
-class SolitaireTest(game: TestGame) : CardGameTest(game) {
+class SolitaireTest(game: TestGameApp) : CardGameTest(game) {
 
-    override fun start() {
-        super.start()
+    override fun layout(layout: CardGameLayout) {
+        super.layout(layout)
 
         val deck = PCard.fullDeck(false)
         deck.shuffle()
 
         repeat(4) {
             val column = CardHand(coreSkin, cardSkin)
-            gameLayer.centerTable.add(column).pad(30f, 20f, 30f, 20f).grow()
+            layout.gameLayer.centerTable.add(column).pad(30f, 20f, 30f, 20f).grow()
             column.apply {
                 horizontal = false
                 cardSize = CardActor.SIZE_NORMAL
@@ -47,7 +48,7 @@ class SolitaireTest(game: TestGame) : CardGameTest(game) {
                     for (i in start until column.size) {
                         column.actors[i]?.let { actors += it }
                     }
-                    val dragger = cardAnimationLayer.dragCards(*actors.toTypedArray())
+                    val dragger = layout.cardAnimationLayer.dragCards(*actors.toTypedArray())
                     dragger?.rearrangeable = true
                     dragger
                 }
@@ -57,7 +58,7 @@ class SolitaireTest(game: TestGame) : CardGameTest(game) {
                     override fun onCardsPlayed(actors: List<CardActor>, src: CardContainer, pos: Vector2) {
                         var insertPos = column.findInsertPositionForCoordinates(pos.x, pos.y)
                         for (actor in actors) {
-                            cardAnimationLayer.moveCard(src, column,
+                            layout.cardAnimationLayer.moveCard(src, column,
                                     src.actors.indexOf(actor), insertPos)
                             insertPos++
                         }

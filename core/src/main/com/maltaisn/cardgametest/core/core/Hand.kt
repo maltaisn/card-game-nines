@@ -23,16 +23,10 @@ import com.maltaisn.cardgame.core.PCard
 /**
  * A player's hand. Each hand have an ID.
  */
-class Hand : Deck<PCard> {
+class Hand(val id: Int) : Deck<PCard>() {
 
-    val id: Int
-
-    constructor(id: Int) : super() {
-        this.id = id
-    }
-
-    constructor(id: Int, cards: Collection<PCard>) : super(cards) {
-        this.id = id
+    constructor(id: Int, cards: Collection<PCard>) : this(id) {
+        this += cards
     }
 
     override fun clone() = Hand(id, this)

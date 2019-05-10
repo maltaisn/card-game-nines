@@ -17,18 +17,20 @@
 package com.maltaisn.cardgametest.core.tests
 
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
-import com.gmail.blueboxware.libgdxplugin.annotations.GDXAssets
+import com.maltaisn.cardgame.CardGameLayout
 import com.maltaisn.cardgame.CardGameScreen
 import com.maltaisn.cardgame.Resources
-import com.maltaisn.cardgametest.core.TestGame
+import com.maltaisn.cardgame.core.CardGame
+import com.maltaisn.cardgame.core.GameEvent
+import com.maltaisn.cardgame.prefs.GamePrefs
+import com.maltaisn.cardgametest.core.TestGameApp
 import ktx.assets.getAsset
 
 
-abstract class CardGameTest(game: TestGame) : CardGameScreen(game) {
+abstract class CardGameTest(game: TestGameApp) : CardGameScreen(game) {
 
-    @GDXAssets(skinFiles = ["assets/core/pcard/pcard.skin"],
-            atlasFiles = ["assets/core/pcard/pcard.atlas"])
     protected lateinit var cardSkin: Skin
+
 
     override fun load() {
         super.load()
@@ -38,6 +40,27 @@ abstract class CardGameTest(game: TestGame) : CardGameScreen(game) {
     override fun start() {
         super.start()
         cardSkin = assetManager.getAsset(Resources.PCARD_SKIN)
+
+        val settings = GamePrefs("unused")
+        gameLayout = object : CardGameLayout(assetManager, settings) {
+            override var shown = true
+
+            init {
+                layout(this)
+            }
+
+            override fun initGame(game: CardGame) {
+                throw UnsupportedOperationException()
+            }
+
+            override fun doEvent(event: GameEvent) {
+                throw UnsupportedOperationException()
+            }
+        }
+    }
+
+    open fun layout(layout: CardGameLayout) {
+
     }
 
 }

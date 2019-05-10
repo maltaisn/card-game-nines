@@ -16,20 +16,19 @@
 
 package com.maltaisn.cardgametest.core.core
 
-import com.maltaisn.cardgame.core.BasePlayer
+import com.maltaisn.cardgame.core.CardPlayer
 import com.maltaisn.cardgame.core.PCard
 
 
-abstract class Player : BasePlayer {
+abstract class Player : CardPlayer {
 
-    /**
-     * Player's hand.
-     */
+    /** The player score at the start of the round. */
+    var score = 0
+
+    /** The player's hand. */
     lateinit var hand: Hand
 
-    /**
-     * List of the tricks taken by a player.
-     */
+    /** List of the tricks taken by a player. */
     val tricksTaken = mutableListOf<Trick>()
 
 
@@ -52,7 +51,8 @@ abstract class Player : BasePlayer {
         this.hand = hand
     }
 
-    override fun toString() = super.toString() + ", tricks: ${tricksTaken.size}, " +
-            "hand: ${hand.toSortedString(PCard.DEFAULT_SORTER)}"
+    override fun toString() = super.toString().dropLast(1) +
+            ", score: $score, ${tricksTaken.size} tricks taken" +
+            ", hand: ${hand.toSortedString(PCard.DEFAULT_SORTER)}]"
 
 }

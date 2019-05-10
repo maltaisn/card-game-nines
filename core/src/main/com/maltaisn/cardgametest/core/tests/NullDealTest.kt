@@ -19,16 +19,17 @@ package com.maltaisn.cardgametest.core.tests
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
+import com.maltaisn.cardgame.CardGameLayout
 import com.maltaisn.cardgame.core.Card
 import com.maltaisn.cardgame.core.PCard
 import com.maltaisn.cardgame.widget.card.CardHand
-import com.maltaisn.cardgametest.core.TestGame
+import com.maltaisn.cardgametest.core.TestGameApp
 
 
-class NullDealTest(game: TestGame) : CardGameTest(game) {
+class NullDealTest(game: TestGameApp) : CardGameTest(game) {
 
-    override fun start() {
-        super.start()
+    override fun layout(layout: CardGameLayout) {
+        super.layout(layout)
 
         val deck = PCard.fullDeck(false)
         deck.shuffle()
@@ -36,23 +37,23 @@ class NullDealTest(game: TestGame) : CardGameTest(game) {
         val count = 16
 
         val hand1 = CardHand(coreSkin, cardSkin)
-        gameLayer.centerTable.add(hand1).pad(30f).grow().row()
+        layout.gameLayer.centerTable.add(hand1).pad(30f).grow().row()
         hand1.cards = deck.drawTop(count)
 
         val hand2 = CardHand(coreSkin, cardSkin)
         hand2.cards = arrayOfNulls<Card>(count).toList()
-        gameLayer.centerTable.add(hand2).pad(30f).grow()
+        layout.gameLayer.centerTable.add(hand2).pad(30f).grow()
 
         addListener(object : InputListener() {
             override fun keyUp(event: InputEvent, keycode: Int): Boolean {
                 if (keycode == Input.Keys.A) {
-                    if (cardAnimationLayer.animationRunning) {
-                        cardAnimationLayer.completeAnimation(true)
+                    if (layout.cardAnimationLayer.animationRunning) {
+                        layout.cardAnimationLayer.completeAnimation(true)
                     }
                     if (hand1.actors.first() != null) {
-                        cardAnimationLayer.deal(hand1, hand2, count, replaceSrc = true, replaceDst = true)
+                        layout.cardAnimationLayer.deal(hand1, hand2, count, replaceSrc = true, replaceDst = true)
                     } else {
-                        cardAnimationLayer.deal(hand2, hand1, count, replaceSrc = true, replaceDst = true)
+                        layout.cardAnimationLayer.deal(hand2, hand1, count, replaceSrc = true, replaceDst = true)
                     }
                     return true
                 }

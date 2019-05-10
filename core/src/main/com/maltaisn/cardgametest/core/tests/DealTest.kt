@@ -20,16 +20,17 @@ import com.badlogic.gdx.Input
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.utils.Align
+import com.maltaisn.cardgame.CardGameLayout
 import com.maltaisn.cardgame.core.PCard
 import com.maltaisn.cardgame.widget.card.CardHand
 import com.maltaisn.cardgame.widget.card.CardStack
-import com.maltaisn.cardgametest.core.TestGame
+import com.maltaisn.cardgametest.core.TestGameApp
 
 
-class DealTest(game: TestGame) : CardGameTest(game) {
+class DealTest(game: TestGameApp) : CardGameTest(game) {
 
-    override fun start() {
-        super.start()
+    override fun layout(layout: CardGameLayout) {
+        super.layout(layout)
 
         val deck = PCard.fullDeck(true)
         deck.shuffle()
@@ -42,13 +43,13 @@ class DealTest(game: TestGame) : CardGameTest(game) {
         stack.isVisible = false
         stack.cards = deck
 
-        gameLayer.centerTable.add(hand).grow()
-        gameLayer.bottomTable.add(stack).grow()
+        layout.gameLayer.centerTable.add(hand).grow()
+        layout.gameLayer.bottomTable.add(stack).grow()
 
         addListener(object : InputListener() {
             override fun keyUp(event: InputEvent, keycode: Int): Boolean {
                 if (keycode == Input.Keys.A) {
-                    cardAnimationLayer.deal(stack, hand, 12)
+                    layout.cardAnimationLayer.deal(stack, hand, 12)
                     return true
                 }
                 return false

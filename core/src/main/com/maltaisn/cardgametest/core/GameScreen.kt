@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package com.maltaisn.cardgametest.core.tests
+package com.maltaisn.cardgametest.core
 
-import com.badlogic.gdx.Input
-import com.badlogic.gdx.scenes.scene2d.InputEvent
-import com.badlogic.gdx.scenes.scene2d.InputListener
+import com.badlogic.gdx.Gdx
+import com.maltaisn.cardgame.CardGameScreen
 import com.maltaisn.cardgame.markdown.Markdown
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.widget.menu.DefaultGameMenu
-import com.maltaisn.cardgametest.core.TestGameApp
 import ktx.assets.load
 
 
-class MenuTest(game: TestGameApp) : CardGameTest(game) {
+class GameScreen(game: TestGameApp) : CardGameScreen(game) {
+
+    private lateinit var settings: GamePrefs
+    private lateinit var newGameOptions: GamePrefs
+
 
     override fun load() {
         super.load()
@@ -34,52 +36,42 @@ class MenuTest(game: TestGameApp) : CardGameTest(game) {
         assetManager.load<GamePrefs>(PREFS_NEW_GAME)
         assetManager.load<GamePrefs>(PREFS_SETTINGS)
         assetManager.load<Markdown>(MD_RULES)
+        loadPCardSkin()
     }
 
     override fun start() {
         super.start()
-
-        //isDebugAll = true
 
         val menu = DefaultGameMenu(coreSkin)
         menu.continueItem.enabled = false
         menu.shown = true
         gameMenu = menu
 
-        val newGamePrefs = assetManager.get<GamePrefs>(PREFS_NEW_GAME)
-        menu.newGameOptions = newGamePrefs
-        prefs += newGamePrefs
+        newGameOptions = assetManager.get<GamePrefs>(PREFS_NEW_GAME)
+        menu.newGameOptions = newGameOptions
+        prefs += newGameOptions
 
-        val settingsPrefs = assetManager.get<GamePrefs>(PREFS_SETTINGS)
-        menu.settings = settingsPrefs
-        prefs += settingsPrefs
+        settings = assetManager.get<GamePrefs>(PREFS_SETTINGS)
+        menu.settings = settings
+        prefs += settings
 
         menu.rules = assetManager.get(MD_RULES)
 
-        addListener(object : InputListener() {
-            override fun keyUp(event: InputEvent, keycode: Int): Boolean {
-                if (keycode == Input.Keys.M) {
-                    menu.shown = !menu.shown
-                    return true
-                }
-                return false
-            }
-        })
-    }
-
-    override fun pause() {
-        super.pause()
-
-        // Save all preferences when game is paused
-        for (pref in prefs) {
-            pref.save()
+        menu.continueListener = {
+            initGame(Game(settings, Gdx.files.local(SAVED_GAME)))
         }
+
+        menu.startGameListener = {
+            initGame(Game(settings, newGameOptions))
+        }
+
+        gameLayout = GameLayout(assetManager, settings)
     }
 
     companion object {
-        private const val PREFS_NEW_GAME = "new-game-options.json"
-        private const val PREFS_SETTINGS = "settings.json"
-        private const val MD_RULES = "rules"
+        private const val PREFS_NEW_GAME = "nines/new-game-options.json"
+        private const val PREFS_SETTINGS = "nines/settings.json"
+        private const val MD_RULES = "nines/rules"
     }
 
 }

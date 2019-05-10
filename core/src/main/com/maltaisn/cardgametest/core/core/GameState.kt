@@ -16,10 +16,8 @@
 
 package com.maltaisn.cardgametest.core.core
 
-import com.maltaisn.cardgame.core.BaseGameState
-import com.maltaisn.cardgame.core.BaseMove
-import com.maltaisn.cardgame.core.Deck
-import com.maltaisn.cardgame.core.PCard
+import com.maltaisn.cardgame.core.*
+import com.maltaisn.cardgame.prefs.GamePrefs
 import kotlin.random.Random
 
 /**
@@ -37,22 +35,25 @@ import kotlin.random.Random
  *
  * [Wikipedia page](https://en.wikipedia.org/wiki/Nines_(card_game)).
  */
-class GameState : BaseGameState<Player> {
+class GameState : CardGameState {
 
-    /** Game result, `null` if game is not done. */
-    private var result: Result? = null
+    @Suppress("UNCHECKED_CAST")
+    override val players: List<Player>
+        get() = super.players as List<Player>
 
     /** Position of the dealer. */
-    private val dealer: Int
+    val dealerPos: Int
 
     /** The extra hand dealt. */
-    private var extraHand: Hand
+    var extraHand: Hand
+        private set
 
-    /** The trump suit, a PCard constant or [NO_TRUMP]. */
+    /** The trump suit, a PCard suit constant or [NO_TRUMP]. */
     val trumpSuit: Int
 
-    /** The game phase, either trade or play. */
+    /** The current game phase. */
     var phase: Phase
+        private set
 
     /** How many trades took place during the trade phase. */
     var tradesCount: Int
@@ -65,9 +66,13 @@ class GameState : BaseGameState<Player> {
     /** The current trick being played. */
     val currentTrick: Trick
 
+    override var result: GameResult? = null
+        private set
 
-    constructor(players: List<Player>, dealer: Int, trumpSuit: Int) : super(players, dealer) {
-        this.dealer = dealer
+
+    constructor(settings: GamePrefs, players: List<Player>,
+                dealer: Int, trumpSuit: Int) : super(settings, players, dealer) {
+        this.dealerPos = dealer
         this.trumpSuit = trumpSuit
 
         // Create and shuffle a 52-card deck.
@@ -83,7 +88,7 @@ class GameState : BaseGameState<Player> {
         extraHand = Hand(id, deck.drawTop(TRICKS_IN_ROUND))
 
         tradesCount = 0
-        playerToMove = getPlayerNextTo(dealer)
+        posToMove = getPositionNextTo(dealer)
         phase = Phase.TRADE
         tricksPlayed = 0
         currentTrick = Trick(trumpSuit)
@@ -91,7 +96,7 @@ class GameState : BaseGameState<Player> {
 
     private constructor(state: GameState) : super(state) {
         result = state.result
-        dealer = state.dealer
+        dealerPos = state.dealerPos
         extraHand = state.extraHand.clone()
         trumpSuit = state.trumpSuit
         phase = state.phase
@@ -100,8 +105,9 @@ class GameState : BaseGameState<Player> {
         currentTrick = state.currentTrick.clone()
     }
 
-    override fun doMove(move: BaseMove) {
-        val player = players[playerToMove]
+
+    override fun doMove(move: GameEvent.Move) {
+        val player = players[posToMove]
         when (move) {
             is TradeHandMove -> {
                 // Swap player's hand with the extra hand
@@ -113,12 +119,12 @@ class GameState : BaseGameState<Player> {
                     tradesCount++
                 }
 
-                if (playerToMove == dealer) {
+                if (posToMove == dealerPos) {
                     // Everyone had the chance to trade hands
                     phase = Phase.PLAY
                 }
 
-                playerToMove = getPlayerNextTo(playerToMove)
+                posToMove = getPositionNextTo(posToMove)
             }
             is PlayMove -> {
                 // Play card in trick
@@ -127,19 +133,19 @@ class GameState : BaseGameState<Player> {
 
                 if (currentTrick.size == 3) {
                     // All players have played, find who takes the trick.
-                    val trickWinner = (currentTrick.findHighest() + playerToMove + 1) % 3
+                    val trickWinner = (currentTrick.findHighest() + posToMove + 1) % 3
 
                     players[trickWinner].tricksTaken += currentTrick.clone()
                     currentTrick.clear()
-                    playerToMove = trickWinner
+                    posToMove = trickWinner
                     tricksPlayed++
 
                     if (tricksPlayed == TRICKS_IN_ROUND) {
                         // Round is done, create result.
-                        result = Result(List(3) { players[it].tricksTaken.size.toDouble() })
+                        result = GameResult(List(3) { players[it].tricksTaken.size.toFloat() })
                     }
                 } else {
-                    playerToMove = getPlayerNextTo(playerToMove)
+                    posToMove = getPositionNextTo(posToMove)
                 }
             }
         }
@@ -149,11 +155,13 @@ class GameState : BaseGameState<Player> {
         }
     }
 
-    override fun getMoves(): MutableList<BaseMove> {
-        val moves = mutableListOf<BaseMove>()
-        if (isGameDone()) return moves
+    override fun getMoves(): MutableList<GameEvent.Move> {
+        val moves = mutableListOf<GameEvent.Move>()
+        if (isGameDone) {
+            return moves
+        }
 
-        val player = players[playerToMove]
+        val player = players[posToMove]
         when (phase) {
             Phase.PLAY -> {
                 if (currentTrick.isNotEmpty()) {
@@ -161,31 +169,33 @@ class GameState : BaseGameState<Player> {
                     val trickSuit = currentTrick.getSuit()
                     for (card in player.hand) {
                         if (card.suit == trickSuit) {
-                            moves += PlayMove(playerToMove, card)
+                            moves += PlayMove(posToMove, card)
                         }
                     }
                 }
                 if (moves.isEmpty()) {
                     // Player plays first or has no cards in required suit, can play any.
                     for (card in player.hand) {
-                        moves += PlayMove(playerToMove, card)
+                        moves += PlayMove(posToMove, card)
                     }
                 }
             }
             Phase.TRADE -> {
                 // Player has the choice to trade his hand with the extra hand or not.
-                moves += TradeHandMove(playerToMove, false)
-                moves += TradeHandMove(playerToMove, true)
+                moves += TradeHandMove(posToMove, false)
+                moves += TradeHandMove(posToMove, true)
             }
         }
 
         return moves
     }
 
-    override fun getRandomMove(): BaseMove? {
-        if (isGameDone()) return null
+    override fun getRandomMove(): GameEvent.Move? {
+        if (isGameDone) {
+            return null
+        }
 
-        val player = players[playerToMove]
+        val player = players[posToMove]
         when (phase) {
             Phase.PLAY -> {
                 if (currentTrick.isNotEmpty()) {
@@ -198,15 +208,15 @@ class GameState : BaseGameState<Player> {
                         }
                     }
                     if (cards.isNotEmpty()) {
-                        return PlayMove(playerToMove, cards.random())
+                        return PlayMove(posToMove, cards.random())
                     }
                 }
                 // Player plays first or has no cards in required suit, can play any.
-                return PlayMove(playerToMove, player.hand.random())
+                return PlayMove(posToMove, player.hand.random())
             }
             Phase.TRADE -> {
                 // Player has the choice to trade his hand with the extra hand or not.
-                return TradeHandMove(playerToMove, Random.nextBoolean())
+                return TradeHandMove(posToMove, Random.nextBoolean())
             }
         }
     }
@@ -216,56 +226,11 @@ class GameState : BaseGameState<Player> {
     override fun randomizedClone(observer: Int): GameState {
         val state = clone()
         val player = state.players[observer]
-        player as MctsPlayer
-
-        // Create a list of all hands unknown to the observer.
-        val hands = mutableListOf<Hand>()
-        for (p in state.players) {
-            if (p.hand.id !in player.knownHands) {
-                hands += p.hand
-            }
-        }
-        if (state.extraHand.id !in player.knownHands) {
-            hands += state.extraHand
-        }
-
-        // Take all cards from these hands and shuffle them.
-        val unseen = Deck<PCard>()
-        for (hand in hands) {
-            unseen += hand
-        }
-        unseen.shuffle()
-
-        // Sort the unseen cards by suit
-        val suitCards = List(4) { Deck<PCard>() }
-        for (card in unseen) {
-            suitCards[card.suit] += card
-        }
-
-        // Redistribute the cards to the unknown hands.
-        // If the observer knows the hand doesn't have cards of a suit, don't give any.
-        // FIXME
-        for (hand in hands) {
-            val handSuits = player.handSuits[hand.id]
-            val size = hand.size
-            hand.clear()
-            while (hand.size < size) {
-                val cards = suitCards[handSuits.random()]
-                if (cards.isNotEmpty()) {
-                    hand += cards.drawTop()
-                }
-            }
-        }
-
+        (player as MctsPlayer).randomizeState(state)
         return state
     }
 
-    override fun getResult() = result
-
-    override fun isGameDone() = result != null
-
-
-    override fun toString() = "playerToMove: $playerToMove, " +
+    override fun toString() = "posToMove: $posToMove, " +
             "tricksPlayed: $tricksPlayed, phase: $phase, trump: ${if (trumpSuit == NO_TRUMP)
                 "none" else PCard.SUIT_STR[trumpSuit].toString()}, currentTrick: $currentTrick]"
 

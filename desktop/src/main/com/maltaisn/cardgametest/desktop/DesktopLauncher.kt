@@ -18,7 +18,7 @@ package com.maltaisn.cardgametest.desktop
 
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration
-import com.maltaisn.cardgametest.core.TestGame
+import com.maltaisn.cardgametest.core.TestGameApp
 
 
 object DesktopLauncher {
@@ -29,6 +29,6 @@ object DesktopLauncher {
         config.setTitle("Cards")
         config.setWindowSizeLimits(960, 540, -1, -1)
 
-        Lwjgl3Application(TestGame(), config)
+        Lwjgl3Application(TestGameApp(), config)
     }
 }

@@ -16,15 +16,14 @@
 
 package com.maltaisn.cardgametest.core.core
 
-import com.maltaisn.cardgame.core.BaseMove
+import com.maltaisn.cardgame.core.GameEvent
 import com.maltaisn.cardgame.core.PCard
 
 
 /**
  * A move representing a player playing a card in a trick
  */
-@Suppress("EqualsOrHashCode")
-class PlayMove(player: Int, val card: PCard) : BaseMove(player) {
+class PlayMove(player: Int, val card: PCard) : GameEvent.Move(player) {
 
     override fun toString() = "Play $card"
 
@@ -33,5 +32,7 @@ class PlayMove(player: Int, val card: PCard) : BaseMove(player) {
         if (other !is PlayMove) return false
         return super.equals(other) && card == other.card
     }
+
+    override fun hashCode() = card.hashCode()
 
 }

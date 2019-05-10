@@ -16,14 +16,13 @@
 
 package com.maltaisn.cardgametest.core.core
 
-import com.maltaisn.cardgame.core.BaseMove
+import com.maltaisn.cardgame.core.GameEvent
 
 
 /**
  * A move representing a player trading his hand with the extra hand
  */
-@Suppress("EqualsOrHashCode")
-class TradeHandMove(player: Int, val trade: Boolean) : BaseMove(player) {
+class TradeHandMove(player: Int, val trade: Boolean) : GameEvent.Move(player) {
 
     override fun toString() = if (trade) "Trade hand" else "Don't trade hand"
 
@@ -31,5 +30,7 @@ class TradeHandMove(player: Int, val trade: Boolean) : BaseMove(player) {
         if (other !is TradeHandMove) return false
         return super.equals(other) && trade == other.trade
     }
+
+    override fun hashCode() = playerPos.hashCode()
 
 }

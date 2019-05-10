@@ -16,13 +16,12 @@
 
 package com.maltaisn.cardgametest.core.core
 
-import com.maltaisn.cardgame.core.PCard
 
+class OldGame(player1: Player, player2: Player, player3: Player,
+              private var dealer: Int, points: Int = 9,
+              private val verbose: Boolean = true) {
 
-class Game(player1: Player, player2: Player, player3: Player,
-           private var dealer: Int, points: Int = 9,
-           private val verbose: Boolean = true) {
-
+    /*
     val players: List<Player> = listOf(player1, player2, player3)
 
     var showHands = false
@@ -76,21 +75,21 @@ class Game(player1: Player, player2: Player, player3: Player,
         }
 
         // Do a player's move
-        val player = players[state.playerToMove]
+        val player = players[state.posToMove]
         val move = player.play(state)
         state.doMove(move)
 
         if (verbose) {
             if (move is PlayMove) {
                 val playedLast = state.currentTrick.isEmpty()
-                val playerToMove = state.playerToMove
-                val trick = if (playedLast) players[playerToMove].tricksTaken.last() else state.currentTrick
+                val posToMove = state.posToMove
+                val trick = if (playedLast) players[posToMove].tricksTaken.last() else state.currentTrick
 
                 print("[${player.name}] $move, trick: $trick")
                 println(if (showHands) player.hand.toSortedString(PCard.DEFAULT_SORTER) else "")
 
                 if (playedLast) {
-                    println("-> Trick #${state.tricksPlayed} taken by [${players[playerToMove].name}].")
+                    println("-> Trick #${state.tricksPlayed} taken by [${players[posToMove].name}].")
                     printSeparator()
                 }
             } else {
@@ -121,5 +120,6 @@ class Game(player1: Player, player2: Player, player3: Player,
         val TRUMP_SUITS = intArrayOf(PCard.HEART, PCard.SPADE, PCard.DIAMOND, PCard.CLUB, GameState.NO_TRUMP)
 
     }
+    */
 
 }

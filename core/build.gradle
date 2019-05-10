@@ -4,6 +4,8 @@ dependencies {
     api project(":cardgame")
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-test:$kotlinVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1"
 
     implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
 

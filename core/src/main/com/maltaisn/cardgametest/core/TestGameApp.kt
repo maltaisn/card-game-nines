@@ -14,9 +14,24 @@
  * limitations under the License.
  */
 
-package com.maltaisn.cardgametest.core.core
+package com.maltaisn.cardgametest.core
 
-import com.maltaisn.cardgame.core.BaseResult
+import com.maltaisn.cardgame.CardGameApp
 
+class TestGameApp : CardGameApp() {
 
-class Result(playerResults: List<Double>) : BaseResult(playerResults)
+    override fun create() {
+        super.create()
+
+        setScreen(GameScreen(this))
+        //setScreen(MenuTest(this))
+        //setScreen(CardLoopTest(this))
+        //setScreen(DealTest(this))
+        //setScreen(FontTest(this))
+        //setScreen(NullDealTest(this))
+        //setScreen(SolitaireTest(this))
+        //setScreen(TrickTest(this))
+        //setScreen(PrefWidgetsTest(this))
+    }
+
+}

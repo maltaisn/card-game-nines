@@ -1,0 +1,19 @@
+{
+  name: "com.maltaisn.nines.newGameSettings"
+  prefs: {
+    difficulty: {
+      type: "slider"
+      title: "@string/pref_difficulty"
+      help: "@string/pref_difficulty_help"
+      enumValues: [
+        "@string/pref_difficulty_0"
+        "@string/pref_difficulty_1"
+        "@string/pref_difficulty_2"
+        "@string/pref_difficulty_3"
+      ]
+      minValue: 0
+      maxValue: 3
+      defaultValue: 1
+    }
+  }
+}

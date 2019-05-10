@@ -17,15 +17,16 @@
 package com.maltaisn.cardgametest.core.tests
 
 import com.badlogic.gdx.graphics.Color
+import com.maltaisn.cardgame.CardGameLayout
 import com.maltaisn.cardgame.widget.FontStyle
 import com.maltaisn.cardgame.widget.SdfLabel
-import com.maltaisn.cardgametest.core.TestGame
+import com.maltaisn.cardgametest.core.TestGameApp
 
 
-class FontTest(game: TestGame) : CardGameTest(game) {
+class FontTest(game: TestGameApp) : CardGameTest(game) {
 
-    override fun start() {
-        super.start()
+    override fun layout(layout: CardGameLayout) {
+        super.layout(layout)
 
         val text = "The quick brown fox jumps over a lazy dog."
         //val text = "!\"#\$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz" +
@@ -38,7 +39,7 @@ class FontTest(game: TestGame) : CardGameTest(game) {
                 shadowColor = Color.BLACK
                 fontSize = 12f + it * 4f
             }, text)
-            gameLayer.centerTable.add(label).expand().center().row()
+            layout.gameLayer.centerTable.add(label).expand().center().row()
         }
     }
 

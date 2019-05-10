@@ -21,20 +21,20 @@ import com.maltaisn.cardgametest.core.core.Trick
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-internal class GameStateTest {
+internal class TrickTest {
 
     @Test
     fun findTrickWinner() {
-        val trick1 = Trick(PCard.SPADE, PCard.parseDeck(',', "A♣,5♣,Q♣"))
+        val trick1 = Trick(PCard.SPADE, PCard.parseDeck("A♣,5♣,Q♣"))
         assertEquals(0, trick1.findHighest())
 
-        val trick2 = Trick(PCard.SPADE, PCard.parseDeck(',', "A♣,5♣,5♠"))
+        val trick2 = Trick(PCard.SPADE, PCard.parseDeck("A♣,5♣,5♠"))
         assertEquals(2, trick2.findHighest())
 
-        val trick3 = Trick(PCard.SPADE, PCard.parseDeck(',', "A♣,Q♠,5♠"))
+        val trick3 = Trick(PCard.SPADE, PCard.parseDeck("A♣,Q♠,5♠"))
         assertEquals(1, trick3.findHighest())
 
-        val trick4 = Trick(PCard.SPADE, PCard.parseDeck(',', "2♣,A♦,A♥"))
+        val trick4 = Trick(PCard.SPADE, PCard.parseDeck("2♣,A♦,A♥"))
         assertEquals(0, trick4.findHighest())
     }
 

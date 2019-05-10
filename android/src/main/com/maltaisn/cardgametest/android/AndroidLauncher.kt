@@ -19,7 +19,7 @@ package com.maltaisn.cardgametest.android
 import android.os.Bundle
 import com.badlogic.gdx.backends.android.AndroidApplication
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration
-import com.maltaisn.cardgametest.core.TestGame
+import com.maltaisn.cardgametest.core.TestGameApp
 
 class AndroidLauncher : AndroidApplication() {
 
@@ -30,7 +30,7 @@ class AndroidLauncher : AndroidApplication() {
         config.useAccelerometer = false
         config.useCompass = false
 
-        initialize(TestGame(), config)
+        initialize(TestGameApp(), config)
     }
 
 }
