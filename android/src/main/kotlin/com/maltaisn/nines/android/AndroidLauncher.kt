@@ -14,25 +14,23 @@
  * limitations under the License.
  */
 
-package com.maltaisn.cardgametest.core.core
+package com.maltaisn.nines.android
 
-import com.maltaisn.cardgame.core.GameEvent
-import com.maltaisn.cardgame.core.PCard
+import android.os.Bundle
+import com.badlogic.gdx.backends.android.AndroidApplication
+import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration
+import com.maltaisn.nines.core.GameApp
 
+class AndroidLauncher : AndroidApplication() {
 
-/**
- * A move representing a player playing a card in a trick
- */
-class PlayMove(player: Int, val card: PCard) : GameEvent.Move(player) {
+    override fun onCreate(state: Bundle?) {
+        super.onCreate(state)
 
-    override fun toString() = "Play $card"
+        val config = AndroidApplicationConfiguration()
+        config.useAccelerometer = false
+        config.useCompass = false
 
-    override fun equals(other: Any?): Boolean {
-        if (other === this) return true
-        if (other !is PlayMove) return false
-        return super.equals(other) && card == other.card
+        initialize(GameApp(), config)
     }
-
-    override fun hashCode() = card.hashCode()
 
 }

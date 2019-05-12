@@ -14,23 +14,25 @@
  * limitations under the License.
  */
 
-package com.maltaisn.cardgametest.core.core
+package com.maltaisn.nines.core.core
 
 import com.maltaisn.cardgame.core.GameEvent
+import com.maltaisn.cardgame.core.PCard
 
 
 /**
- * A move representing a player trading his hand with the extra hand
+ * A move representing a player playing a card in a trick
  */
-class TradeHandMove(player: Int, val trade: Boolean) : GameEvent.Move(player) {
+class PlayMove(player: Int, val card: PCard) : GameEvent.Move(player) {
 
-    override fun toString() = if (trade) "Trade hand" else "Don't trade hand"
+    override fun toString() = "Play $card"
 
     override fun equals(other: Any?): Boolean {
-        if (other !is TradeHandMove) return false
-        return super.equals(other) && trade == other.trade
+        if (other === this) return true
+        if (other !is PlayMove) return false
+        return super.equals(other) && card == other.card
     }
 
-    override fun hashCode() = playerPos.hashCode()
+    override fun hashCode() = card.hashCode()
 
 }

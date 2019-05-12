@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.maltaisn.cardgametest.core
+package com.maltaisn.nines.core
 
 class GameTest {
 /*

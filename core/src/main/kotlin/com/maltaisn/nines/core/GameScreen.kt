@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.maltaisn.cardgametest.core
+package com.maltaisn.nines.core
 
 import com.badlogic.gdx.Gdx
 import com.maltaisn.cardgame.CardGameScreen

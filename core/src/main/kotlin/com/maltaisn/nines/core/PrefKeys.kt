@@ -1,4 +1,4 @@
-package com.maltaisn.cardgametest.core
+package com.maltaisn.nines.core
 
 object PrefKeys {
 

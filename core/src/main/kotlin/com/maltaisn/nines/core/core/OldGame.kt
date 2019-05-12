@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.maltaisn.cardgametest.core.core
+package com.maltaisn.nines.core.core
 
 
 class OldGame(player1: Player, player2: Player, player3: Player,

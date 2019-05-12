@@ -14,15 +14,21 @@
  * limitations under the License.
  */
 
-package com.maltaisn.cardgametest.core
+package com.maltaisn.nines.desktop
 
-import com.maltaisn.cardgame.CardGameApp
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration
+import com.maltaisn.nines.core.GameApp
 
-class GameApp : CardGameApp() {
 
-    override fun create() {
-        super.create()
-        setScreen(GameScreen(this))
+object DesktopLauncher {
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        val config = Lwjgl3ApplicationConfiguration()
+        config.setTitle("Cards")
+        config.setWindowSizeLimits(960, 540, -1, -1)
+
+        Lwjgl3Application(GameApp(), config)
     }
-
 }

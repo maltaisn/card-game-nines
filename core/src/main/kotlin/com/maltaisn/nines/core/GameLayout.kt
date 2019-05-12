@@ -1,4 +1,4 @@
-package com.maltaisn.cardgametest.core
+package com.maltaisn.nines.core
 
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
@@ -11,8 +11,8 @@ import com.maltaisn.cardgame.core.GameEvent
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.prefs.PrefEntry
 import com.maltaisn.cardgame.widget.card.*
-import com.maltaisn.cardgametest.core.core.PlayMove
-import com.maltaisn.cardgametest.core.core.TradeHandMove
+import com.maltaisn.nines.core.core.PlayMove
+import com.maltaisn.nines.core.core.TradeHandMove
 
 
 class GameLayout(assetManager: AssetManager, settings: GamePrefs) :

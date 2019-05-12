@@ -1,4 +1,4 @@
-package com.maltaisn.cardgametest.core
+package com.maltaisn.nines.core
 
 import com.badlogic.gdx.files.FileHandle
 import com.maltaisn.cardgame.core.CardGame
@@ -8,11 +8,11 @@ import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.prefs.PlayerNamesPref
 import com.maltaisn.cardgame.prefs.PrefEntry
 import com.maltaisn.cardgame.widget.card.CardAnimationLayer
-import com.maltaisn.cardgametest.core.core.GameState
-import com.maltaisn.cardgametest.core.core.HumanPlayer
-import com.maltaisn.cardgametest.core.core.MctsPlayer
-import com.maltaisn.cardgametest.core.core.MctsPlayer.Difficulty
-import com.maltaisn.cardgametest.core.core.Player
+import com.maltaisn.nines.core.core.GameState
+import com.maltaisn.nines.core.core.HumanPlayer
+import com.maltaisn.nines.core.core.MctsPlayer
+import com.maltaisn.nines.core.core.MctsPlayer.Difficulty
+import com.maltaisn.nines.core.core.Player
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay

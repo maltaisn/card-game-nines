@@ -14,7 +14,7 @@ android {
         }
     }
     defaultConfig {
-        applicationId "com.maltaisn.cardgametest.android"
+        applicationId "com.maltaisn.nines.android"
         minSdkVersion 14
         targetSdkVersion 28
         versionCode = appVersionCode
@@ -29,6 +29,11 @@ android {
 }
 
 configurations { natives }
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_6
+    targetCompatibility = JavaVersion.VERSION_1_6
+}
 
 dependencies {
     implementation project(":core")

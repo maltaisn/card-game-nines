@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.maltaisn.cardgametest.core.core
+package com.maltaisn.nines.core.core
 
 import com.maltaisn.cardgame.core.*
 

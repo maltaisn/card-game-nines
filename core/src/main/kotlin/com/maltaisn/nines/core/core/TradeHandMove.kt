@@ -14,21 +14,23 @@
  * limitations under the License.
  */
 
-package com.maltaisn.cardgametest.desktop
+package com.maltaisn.nines.core.core
 
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration
-import com.maltaisn.cardgametest.core.GameApp
+import com.maltaisn.cardgame.core.GameEvent
 
 
-object DesktopLauncher {
+/**
+ * A move representing a player trading his hand with the extra hand
+ */
+class TradeHandMove(player: Int, val trade: Boolean) : GameEvent.Move(player) {
 
-    @JvmStatic
-    fun main(args: Array<String>) {
-        val config = Lwjgl3ApplicationConfiguration()
-        config.setTitle("Cards")
-        config.setWindowSizeLimits(960, 540, -1, -1)
+    override fun toString() = if (trade) "Trade hand" else "Don't trade hand"
 
-        Lwjgl3Application(GameApp(), config)
+    override fun equals(other: Any?): Boolean {
+        if (other !is TradeHandMove) return false
+        return super.equals(other) && trade == other.trade
     }
+
+    override fun hashCode() = playerPos.hashCode()
+
 }
