@@ -1,4 +1,4 @@
 include ":core", ":android", ":desktop"
 
-include ":cardgame"
-project(":cardgame").projectDir = file("../cardgame")
+include ":cardgame:app"
+project(":cardgame:app").projectDir = file("../cardgame/app")

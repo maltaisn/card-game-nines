@@ -1,5 +1,4 @@
-/todo.txt
-META-INF/
+production/
 
 ## Android Studio and Intellij and Android in general
 /android/libs/armeabi/
@@ -8,7 +7,6 @@ META-INF/
 /android/libs/x86/
 /android/libs/x86_64/
 /android/gen/
-/android/out/
 .idea/
 *.iml
 
@@ -19,6 +17,8 @@ build/
 
 ## Copied assets
 /assets/core/
+/android/assets/
+cardgame/
 
 ## OS Specific
 .DS_Store

@@ -24,7 +24,7 @@ import com.maltaisn.cardgame.widget.menu.DefaultGameMenu
 import ktx.assets.load
 
 
-class GameScreen(game: TestGameApp) : CardGameScreen(game) {
+class GameScreen(game: GameApp) : CardGameScreen() {
 
     private lateinit var settings: GamePrefs
     private lateinit var newGameOptions: GamePrefs
@@ -69,9 +69,9 @@ class GameScreen(game: TestGameApp) : CardGameScreen(game) {
     }
 
     companion object {
-        private const val PREFS_NEW_GAME = "nines/new-game-options.json"
-        private const val PREFS_SETTINGS = "nines/settings.json"
-        private const val MD_RULES = "nines/rules"
+        private const val PREFS_NEW_GAME = "new-game-options.json"
+        private const val PREFS_SETTINGS = "settings.json"
+        private const val MD_RULES = "rules"
     }
 
 }

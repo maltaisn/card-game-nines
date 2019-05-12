@@ -1,13 +1,6 @@
 {
-  name: "com.maltaisn.cardgametest.newGameSettings"
+  name: "com.maltaisn.nines.newGameSettings"
   prefs: {
-    player_count: {
-      type: "slider"
-      title: "@string/pref_player_count"
-      minValue: 2
-      maxValue: 6
-      defaultValue: 4
-    }
     difficulty: {
       type: "slider"
       title: "@string/pref_difficulty"
@@ -21,24 +14,6 @@
       minValue: 0
       maxValue: 3
       defaultValue: 1
-    }
-    game_speed: {
-      type: "list"
-      title: "@string/pref_game_speed"
-      entries: {
-        very_slow: "@string/pref_game_speed_0"
-        slow: "@string/pref_game_speed_1"
-        normal: "@string/pref_game_speed_2"
-        fast: "@string/pref_game_speed_3"
-        very_fast: "@string/pref_game_speed_4"
-      }
-      defaultValue: "normal"
-    }
-    cheat_mode: {
-      type: "switch"
-      title: "@string/pref_cheat_mode"
-      help: "@string/pref_cheat_mode_help"
-      defaultValue: false
     }
   }
 }

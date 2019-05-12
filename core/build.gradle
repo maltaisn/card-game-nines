@@ -1,7 +1,7 @@
 apply plugin: "kotlin"
 
 dependencies {
-    api project(":cardgame")
+    api project(":cardgame:app")
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     implementation "org.jetbrains.kotlin:kotlin-test:$kotlinVersion"
@@ -17,8 +17,7 @@ dependencies {
     implementation "io.github.libktx:ktx-style:$ktxVersion"
     
     implementation "com.gmail.blueboxware:libgdxpluginannotations:1.16"
-
-    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion"
+    
     testImplementation "junit:junit:$junitVersion"
 }
 
@@ -29,11 +28,10 @@ java {
 
 sourceSets {
     main {
-        java.srcDirs = ["src/main"]
-        resources.srcDirs = ["../assets"]
+        java.srcDirs = ["src/main/kotlin"]
     }
     test {
-        java.srcDirs = ["src/test"]
+        java.srcDirs = ["src/test/kotlin"]
     }
 }
 

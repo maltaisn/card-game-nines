@@ -1,53 +1,23 @@
-Lorem ipsum dolor sit amet, consectetur adipiscing elit...
+# Nines
+Nines is a trick-taking card game with 3 players played with a standard deck of 52 cards. The object of the game is to lower your score to zero by taking as many tricks as possible.
 
-# ![](icon-list) Lorem ipsum
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
-Nulla consectetur nunc scelerisque, pretium urna eu, maximus 
-augue. In lacinia lobortis enim, quis sodales turpis pulvinar 
-iaculis. Praesent placerat cursus fringilla. Etiam non dolor 
-tellus. Aenean erat odio, fringilla in interdum et, dapibus at 
-nulla. Donec massa velit, elementum id rhoncus sed, sagittis 
-eget velit. Pellentesque nunc lorem, sagittis sed vestibulum 
-nec, fringilla et arcu. Vestibulum libero justo, vestibulum
-non velit sit amet, volutpat maximus diam. Nulla urna felis, 
-maximus ut est in, ullamcorper mollis neque. Quisque vitae diam
-a tellus dapibus placerat at sit amet odio. Aliquam ac ex odio.
-
-___
-
-1. Praesent a lorem non ipsum sollicitudin laoreet. 
-2. Donec enim ex,
-volutpat nec dictum ut, auctor et felis. 
-    - Maecenas auctor nec 
-    + Urna et pharetra. Class 
-        1. Aptent taciti sociosqu ad litora
-        2. Cras ultricies mi faucibus
-    * Gravida diam bibendum ut. 
-3. Torquent per conubia nostra, per inceptos himenaeos.
-
-  Suspendisse maximus lacus libero, ullamcorper sodales libero 
-semper et.
-
-## Ut accumsan ##
-Ut accumsan dui ex, consectetur gravida diam bibendum ut. 
-Donec tempus dui est, vel mollis leo hendrerit quis. Class 
-aptent taciti sociosqu ad litora torquent per conubia nostra, 
-per inceptos himenaeos. 
-
-Cras ultricies mi faucibus interdum lobortis.\
-Aenean vel orci dolor. Orci varius natoque penatibus\
-et magnis dis parturient montes, nascetur ridiculus\
-mus. Curabitur mollis at justo vitae dapibus.
-
-# ![](icon-book) Suspendisse maximus
-Suspendisse maximus lacus libero, ullamcorper sodales libero 
-semper et. Vivamus eget leo vel leo iaculis elementum. Nulla 
-sit amet lacus ultricies, euismod tortor quis, dignissim massa. 
-Phasellus eget hendrerit mi. Curabitur in neque vitae nisl 
-faucibus pretium. In a diam diam. Aliquam at diam nulla.
+The order of the cards goes from the 2 (the weakest), to the Ace (the strongest). The cards in the trump suit are stronger than the other cards.
 
 
+# Playing
+All of the cards are dealt into four hands of thirteen cards. One hand for each player and the remaining hand is set aside.
+
+After all the cards are dealt, each player can look at his hand and decide if he wants to trade it for the extra hand. The player to the left of the dealer has the first choice of taking the hand. Then, the choice moves to the left until everyone has decided. Players may take the hand that someone else has already traded in.
+
+The object of the game is to take as many tricks as possible. The trump suit goes in the following sequence: Hearts, Spades, Diamonds, Clubs, No Trump.
+
+Play starts with the player to the left of the dealer and always moves to the left around the table. The player who plays the highest card of the suit that was led is awarded the trick. Each player must follow suit if they can. If they are out of the suit that was led, they can either play a card from another suit (not the trump suit) and forfeit the trick, or they can play a trump card which will earn them the trick, provided nobody plays a higher trump. Play continues until 13 tricks are played, at which point all players will be out of cards.
+
+## The No Trump Hand
+After the four trump hands, there is a hand that is played without trump. In this round, the tricks always go to the person who played the highest card of the same suit that was led, since there is no trump suit.
 
 
+# Scoring
+All players start the game with a score of nine, and the object is to bring one's score to zero or lower. Ties are broken by playing additional rounds. 
 
-
+In each hand, the number of tricks a player has collected translates to the change that will happen to their score. If four tricks are collected, the score will remain the same. For each trick there is in excess of four, the player's score will go down by one. For each trick shy of four, the player's score will go up by one. So, three tricks will result in a score increase of one, six tricks will result in a score decrease of two.

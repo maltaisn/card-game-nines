@@ -1,8 +1,5 @@
 apply plugin: "kotlin"
 
-def mainClassName = "com.maltaisn.cardgametest.desktop.DesktopLauncher"
-def assetsDir = "../assets"
-
 dependencies {
     api project(":core")
 
@@ -14,8 +11,7 @@ dependencies {
 
 sourceSets {
     main {
-        java.srcDirs = ["src/main"]
-        resources.srcDirs = [assetsDir]
+        java.srcDirs = ["src/main/kotlin"]
     }
 }
 
@@ -25,22 +21,9 @@ java {
 }
 
 task run(dependsOn: classes, type: JavaExec) {
-    main = mainClassName
+    main = "com.maltaisn.cardgametest.desktop.DesktopLauncher"
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
-    workingDir = file(assetsDir)
+    workingDir = file("../assets")
     ignoreExitValue = true
 }
-
-/*
-task dist(type: Jar) {
-    manifest {
-        attributes "Main-Class": mainClassName
-    }
-    from files(sourceSets.main.output.classesDirs)
-    from files(sourceSets.main.output.resourcesDir)
-    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
-    from files(assetsDir);
-    with jar
-}
-*/
