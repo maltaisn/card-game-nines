@@ -1,7 +1,7 @@
 apply plugin: "kotlin"
 
 dependencies {
-    api project(":core")
+    implementation project(":core")
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 

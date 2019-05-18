@@ -24,7 +24,7 @@ import com.maltaisn.cardgame.widget.menu.DefaultGameMenu
 import ktx.assets.load
 
 
-class GameScreen(game: GameApp) : CardGameScreen() {
+class GameScreen : CardGameScreen() {
 
     private lateinit var settings: GamePrefs
     private lateinit var newGameOptions: GamePrefs
@@ -44,8 +44,6 @@ class GameScreen(game: GameApp) : CardGameScreen() {
 
         val menu = DefaultGameMenu(coreSkin)
         menu.continueItem.enabled = false
-        menu.shown = true
-        gameMenu = menu
 
         newGameOptions = assetManager.get<GamePrefs>(PREFS_NEW_GAME)
         menu.newGameOptions = newGameOptions
@@ -65,7 +63,9 @@ class GameScreen(game: GameApp) : CardGameScreen() {
             initGame(Game(settings, newGameOptions))
         }
 
-        gameLayout = GameLayout(assetManager, settings)
+        gameLayout = GameLayout(assetManager, settings).apply {
+            gameMenu = menu
+        }
     }
 
     companion object {

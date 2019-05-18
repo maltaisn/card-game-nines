@@ -2,3 +2,5 @@ include ":core", ":android", ":desktop"
 
 include ":cardgame:app"
 project(":cardgame:app").projectDir = file("../cardgame/app")
+
+rootProject.name = "nines"

@@ -20,7 +20,7 @@ import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Stack
 import com.badlogic.gdx.utils.Align
-import com.maltaisn.cardgame.CardGameLayout
+import com.maltaisn.cardgame.widget.CardGameLayout
 import com.maltaisn.cardgame.Resources
 import com.maltaisn.cardgame.core.CardGame
 import com.maltaisn.cardgame.core.GameEvent
@@ -33,14 +33,6 @@ import com.maltaisn.nines.core.core.TradeHandMove
 
 class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
         CardGameLayout(assetManager, settings) {
-
-    override var shown = false
-        set(value) {
-            if (field == value) return
-            field = value
-
-            // Do transition
-        }
 
     private val hands: List<CardContainer>
     private val playerStack: CardStack
@@ -88,7 +80,9 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
         val state = game.gameState
         if (state != null) {
             game as Game
-            // TODO must be able to layout every state
+            // TODO
+            //  - Do container transitions
+            //  - Must be able to layout every saved state
         }
     }
 
@@ -106,8 +100,6 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
     }
 
     private fun startRound() {
-        shown = true
-
         // TODO deal cards, etc
         if (settings.getBoolean(PrefKeys.CARD_DEAL_ANIMATION)) {
 
@@ -115,8 +107,6 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
     }
 
     private fun endRound() {
-        shown = false
-
         // TODO show scoreboard
     }
 

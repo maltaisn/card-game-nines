@@ -22,7 +22,7 @@ class GameApp : CardGameApp() {
 
     override fun create() {
         super.create()
-        setScreen(GameScreen(this))
+        setScreen(GameScreen())
     }
 
 }

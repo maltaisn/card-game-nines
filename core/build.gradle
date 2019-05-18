@@ -40,7 +40,7 @@ sourceSets {
 task copyCardGameAssets {
     file("../assets/core").mkdirs()
     copy {
-        from "../../cardgame/assets"
+        from "../../cardgame/app/assets"
         into "../assets/core"
     }
 }
