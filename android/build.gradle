@@ -1,5 +1,7 @@
-apply plugin: "com.android.application"
-apply plugin: "kotlin-android"
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+}
 
 android {
     buildToolsVersion "28.0.3"
@@ -30,11 +32,6 @@ android {
 
 configurations { natives }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_6
-    targetCompatibility = JavaVersion.VERSION_1_6
-}
-
 dependencies {
     implementation project(":core")
 
@@ -47,6 +44,11 @@ dependencies {
     natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-arm64-v8a"
     natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86"
     natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86_64"
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_6
+    targetCompatibility = JavaVersion.VERSION_1_6
 }
 
 // called every time gradle gets executed, takes the native dependencies of
@@ -84,23 +86,23 @@ tasks.whenTaskAdded { packageTask ->
 }
 
 
-// Tasks to copy the game assets to the android module root
-task copyCardGameAssets {
-    file("assets/").mkdirs()
+// Tasks to copy the game assets to the android assets folder
+task copyAssets {
+    file("assets").mkdirs()
     copy {
         from "../assets"
-        into "assets/"
+        into "assets"
     }
 }
 
-task cleanCardGameAssets(type: Delete) {
-    setDelete("assets/")
+task cleanAssets(type: Delete) {
+    delete "assets"
 }
 
 clean {
-    finalizedBy cleanCardGameAssets
+    finalizedBy cleanAssets
 }
 
 build {
-    finalizedBy copyCardGameAssets
+    finalizedBy copyAssets
 }

@@ -18,7 +18,6 @@ build/
 ## Copied assets
 /assets/core/
 /android/assets/
-cardgame/
 
 ## OS Specific
 .DS_Store

@@ -1,4 +1,15 @@
-apply plugin: "kotlin"
+plugins {
+    id "kotlin"
+}
+
+def assetsDir = file("../assets")
+def mainClassName = "com.maltaisn.nines.desktop.DesktopLauncher"
+
+sourceSets {
+    main {
+        java.srcDirs = ["src/main/kotlin"]
+    }
+}
 
 dependencies {
     implementation project(":core")
@@ -9,21 +20,25 @@ dependencies {
     implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
 }
 
-sourceSets {
-    main {
-        java.srcDirs = ["src/main/kotlin"]
-    }
-}
-
 java {
     sourceCompatibility = JavaVersion.VERSION_1_6
     targetCompatibility = JavaVersion.VERSION_1_6
 }
 
 task run(dependsOn: classes, type: JavaExec) {
-    main = "com.maltaisn.nines.desktop.DesktopLauncher"
+    main = mainClassName
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
-    workingDir = file("../assets")
+    workingDir = assetsDir
     ignoreExitValue = true
+}
+
+task dist(type: Jar) {
+    from files(sourceSets.main.output.classesDirs)
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    from assetsDir
+
+    manifest {
+        attributes "Main-Class": mainClassName
+    }
 }
