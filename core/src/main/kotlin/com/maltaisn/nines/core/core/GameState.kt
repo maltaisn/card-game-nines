@@ -106,7 +106,7 @@ class GameState : CardGameState {
     }
 
 
-    override fun doMove(move: GameEvent.Move) {
+    override fun doMove(move: CardGameEvent.Move) {
         val player = players[posToMove]
         when (move) {
             is TradeHandMove -> {
@@ -155,8 +155,8 @@ class GameState : CardGameState {
         }
     }
 
-    override fun getMoves(): MutableList<GameEvent.Move> {
-        val moves = mutableListOf<GameEvent.Move>()
+    override fun getMoves(): MutableList<CardGameEvent.Move> {
+        val moves = mutableListOf<CardGameEvent.Move>()
         if (isGameDone) {
             return moves
         }

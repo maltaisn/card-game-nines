@@ -26,7 +26,7 @@ abstract class Player : CardPlayer {
     var score = 0
 
     /** The player's hand. */
-    lateinit var hand: Hand
+    var hand = Hand(-1)
 
     /** List of the tricks taken by a player. */
     val tricksTaken = mutableListOf<Trick>()

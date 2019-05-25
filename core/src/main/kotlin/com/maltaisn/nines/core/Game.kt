@@ -18,31 +18,34 @@ package com.maltaisn.nines.core
 
 import com.badlogic.gdx.files.FileHandle
 import com.maltaisn.cardgame.core.CardGame
-import com.maltaisn.cardgame.core.GameEvent
+import com.maltaisn.cardgame.core.CardGameEvent
 import com.maltaisn.cardgame.core.PCard
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.prefs.PlayerNamesPref
 import com.maltaisn.cardgame.prefs.PrefEntry
-import com.maltaisn.cardgame.widget.card.CardAnimationLayer
+import com.maltaisn.nines.core.core.GameEvent
 import com.maltaisn.nines.core.core.GameState
-import com.maltaisn.nines.core.core.HumanPlayer
-import com.maltaisn.nines.core.core.MctsPlayer
-import com.maltaisn.nines.core.core.MctsPlayer.Difficulty
 import com.maltaisn.nines.core.core.Player
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlin.math.max
 import kotlin.random.Random
 
 
 class Game : CardGame {
 
-    var players: List<Player> = emptyList()
+    override val events: List<GameEvent>
+        get() = _events
+
+    private val _events = mutableListOf<GameEvent>()
+
+    val players: List<Player>
+
+    /** The current phase of the game. */
+    var phase = Phase.ENDED
         private set
 
-    /** The difficulty set for AI players. */
-    val difficulty: Difficulty
+    /** The current round. */
+    var round = 0
+        private set
 
     /** The position of the current dealer. */
     var dealerPos = 0
@@ -50,84 +53,119 @@ class Game : CardGame {
 
     /** The trump suit for the current round. */
     val trumpSuit: Int
-        get() = TRUMP_SUITS[round % TRUMP_SUITS.size]
+        get() = TRUMP_SUITS[max(0, round - 1) % TRUMP_SUITS.size]
+
+    /** The player who won if the game has ended. */
+    var winner: Player? = null
+
+    /** Whether the game is done or not. */
+    val isDone: Boolean
+        get() = winner != null
 
 
-    private val gameSpeedDelay: Long
-        get() = when (settings.getChoice(PrefKeys.GAME_SPEED)) {
-            "slow" -> 1500
-            "normal" -> 1000
-            "fast" -> 500
-            "very_fast" -> 100
-            else -> error("Unknown game speed.")
-        } + (CardAnimationLayer.UPDATE_DURATION * 1000).toLong()
-
-    /** System time when the last move was made. */
-    private var lastMoveTime = 0
-
-
-    constructor(settings: GamePrefs, newGameOptions: GamePrefs) : super(settings) {
-        difficulty = when (newGameOptions.getInt(PrefKeys.DIFFICULTY)) {
-            0 -> Difficulty.BEGINNER
-            1 -> Difficulty.INTERMEDIATE
-            2 -> Difficulty.ADVANCED
-            3 -> Difficulty.EXPERT
-            else -> error("Wrong difficulty level.")
-        }
+    constructor(settings: GamePrefs, south: Player, east: Player, north: Player) : super(settings) {
+        players = listOf(south, east, north)
     }
 
-    constructor(settings: GamePrefs, file: FileHandle) : super(settings) {
-        difficulty = Difficulty.BEGINNER
+    constructor(settings: GamePrefs, file: FileHandle) : super(settings, file) {
         dealerPos = 0
+        players = emptyList()
         // TODO
     }
 
+    /** Start the game. */
+    fun start() {
+        check(phase == Phase.ENDED) { "Game has already started." }
+        phase = Phase.GAME_STARTED
 
-    override fun start() {
-        // Create players
-        val south = HumanPlayer()
-        val west = MctsPlayer(difficulty)
-        val north = MctsPlayer(difficulty)
-        players = listOf(south, west, north)
+        round = 0
+        gameState = null
 
         val startScore = settings.getInt(PrefKeys.START_SCORE)
-        south.score = startScore
-        west.score = startScore
-        north.score = startScore
+        for (player in players) {
+            player.score = startScore
+        }
         updatePlayerNames()
 
         dealerPos = Random.nextInt(3)
+        winner = null
 
-        super.start()
-        startRound()
+        _events.clear()
+        _events += GameEvent.Start
+        eventListener?.invoke(GameEvent.Start)
     }
 
-    override fun startRound() {
+    /** End the game. */
+    fun end() {
+        if (phase == Phase.ROUND_STARTED) {
+            // End round if necessary
+            endRound()
+        }
+        check(phase == Phase.GAME_STARTED) { "Game has already ended." }
+        phase = Phase.ENDED
+
+        _events += GameEvent.End
+        eventListener?.invoke(GameEvent.End)
+    }
+
+    /** Start a new round. */
+    fun startRound() {
+        check(phase == Phase.GAME_STARTED) { "Round has already started or game has not started." }
+        phase = Phase.ROUND_STARTED
+
+        round++
+
         dealerPos = (dealerPos + 1) % 3
         gameState = GameState(settings, players, Random.nextInt(3), trumpSuit)
 
-        super.startRound()
+        _events += GameEvent.RoundStart
+        eventListener?.invoke(GameEvent.RoundStart)
     }
 
-    override fun doMove(move: GameEvent.Move) {
-        coroutineScope.launch {
-            // Wait between AI players moves to adjust game speed
-            if (gameState?.playerToMove !is HumanPlayer) {
-                delay(gameSpeedDelay - (System.currentTimeMillis() - lastMoveTime))
-            }
+    /** End the current round. */
+    fun endRound() {
+        check(phase == Phase.ROUND_STARTED) { "Round has already ended or game has not started." }
+        phase = Phase.GAME_STARTED
 
-            launch(Dispatchers.Main) {
-                // Do move and callback on main thread
-                super.doMove(move)
-                val next = gameState?.playerToMove
-                if (next is MctsPlayer) {
-                    // Find next AI move asynchronously
-                    GlobalScope.launch {
-                        doMove(next.findMove(gameState!!))
-                    }
-                }
+        // Update the scores
+        val result = gameState?.result!!.playerResults
+        for ((i, player) in players.withIndex()) {
+            player.score += 4 - result[i].toInt()
+        }
+
+        _events += GameEvent.RoundEnd
+        eventListener?.invoke(GameEvent.RoundEnd)
+
+        // Check if any player has won
+        // If there's any tie, continue playing
+        var minIndex = 0
+        var tie = false
+        for (i in 1..2) {
+            val score = players[i].score
+            val min = players[minIndex].score
+            if (score < min) {
+                minIndex = i
+                tie = false
+            } else if (score == min) {
+                tie = true
             }
         }
+
+        val minPlayer = players[minIndex]
+        if (minPlayer.score <= 0 && !tie) {
+            winner = minPlayer
+            end()
+        }
+    }
+
+    /** Do a [move] on the game state. */
+    fun doMove(move: CardGameEvent.Move) {
+        move as GameEvent.Move
+        check(phase != Phase.ENDED) { "Game has not started." }
+
+        _events += move
+        gameState?.doMove(move)
+        eventListener?.invoke(move)
     }
 
     override fun onPreferenceValueChanged(pref: PrefEntry) {
@@ -149,10 +187,19 @@ class Game : CardGame {
     }
 
 
-    override fun toString() = super.toString().dropLast(1) + ", difficulty: $difficulty," +
-            "dealer: ${players[dealerPos].name}, trumpSuit: " +
+    override fun toString() = super.toString().dropLast(1) +
+            ", phase: $phase, round: $round, dealer: ${players[dealerPos].name}, trumpSuit: " +
             (if (trumpSuit == GameState.NO_TRUMP) "none" else PCard.SUIT_STR[trumpSuit]) + "]"
 
+
+    enum class Phase {
+        /** Game has not started or is done. */
+        ENDED,
+        /** Game is started but round is done. */
+        GAME_STARTED,
+        /** Round has started and is being played. */
+        ROUND_STARTED
+    }
 
     companion object {
         private val TRUMP_SUITS = intArrayOf(PCard.HEART, PCard.SPADE,

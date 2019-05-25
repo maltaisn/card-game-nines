@@ -16,8 +16,6 @@
 
 package com.maltaisn.nines.core.core
 
-import com.maltaisn.cardgame.core.GameEvent
-
 
 /**
  * A move representing a player trading his hand with the extra hand

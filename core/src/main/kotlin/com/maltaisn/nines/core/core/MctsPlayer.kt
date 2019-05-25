@@ -67,7 +67,7 @@ class MctsPlayer : Player {
      * Find the best move to play given the current game state.
      * This always gets moves from [CardGameState.getMoves], never creates them.
      */
-    fun findMove(state: CardGameState): GameEvent.Move {
+    fun findMove(state: CardGameState): CardGameEvent.Move {
         state as GameState
         return if (state.phase == GameState.Phase.TRADE) {
             // Do random simulations of trading and not trading.
@@ -81,7 +81,7 @@ class MctsPlayer : Player {
         }
     }
 
-    override fun onMove(state: CardGameState, move: GameEvent.Move) {
+    override fun onMove(state: CardGameState, move: CardGameEvent.Move) {
         state as GameState
 
         if (move is TradeHandMove) {
@@ -128,27 +128,36 @@ class MctsPlayer : Player {
         }
         unseen.shuffle()
 
-        // Sort the unseen cards by suit
-        val suitCards = List(4) { Deck<PCard>() }
-        for (card in unseen) {
-            suitCards[card.suit] += card
-        }
-
-        // Redistribute the cards to the unknown hands.
-        // If the observer knows the hand doesn't have cards of a suit, don't give any.
-        // FIXME hungarian algorithm
-        //   https://cs.stackexchange.com/questions/102999/split-a-list-of-elements-into-sub-lists-each-with-different-criteria
-        for (hand in hands) {
-            val handSuits = handSuits[hand.id]
-            val size = hand.size
-            hand.clear()
-            while (hand.size < size) {
-                val cards = suitCards[handSuits.random()]
-                if (cards.isNotEmpty()) {
-                    hand += cards.drawTop()
-                }
+        // Redistribute the cards to other players
+        for (player in state.players) {
+            if (player !== this) {
+                val size = player.hand.size
+                player.hand.clear()
+                player.hand.addAll(unseen.drawTop(size))
             }
         }
+
+//        // Sort the unseen cards by suit
+//        val suitCards = List(4) { Deck<PCard>() }
+//        for (card in unseen) {
+//            suitCards[card.suit] += card
+//        }
+//
+//        // Redistribute the cards to the unknown hands.
+//        // If the observer knows the hand doesn't have cards of a suit, don't give any.
+//        // FIXME hungarian algorithm
+//        //   https://cs.stackexchange.com/questions/102999/split-a-list-of-elements-into-sub-lists-each-with-different-criteria
+//        for (hand in hands) {
+//            val handSuits = handSuits[hand.id]
+//            val size = hand.size
+//            hand.clear()
+//            while (hand.size < size) {
+//                val cards = suitCards[handSuits.random()]
+//                if (cards.isNotEmpty()) {
+//                    hand += cards.drawTop()
+//                }
+//            }
+//        }
     }
 
 

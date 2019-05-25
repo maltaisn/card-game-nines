@@ -16,7 +16,6 @@
 
 package com.maltaisn.nines.core.core
 
-import com.maltaisn.cardgame.core.GameEvent
 import com.maltaisn.cardgame.core.PCard
 
 

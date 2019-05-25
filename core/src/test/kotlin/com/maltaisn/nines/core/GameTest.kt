@@ -16,74 +16,142 @@
 
 package com.maltaisn.nines.core
 
-class GameTest {
-/*
-    @Test
-    fun play() {
+import com.maltaisn.cardgame.core.PCard
+import com.maltaisn.cardgame.prefs.GamePrefs
+import com.maltaisn.cardgame.prefs.buildGamePrefsFromMap
+import com.maltaisn.nines.core.core.GameEvent
+import com.maltaisn.nines.core.core.GameState
+import com.maltaisn.nines.core.core.MctsPlayer
+import com.maltaisn.nines.core.core.MctsPlayer.Difficulty
+import com.maltaisn.nines.core.core.Player
 
-        // Create players
-        val player1 = MctsPlayer(MctsPlayer.Difficulty.ADVANCED)
-        player1.name = "AI1"
-        val player2 = MctsPlayer(MctsPlayer.Difficulty.EXPERT)
-        player2.name = "AI2"
-        val player3 = MctsPlayer(MctsPlayer.Difficulty.INTERMEDIATE)
-        player3.name = "AI3"
 
-        playGames(player1, player2, player3, 30)
-    }
+fun main(args: Array<String>) {
+    // Create players
+    val south = MctsPlayer(Difficulty.EXPERT)
+    val east = MctsPlayer(Difficulty.INTERMEDIATE)
+    val north = MctsPlayer(Difficulty.ADVANCED)
 
-    private fun playGames(player1: Player, player2: Player, player3: Player, count: Int) {
-        val gamesWon = intArrayOf(0, 0, 0)
-        lateinit var game: Game
-        repeat(count) {
-            // Play game
-            print("Game ${it + 1}: ")
-            game = Game(player1, player2, player3,
-                    dealer = Random.nextInt(3),
-                    points = 9, verbose = false)
-
-            // Play until game is done
-            while (!game.play()) {
-                // Do nothing...
-            }
-
-            // Print scores
-            var winner = 0
-            for (i in 0 until 3) {
-                val score = game.players[i].score
-                if (score < game.players[winner].score) {
-                    winner = i
-                }
-                print("[${game.players[i].name}]: $score")
-                if (i != 2) print(", ")
-            }
-            println()
-            gamesWon[winner]++
-        }
-
-        print("Result: ")
-        for (i in 0 until 3) {
-            print("[${game.players[i].name}]: ${gamesWon[i]}")
-            if (i != 2) print(", ")
-        }
-    }
-
-    private fun playGame(player1: Player, player2: Player, player3: Player) {
-        // Play game
-        val game = OldGame(player1, player2, player3,
-                dealer = Random.nextInt(3),
-                points = 9, verbose = true)
-
-        // Play until game is done
-        while (!game.play()) {
-            // Do nothing...
-        }
-
-        // Print scores
-        println("GAME IS DONE")
-        for (i in 0 until 3) {
-            println("[P${i + 1}] Score: ${game.scores[i]} pts")
-        }
-    }
-*/
+    playGame(settings, south, east, north, VERBOSE_MOVES)
+    //playGames(settings, south, east, north, 30, VERBOSE_ROUNDS)
 }
+
+/**
+ * Play a single game.
+ */
+private fun playGame(settings: GamePrefs,
+                     south: Player, east: Player, north: Player,
+                     verbosity: Int): Game {
+    val game = Game(settings, south, east, north)
+    val players = game.players
+
+    var lastScores = IntArray(3) { settings.getInt(PrefKeys.START_SCORE) }
+
+    game.eventListener = { event ->
+        event as GameEvent
+        when (event) {
+            is GameEvent.Start -> {
+                println("=== GAME STARTED ===")
+            }
+            is GameEvent.RoundStart -> {
+                // >>> Round 1 started, trump: ♥
+                val trumpStr = if (game.trumpSuit == GameState.NO_TRUMP) {
+                    "none"
+                } else {
+                    PCard.SUIT_STR[game.trumpSuit].toString()
+                }
+                println(">>> Round ${game.round} started, trump: $trumpStr")
+            }
+            is GameEvent.RoundEnd -> {
+                // >>> Round 1 ended, diff: [-2, 1, 0], scores: [7, 10, 9]
+                val scores = IntArray(3) { players[it].score }
+                val diff = IntArray(3) { scores[it] - lastScores[it] }
+                lastScores = scores
+                println(">>> Round ${game.round} ended, " +
+                        "diff: ${diff.contentToString()}, " +
+                        "scores: ${scores.contentToString()}\n")
+            }
+            is GameEvent.End -> {
+                // === GAME ENDED after 13 rounds, scores: [-1, 6, 9], winner: South ===
+                val scores = IntArray(3) { players[it].score }
+                println("=== GAME ENDED after ${game.round} rounds, " +
+                        "scores: ${scores.contentToString()}, " +
+                        "winner: ${game.winner!!.name} ===\n")
+            }
+            is GameEvent.Move -> {
+                if (verbosity > VERBOSE_ROUNDS) {
+                    val state = game.gameState as GameState
+                    val player = players[event.playerPos]
+                    // South did: Trade hand, trick: []
+                    print("${player.name} did: $event, trick: ${state.currentTrick}")
+                    if (verbosity == VERBOSE_ALL) {
+                        // East did: Play 5♥, trick: [A♥, 5♥], hand: [...]
+                        print(", hand: ${player.hand.toSortedString(PCard.DEFAULT_SORTER)}")
+                    }
+                    println()
+                    if (state.tricksPlayed > 0 && state.currentTrick.isEmpty()) {
+                        // > Trick #5 taken by North
+                        println("> Trick #${state.tricksPlayed} taken by ${state.playerToMove.name}\n")
+                    }
+                }
+            }
+        }
+    }
+
+    // Play the game
+    game.start()
+    while (!game.isDone) {
+        game.startRound()
+        val state = game.gameState!!
+        var moves = state.getMoves()
+        while (moves.isNotEmpty()) {
+            val next = state.playerToMove
+            if (next is MctsPlayer) {
+                val move = next.findMove(state)
+                game.doMove(move)
+            } else {
+                println("\n${next.name}'s turn, choose a move:")
+                for ((i, move) in moves.withIndex()) {
+                    println("${i + 1}. $move")
+                }
+                var answer = 0
+                while (answer <= 0 || answer > moves.size) {
+                    print(">> ")
+                    answer = readLine()?.toIntOrNull() ?: 0
+                }
+                println()
+                game.doMove(moves[answer - 1])
+            }
+
+            moves = state.getMoves()
+        }
+        game.endRound()
+    }
+
+    return game
+}
+
+/**
+ * Play a number of games.
+ */
+private fun playGames(settings: GamePrefs,
+                      south: Player, east: Player, north: Player,
+                      count: Int, verbosity: Int) {
+    val gamesWon = intArrayOf(0, 0, 0)
+    repeat(count) {
+        println("=== GAME ${it + 1} / $count ===")
+        val game = playGame(settings, south, east, north, verbosity)
+        gamesWon[game.winner!!.position]++
+    }
+    println("Games won: ${gamesWon.contentToString()}")
+}
+
+private val settings = buildGamePrefsFromMap(mapOf(
+        PrefKeys.START_SCORE to 9,
+        PrefKeys.GAME_SPEED to "none",
+        PrefKeys.PLAYER_NAMES to arrayOf("South", "East", "North")
+))
+
+private const val VERBOSE_ROUNDS = 0
+private const val VERBOSE_MOVES = 1
+private const val VERBOSE_ALL = 2

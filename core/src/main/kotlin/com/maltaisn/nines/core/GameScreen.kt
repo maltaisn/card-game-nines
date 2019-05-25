@@ -21,6 +21,8 @@ import com.maltaisn.cardgame.CardGameScreen
 import com.maltaisn.cardgame.markdown.Markdown
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.widget.menu.DefaultGameMenu
+import com.maltaisn.nines.core.core.HumanPlayer
+import com.maltaisn.nines.core.core.MctsPlayer
 import ktx.assets.load
 
 
@@ -55,17 +57,29 @@ class GameScreen : CardGameScreen() {
 
         menu.rules = assetManager.get(MD_RULES)
 
-        menu.continueListener = {
-            initGame(Game(settings, Gdx.files.local(SAVED_GAME)))
-        }
-
-        menu.startGameListener = {
-            initGame(Game(settings, newGameOptions))
-        }
+        menu.continueListener = { initGame(Game(settings, Gdx.files.local(SAVED_GAME))) }
+        menu.startGameListener = { startGame() }
 
         gameLayout = GameLayout(assetManager, settings).apply {
             gameMenu = menu
         }
+    }
+
+    private fun startGame() {
+        val difficulty = when (newGameOptions.getInt(PrefKeys.DIFFICULTY)) {
+            0 -> MctsPlayer.Difficulty.BEGINNER
+            1 -> MctsPlayer.Difficulty.INTERMEDIATE
+            2 -> MctsPlayer.Difficulty.ADVANCED
+            3 -> MctsPlayer.Difficulty.EXPERT
+            else -> error("Wrong difficulty level.")
+        }
+
+        // Create players
+        val south = HumanPlayer()
+        val east = MctsPlayer(difficulty)
+        val north = MctsPlayer(difficulty)
+
+        initGame(Game(settings, south, east, north))
     }
 
     companion object {

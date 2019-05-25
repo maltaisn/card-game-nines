@@ -17,11 +17,15 @@
 package com.maltaisn.nines.core
 
 import com.maltaisn.cardgame.CardGameApp
+import ktx.async.KtxAsync
 
 class GameApp : CardGameApp() {
 
     override fun create() {
         super.create()
+
+        KtxAsync.initiate()
+
         setScreen(GameScreen())
     }
 
