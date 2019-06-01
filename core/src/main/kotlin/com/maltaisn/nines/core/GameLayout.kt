@@ -432,25 +432,33 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
                 }
             } else {
                 // Human player turn
-                if (state.phase == GameState.Phase.TRADE) {
-                    tradePopup.show(playerHand, Popup.Side.ABOVE)
+                val moves = state.getMoves()
+                if (moves.size == 1 && settings.getBoolean(PrefKeys.AUTO_PLAY)) {
+                    // Only one card is playable, auto-play it.
+                    game.doMove(moves.first())
+
                 } else {
-                    val moves = state.getMoves()
-                    if (settings.getBoolean(PrefKeys.SELECT_PLAYABLE)) {
-                        val playableCards = moves.map { (it as PlayMove).card }
-                        if (playableCards.size < playerHand.size) {
-                            playerHand.highlightCards(playableCards)
+                    if (state.phase == GameState.Phase.TRADE) {
+                        tradePopup.show(playerHand, Popup.Side.ABOVE)
+
+                    } else {
+                        if (settings.getBoolean(PrefKeys.SELECT_PLAYABLE)) {
+                            val playableCards = moves.map { (it as PlayMove).card }
+                            if (playableCards.size < playerHand.size) {
+                                // Highlight playable cards
+                                playerHand.highlightCards(playableCards)
+                            }
                         }
-                    }
 
-                    playerHand.clickListener = { actor, _ ->
-                        val move = moves.find { it is PlayMove && it.card == actor.card }
-                        if (move != null) {
-                            // This card can be played, play it.
-                            game.doMove(move)
+                        playerHand.clickListener = { actor, _ ->
+                            val move = moves.find { it is PlayMove && it.card == actor.card }
+                            if (move != null) {
+                                // This card can be played, play it.
+                                game.doMove(move)
 
-                            // Remove click listener
-                            playerHand.clickListener = null
+                                // Remove click listener
+                                playerHand.clickListener = null
+                            }
                         }
                     }
                 }
