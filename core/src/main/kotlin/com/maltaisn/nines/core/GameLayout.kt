@@ -36,8 +36,10 @@ import com.maltaisn.cardgame.widget.PopupButton
 import com.maltaisn.cardgame.widget.TimeAction
 import com.maltaisn.cardgame.widget.card.*
 import com.maltaisn.nines.core.core.*
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import ktx.actors.onClick
 import ktx.async.AsyncExecutorDispatcher
 import ktx.async.KtxAsync
@@ -72,6 +74,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
     private var lastMoveTime = 0L
 
     private lateinit var dispatcher: AsyncExecutorDispatcher
+    private var aiPlayerJob: Job? = null
 
 
     init {
@@ -163,6 +166,8 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
             dispatcher = newSingleThreadAsyncContext()
         } else {
             dispatcher.dispose()
+            aiPlayerJob?.cancel()
+            aiPlayerJob = null
         }
     }
 
@@ -175,9 +180,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
         when (game.phase) {
             Game.Phase.ENDED, Game.Phase.GAME_STARTED -> {
                 // Round wasn't started yet or has just ended. Hide all containers.
-                extraHand.fade(false)
-                trick.fade(false)
-                playerHand.slide(false, CardContainer.Direction.DOWN)
+                hide()
             }
             Game.Phase.ROUND_STARTED -> {
                 // Round has started
@@ -198,12 +201,28 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
                 }
 
                 playerHand.apply {
-                    sorter = PCard.DEFAULT_SORTER
                     cards = state.players.first().hand.cards
                     slide(true, CardContainer.Direction.DOWN)
                 }
             }
         }
+    }
+
+    fun hide() {
+        // Clear all animations
+        cardAnimationLayer.completeAnimation(true)
+        clearActions()
+
+        // Hide all containers and all popups
+        extraHand.fade(false)
+        trick.fade(false)
+        playerHand.slide(false, CardContainer.Direction.DOWN)
+        tradePopup.hide()
+        collectPopup.hide()
+
+        // Cancel AI job
+        aiPlayerJob?.cancel()
+        aiPlayerJob = null
     }
 
     override fun doEvent(event: CardGameEvent) {
@@ -253,18 +272,15 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
             moveDuration += CardContainer.TRANSITION_DURATION
         }
 
-        // Set extra hand
+        // Set cards in containers
         extraHand.apply {
             cards = state.extraHand.cards
             fade(true)
         }
-
-        // Set other players hand
         for (i in 1..2) {
             hiddenStacks[i].cards = state.players[i].hand.cards
         }
-
-        tradePopup.hide()
+        trick.cards = List(3) { null }
 
         // Start playing
         moveDuration += 0.5f
@@ -439,16 +455,19 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
             val next = state.playerToMove
             if (next is MctsPlayer) {
                 // Find next AI move asynchronously
-                KtxAsync.launch(dispatcher) {
+                aiPlayerJob = KtxAsync.launch(dispatcher) {
                     // Wait between AI players moves to adjust game speed
                     delay((gameSpeedDelay * 1000).toLong() -
                             (System.currentTimeMillis() - lastMoveTime))
 
                     // Find move
+                    yield()
                     val move = next.findMove(state)
 
                     // Do move
+                    yield()
                     onRenderingThread {
+                        aiPlayerJob = null
                         (game as Game?)?.doMove(move)
                     }
                 }

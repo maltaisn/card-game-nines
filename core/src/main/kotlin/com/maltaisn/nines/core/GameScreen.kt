@@ -25,6 +25,7 @@ import com.maltaisn.cardgame.widget.menu.DefaultGameMenu
 import com.maltaisn.nines.core.core.HumanPlayer
 import com.maltaisn.nines.core.core.MctsPlayer
 import ktx.assets.load
+import ktx.log.info
 
 
 class GameScreen : CardGameScreen() {
@@ -59,8 +60,18 @@ class GameScreen : CardGameScreen() {
 
         menu.rules = assetManager.get(Res.MD_RULES)
 
-        menu.continueListener = { initGame(Game(settings, Gdx.files.local(SAVED_GAME))) }
-        menu.startGameListener = { startGame() }
+        menu.continueListener = {
+            initGame(Game(settings, Gdx.files.local(SAVED_GAME)))
+        }
+        menu.startGameListener = {
+            startGame()
+        }
+        menu.exitGameListener = {
+            (gameLayout as GameLayout).hide()
+        }
+        menu.scoreboardListener = {
+            info { "Show scoreboard" }
+        }
 
         gameLayout = GameLayout(assetManager, settings).apply {
             gameMenu = menu
