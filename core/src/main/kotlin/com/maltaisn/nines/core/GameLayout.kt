@@ -58,6 +58,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
     private val trick: CardTrick
 
     private val tradePopup: Popup
+    private val collectPopup: Popup
 
     private val gameSpeedDelay: Float
         get() = when (settings.getChoice(PrefKeys.GAME_SPEED)) {
@@ -118,7 +119,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
         tradePopup = Popup(coreSkin)
         popupGroup.addActor(tradePopup)
 
-        val tradeBtn = PopupButton(coreSkin, bundle["popup_trade"])
+        val tradeBtn = PopupButton(coreSkin, bundle["action_trade"])
         tradeBtn.onClick {
             val game = game as Game
             val state = game.gameState as GameState
@@ -126,7 +127,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
             tradePopup.hide()
         }
 
-        val noTradeBtn = PopupButton(coreSkin, bundle["popup_no_trade"])
+        val noTradeBtn = PopupButton(coreSkin, bundle["action_no_trade"])
         noTradeBtn.onClick {
             val game = game as Game
             val state = game.gameState as GameState
@@ -135,9 +136,24 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
         }
 
         tradePopup.apply {
-            add(tradeBtn).width(150f)
-            add(noTradeBtn).width(150f)
+            add(tradeBtn).minWidth(150f)
+            add(noTradeBtn).minWidth(150f)
         }
+
+        // Collect trick popup
+        collectPopup = Popup(coreSkin)
+        popupGroup.addActor(collectPopup)
+
+        val collectBtn = PopupButton(coreSkin, bundle["action_ok"])
+        collectBtn.onClick {
+            val moveDuration = collectTrick(hiddenStacks.first(), 0f)
+            collectPopup.hide()
+
+            doDelayed(moveDuration) {
+                playNext()
+            }
+        }
+        collectPopup.add(collectBtn).minWidth(150f)
     }
 
 
@@ -357,30 +373,15 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
                 when (state.currentTrick.cards.size) {
                     0 -> {
                         // Player plays last
-                        if (settings.getBoolean(PrefKeys.AUTO_COLLECT)) {
-                            // Collect the trick to the player's hidden stack.
-                            // Temporarily show the hidden stack so the trick is shown while collected.
-                            val hiddenStack = hiddenStacks[state.posToMove]
-                            hiddenStack.visibility = CardContainer.Visibility.ALL
-
-                            moveDuration += 1f
-                            doDelayed(moveDuration) {
-                                for (i in 0 until trick.capacity) {
-                                    cardAnimationLayer.moveCard(trick, hiddenStack,
-                                            i, 0, replaceSrc = true)
-                                }
-                                cardAnimationLayer.update()
-
-                            }
-                            moveDuration += CardAnimationLayer.UPDATE_DURATION
-
-                            doDelayed(moveDuration) {
-                                hiddenStack.visibility = CardContainer.Visibility.NONE
-                            }
+                        moveDuration = if (settings.getBoolean(PrefKeys.AUTO_COLLECT)) {
+                            // Collect the trick automatically.
+                            collectTrick(hiddenStacks[state.posToMove], moveDuration + 1f)
 
                         } else {
-                            // TODO show collect popup
-                            moveDuration = Float.POSITIVE_INFINITY
+                            doDelayed(moveDuration + 0.2f) {
+                                collectPopup.show(playerHand, Popup.Side.ABOVE)
+                            }
+                            Float.POSITIVE_INFINITY
                         }
                     }
                     1 -> {
@@ -397,6 +398,27 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
                 playNext()
             }
         }
+    }
+
+    private fun collectTrick(dst: CardContainer, delay: Float): Float {
+        // Collect the trick to the destination container.
+        // Temporarily show the hidden stack so the trick is shown while collected.
+        var moveDuration = delay
+        dst.visibility = CardContainer.Visibility.ALL
+
+        doDelayed(moveDuration) {
+            for (i in 0 until trick.capacity) {
+                cardAnimationLayer.moveCard(trick, dst, i, 0, replaceSrc = true)
+            }
+            cardAnimationLayer.update()
+        }
+        moveDuration += CardAnimationLayer.UPDATE_DURATION
+
+        doDelayed(moveDuration) {
+            dst.visibility = CardContainer.Visibility.NONE
+        }
+
+        return moveDuration
     }
 
     override fun onPreferenceValueChanged(pref: PrefEntry) {
