@@ -17,6 +17,7 @@
 package com.maltaisn.nines.core
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.utils.I18NBundle
 import com.maltaisn.cardgame.CardGameScreen
 import com.maltaisn.cardgame.markdown.Markdown
 import com.maltaisn.cardgame.prefs.GamePrefs
@@ -35,9 +36,10 @@ class GameScreen : CardGameScreen() {
     override fun load() {
         super.load()
 
-        assetManager.load<GamePrefs>(PREFS_NEW_GAME)
-        assetManager.load<GamePrefs>(PREFS_SETTINGS)
-        assetManager.load<Markdown>(MD_RULES)
+        assetManager.load<GamePrefs>(Res.PREFS_NEW_GAME)
+        assetManager.load<GamePrefs>(Res.PREFS_SETTINGS)
+        assetManager.load<Markdown>(Res.MD_RULES)
+        assetManager.load<I18NBundle>(Res.STRINGS_BUNDLE)
         loadPCardSkin()
     }
 
@@ -47,15 +49,15 @@ class GameScreen : CardGameScreen() {
         val menu = DefaultGameMenu(coreSkin)
         menu.continueItem.enabled = false
 
-        newGameOptions = assetManager.get<GamePrefs>(PREFS_NEW_GAME)
+        newGameOptions = assetManager.get<GamePrefs>(Res.PREFS_NEW_GAME)
         menu.newGameOptions = newGameOptions
         prefs += newGameOptions
 
-        settings = assetManager.get<GamePrefs>(PREFS_SETTINGS)
+        settings = assetManager.get<GamePrefs>(Res.PREFS_SETTINGS)
         menu.settings = settings
         prefs += settings
 
-        menu.rules = assetManager.get(MD_RULES)
+        menu.rules = assetManager.get(Res.MD_RULES)
 
         menu.continueListener = { initGame(Game(settings, Gdx.files.local(SAVED_GAME))) }
         menu.startGameListener = { startGame() }
@@ -79,13 +81,9 @@ class GameScreen : CardGameScreen() {
         val east = MctsPlayer(difficulty)
         val north = MctsPlayer(difficulty)
 
-        initGame(Game(settings, south, east, north))
-    }
-
-    companion object {
-        private const val PREFS_NEW_GAME = "new-game-options.json"
-        private const val PREFS_SETTINGS = "settings.json"
-        private const val MD_RULES = "rules"
+        val game = Game(settings, south, east, north)
+        initGame(game)
+        game.start()
     }
 
 }

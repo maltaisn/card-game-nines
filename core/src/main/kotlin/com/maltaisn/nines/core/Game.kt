@@ -115,8 +115,7 @@ class Game : CardGame {
 
         round++
 
-        dealerPos = (dealerPos + 1) % 3
-        gameState = GameState(settings, players, Random.nextInt(3), trumpSuit)
+        gameState = GameState(settings, players, dealerPos, trumpSuit)
 
         _events += GameEvent.RoundStart
         eventListener?.invoke(GameEvent.RoundStart)
@@ -156,6 +155,8 @@ class Game : CardGame {
             winner = minPlayer
             end()
         }
+
+        dealerPos = (dealerPos + 1) % 3
     }
 
     /** Do a [move] on the game state. */

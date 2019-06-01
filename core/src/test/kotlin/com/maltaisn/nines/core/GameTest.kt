@@ -26,7 +26,7 @@ import com.maltaisn.nines.core.core.MctsPlayer.Difficulty
 import com.maltaisn.nines.core.core.Player
 
 
-fun main(args: Array<String>) {
+fun main() {
     // Create players
     val south = MctsPlayer(Difficulty.EXPERT)
     val east = MctsPlayer(Difficulty.INTERMEDIATE)
@@ -86,10 +86,10 @@ private fun playGame(settings: GamePrefs,
                     print("${player.name} did: $event, trick: ${state.currentTrick}")
                     if (verbosity == VERBOSE_ALL) {
                         // East did: Play 5♥, trick: [A♥, 5♥], hand: [...]
-                        print(", hand: ${player.hand.toSortedString(PCard.DEFAULT_SORTER)}")
+                        print(", hand: ${player.hand}")
                     }
                     println()
-                    if (state.tricksPlayed > 0 && state.currentTrick.isEmpty()) {
+                    if (state.tricksPlayed > 0 && state.currentTrick.cards.isEmpty()) {
                         // > Trick #5 taken by North
                         println("> Trick #${state.tricksPlayed} taken by ${state.playerToMove.name}\n")
                     }

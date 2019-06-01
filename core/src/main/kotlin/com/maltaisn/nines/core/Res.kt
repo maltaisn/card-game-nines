@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package com.maltaisn.nines.core.core
-
-import com.maltaisn.cardgame.core.PCard
-import com.maltaisn.cardgame.core.sortWith
+package com.maltaisn.nines.core
 
 
-/**
- * A player's hand. Each hand have an ID.
- */
-class Hand(val id: Int, val cards: MutableList<PCard>) : Cloneable {
+object Res {
 
-    public override fun clone() = Hand(id, cards.toMutableList())
-
-    override fun toString() = cards.sortWith(PCard.DEFAULT_SORTER).toString()
+    const val PREFS_NEW_GAME = "new-game-options.json"
+    const val PREFS_SETTINGS = "settings.json"
+    const val MD_RULES = "rules"
+    const val STRINGS_BUNDLE = "strings"
 
 }

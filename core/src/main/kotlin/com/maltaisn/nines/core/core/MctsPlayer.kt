@@ -25,12 +25,15 @@ import com.maltaisn.cardgame.core.*
 class MctsPlayer : Player {
 
     /**
+     * IDs of known hands. They won't be randomized by [GameState.randomizedClone].
+     * TODO Replaceable with bit field
+     */
+    val knownHands = mutableListOf<Int>()
+
+    /**
      * The playing difficulty for this player.
      */
     val difficulty: Difficulty
-
-    /** IDs of known hands. They won't be randomized by [GameState.randomizedClone]. */
-    val knownHands = mutableListOf<Int>()
 
     /**
      * Array indexed by hand ID. Each index is a list of
@@ -90,13 +93,13 @@ class MctsPlayer : Player {
                 knownHands += hand.id
             }
         } else if (move is PlayMove) {
-            val trick = if (state.currentTrick.isEmpty()) {
+            val trick = if (state.currentTrick.cards.isEmpty()) {
                 state.players[state.posToMove].tricksTaken.last()
             } else {
                 state.currentTrick
             }
-            val trickSuit = trick.getSuit()
-            if (trick.last().suit != trickSuit) {
+            val trickSuit = trick.suit
+            if (trick.cards.last().suit != trickSuit) {
                 // The player that moved couldn't follow suit, remember that.
                 handSuits[state.players[move.playerPos].hand.id].remove(trickSuit)
             }
@@ -122,23 +125,24 @@ class MctsPlayer : Player {
         }
 
         // Take all cards from these hands and shuffle them.
-        val unseen = Deck<PCard>()
+        val unseen = mutableListOf<PCard>()
         for (hand in hands) {
-            unseen += hand
+            unseen += hand.cards
         }
         unseen.shuffle()
 
         // Redistribute the cards to other players
         for (player in state.players) {
             if (player !== this) {
-                val size = player.hand.size
-                player.hand.clear()
-                player.hand.addAll(unseen.drawTop(size))
+                val cards = player.hand.cards
+                val size = cards.size
+                cards.clear()
+                cards += unseen.drawTop(size)
             }
         }
 
 //        // Sort the unseen cards by suit
-//        val suitCards = List(4) { Deck<PCard>() }
+//        val suitCards = List(4) { mutableListOf<PCard>() }
 //        for (card in unseen) {
 //            suitCards[card.suit] += card
 //        }
@@ -149,12 +153,12 @@ class MctsPlayer : Player {
 //        //   https://cs.stackexchange.com/questions/102999/split-a-list-of-elements-into-sub-lists-each-with-different-criteria
 //        for (hand in hands) {
 //            val handSuits = handSuits[hand.id]
-//            val size = hand.size
-//            hand.clear()
+//            val size = hand.cards.size
+//            hand.cards.clear()
 //            while (hand.size < size) {
 //                val cards = suitCards[handSuits.random()]
 //                if (cards.isNotEmpty()) {
-//                    hand += cards.drawTop()
+//                    hand.cards += cards.drawTop()
 //                }
 //            }
 //        }

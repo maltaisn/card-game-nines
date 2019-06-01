@@ -16,41 +16,31 @@
 
 package com.maltaisn.nines.core.core
 
-import com.maltaisn.cardgame.core.Deck
 import com.maltaisn.cardgame.core.PCard
 
 
 /**
  * A game trick, made of 0 to 3 cards.
+ * @property trumpSuit Trump suit when this trick was played.
+ * @property cards The cards in the trick. There should always be between 0 and 3 cards.
  */
-class Trick : Deck<PCard> {
-
-    /** The trump suit when this trick was played. */
-    val trumpSuit: Int
-
-    constructor(trumpSuit: Int) : super(3) {
-        this.trumpSuit = trumpSuit
-    }
-
-    constructor(trumpSuit: Int, cards: Collection<PCard>) : super(cards) {
-        this.trumpSuit = trumpSuit
-        assert(cards.size <= 3)
-    }
+class Trick(val trumpSuit: Int, val cards: MutableList<PCard> = ArrayList(3)) : Cloneable {
 
     /**
      * Get the required suit in this trick if there's at least one card in it.
      * Returns `-1` if there's no card in trick.
      */
-    fun getSuit() = if (isEmpty()) -1 else get(0).suit
+    val suit: Int
+        get() = if (cards.isEmpty()) -1 else cards.first().suit
 
     /**
      * Find the index of the highest card in the trick.
      */
     fun findHighest(): Int {
         var highestIndex = 0
-        var highest = first()
-        for (i in 1 until size) {
-            val card = get(i)
+        var highest = cards.first()
+        for (i in 1 until cards.size) {
+            val card = cards.get(i)
 
             if ((card.suit == trumpSuit && (highest.suit != trumpSuit
                             || card.greaterThan(highest, true)))
@@ -71,6 +61,8 @@ class Trick : Deck<PCard> {
         return highestIndex
     }
 
-    override fun clone() = Trick(trumpSuit, super.clone())
+    public override fun clone() = Trick(trumpSuit, cards.toMutableList())
+
+    override fun toString() = cards.toString()
 
 }

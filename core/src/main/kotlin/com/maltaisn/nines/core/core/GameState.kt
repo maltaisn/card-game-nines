@@ -76,19 +76,18 @@ class GameState : CardGameState {
         this.trumpSuit = trumpSuit
 
         // Create and shuffle a 52-card deck.
-        val deck = PCard.fullDeck(false)
-        deck.shuffle()
+        val deck = PCard.fullDecks(shuffled = true)
 
         // Deal 13 cards to each player + extra hand, assigning an ID to each hand.
         var id = 0
         for (player in players) {
-            player.initialize(id, Hand(id, deck.drawTop(TRICKS_IN_ROUND)))
+            player.initialize(id, Hand(id, deck.drawTop(CARDS_COUNT)))
             id++
         }
-        extraHand = Hand(id, deck.drawTop(TRICKS_IN_ROUND))
+        extraHand = Hand(id, deck.drawTop(CARDS_COUNT))
 
         tradesCount = 0
-        posToMove = getPositionNextTo(dealer)
+        posToMove = dealer
         phase = Phase.TRADE
         tricksPlayed = 0
         currentTrick = Trick(trumpSuit)
@@ -119,28 +118,30 @@ class GameState : CardGameState {
                     tradesCount++
                 }
 
-                if (posToMove == dealerPos) {
-                    // Everyone had the chance to trade hands
-                    phase = Phase.PLAY
-                }
-
                 posToMove = getPositionNextTo(posToMove)
+
+                if (posToMove == dealerPos) {
+                    // Everyone had the chance to trade hands.
+                    // Player to the left of the dealer starts.
+                    phase = Phase.PLAY
+                    posToMove = dealerPos + 1
+                }
             }
             is PlayMove -> {
                 // Play card in trick
-                currentTrick += move.card
-                player.hand.remove(move.card)
+                currentTrick.cards += move.card
+                player.hand.cards -= move.card
 
-                if (currentTrick.size == 3) {
+                if (currentTrick.cards.size == 3) {
                     // All players have played, find who takes the trick.
                     val trickWinner = (currentTrick.findHighest() + posToMove + 1) % 3
 
                     players[trickWinner].tricksTaken += currentTrick.clone()
-                    currentTrick.clear()
+                    currentTrick.cards.clear()
                     posToMove = trickWinner
                     tricksPlayed++
 
-                    if (tricksPlayed == TRICKS_IN_ROUND) {
+                    if (tricksPlayed == CARDS_COUNT) {
                         // Round is done, create result.
                         result = GameResult(List(3) { players[it].tricksTaken.size.toFloat() })
                     }
@@ -164,10 +165,10 @@ class GameState : CardGameState {
         val player = players[posToMove]
         when (phase) {
             Phase.PLAY -> {
-                if (currentTrick.isNotEmpty()) {
+                if (currentTrick.cards.isNotEmpty()) {
                     // Player must follow the suit of first card in trick.
-                    val trickSuit = currentTrick.getSuit()
-                    for (card in player.hand) {
+                    val trickSuit = currentTrick.suit
+                    for (card in player.hand.cards) {
                         if (card.suit == trickSuit) {
                             moves += PlayMove(posToMove, card)
                         }
@@ -175,7 +176,7 @@ class GameState : CardGameState {
                 }
                 if (moves.isEmpty()) {
                     // Player plays first or has no cards in required suit, can play any.
-                    for (card in player.hand) {
+                    for (card in player.hand.cards) {
                         moves += PlayMove(posToMove, card)
                     }
                 }
@@ -198,11 +199,11 @@ class GameState : CardGameState {
         val player = players[posToMove]
         when (phase) {
             Phase.PLAY -> {
-                if (currentTrick.isNotEmpty()) {
+                if (currentTrick.cards.isNotEmpty()) {
                     // Player must follow the suit of first card in trick.
-                    val cards = Deck<PCard>()
-                    val trickSuit = currentTrick.getSuit()
-                    for (card in player.hand) {
+                    val cards = mutableListOf<PCard>()
+                    val trickSuit = currentTrick.suit
+                    for (card in player.hand.cards) {
                         if (card.suit == trickSuit) {
                             cards += card
                         }
@@ -212,7 +213,7 @@ class GameState : CardGameState {
                     }
                 }
                 // Player plays first or has no cards in required suit, can play any.
-                return PlayMove(posToMove, player.hand.random())
+                return PlayMove(posToMove, player.hand.cards.random())
             }
             Phase.TRADE -> {
                 // Player has the choice to trade his hand with the extra hand or not.
@@ -239,7 +240,7 @@ class GameState : CardGameState {
     }
 
     companion object {
-        const val TRICKS_IN_ROUND = 13
+        const val CARDS_COUNT = 13
         const val NO_TRUMP = -1
     }
 

@@ -17,7 +17,6 @@
 package com.maltaisn.nines.core.core
 
 import com.maltaisn.cardgame.core.CardPlayer
-import com.maltaisn.cardgame.core.PCard
 
 
 abstract class Player : CardPlayer {
@@ -26,7 +25,7 @@ abstract class Player : CardPlayer {
     var score = 0
 
     /** The player's hand. */
-    var hand = Hand(-1)
+    var hand = EMPTY_HAND
 
     /** List of the tricks taken by a player. */
     val tricksTaken = mutableListOf<Trick>()
@@ -52,7 +51,10 @@ abstract class Player : CardPlayer {
     }
 
     override fun toString() = super.toString().dropLast(1) +
-            ", score: $score, ${tricksTaken.size} tricks taken" +
-            ", hand: ${hand.toSortedString(PCard.DEFAULT_SORTER)}]"
+            ", score: $score, ${tricksTaken.size} tricks taken, hand: $hand]"
+
+    companion object {
+        private val EMPTY_HAND = Hand(-1, mutableListOf())
+    }
 
 }
