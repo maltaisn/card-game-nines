@@ -30,12 +30,12 @@ import com.maltaisn.cardgame.core.CardGame
 import com.maltaisn.cardgame.core.CardGameEvent
 import com.maltaisn.cardgame.core.PCard
 import com.maltaisn.cardgame.core.sortWith
+import com.maltaisn.cardgame.postDelayed
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.prefs.PrefEntry
 import com.maltaisn.cardgame.widget.CardGameLayout
 import com.maltaisn.cardgame.widget.Popup
 import com.maltaisn.cardgame.widget.PopupButton
-import com.maltaisn.cardgame.widget.TimeAction
 import com.maltaisn.cardgame.widget.card.*
 import com.maltaisn.nines.core.core.*
 import kotlinx.coroutines.Job
@@ -156,7 +156,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
             val moveDuration = collectTrick(hiddenStacks.first(), 0f)
             collectPopup.hide()
 
-            doDelayed(moveDuration) {
+            postDelayed(moveDuration) {
                 playNext()
             }
         }
@@ -273,7 +273,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
             playerHand.cards = emptyList()
             playerHand.shown = true
 
-            doDelayed(moveDuration) {
+            postDelayed(moveDuration) {
                 cardAnimationLayer.deal(hiddenStack, playerHand, playerCards.size, fromLast = false)
             }
             moveDuration += CardAnimationLayer.DEAL_DELAY * playerCards.size
@@ -297,7 +297,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
 
         // Start playing
         moveDuration += 0.5f
-        doDelayed(moveDuration) {
+        postDelayed(moveDuration) {
             playNext()
         }
     }
@@ -325,7 +325,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
                         moveDuration += CardContainer.TRANSITION_DURATION
 
                         moveDuration += 0.1f
-                        doDelayed(moveDuration) {
+                        postDelayed(moveDuration) {
                             // Move player hand cards to hidden stack
                             hiddenStack.cards = playerHand.cards
                             playerHand.cards = emptyList()
@@ -342,7 +342,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
 
                         // Move cards from hidden stack to extra hand
                         moveDuration += 0.1f
-                        doDelayed(moveDuration) {
+                        postDelayed(moveDuration) {
                             for (i in 0 until GameState.CARDS_COUNT) {
                                 cardAnimationLayer.moveCard(hiddenStack, extraHand, 0, 0)
                             }
@@ -360,7 +360,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
 
                         // Move cards from hidden stack to extra hand
                         moveDuration += 0.1f
-                        doDelayed(moveDuration) {
+                        postDelayed(moveDuration) {
                             for (i in 0 until GameState.CARDS_COUNT) {
                                 cardAnimationLayer.moveCard(hiddenStack, extraHand, 0, 0)
                             }
@@ -375,7 +375,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
                 // Hide extra hand if it's last player choice
                 if ((move.playerPos + 1) % 3 == game.dealerPos) {
                     moveDuration += gameSpeedDelay + 0.5f
-                    doDelayed(moveDuration) {
+                    postDelayed(moveDuration) {
                         extraHand.fade(false)
                         trick.shown = true
                     }
@@ -393,7 +393,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
                 if (isSouth) {
                     // Unhighlight cards in case they were highlighted before move
                     moveDuration += 0.1f
-                    doDelayed(moveDuration) {
+                    postDelayed(moveDuration) {
                         playerHand.highlightAllCards(false)
                     }
                     moveDuration += CardHand.HIGHLIGHT_DURATION
@@ -407,7 +407,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
                             collectTrick(hiddenStacks[state.posToMove], moveDuration + 1f)
 
                         } else {
-                            doDelayed(moveDuration + 0.2f) {
+                            postDelayed(moveDuration + 0.2f) {
                                 collectPopup.show(playerHand, Popup.Side.ABOVE)
                             }
                             Float.POSITIVE_INFINITY
@@ -423,7 +423,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
 
         if (moveDuration != Float.POSITIVE_INFINITY) {
             // After move animation is done, start next player turn.
-            doDelayed(moveDuration) {
+            postDelayed(moveDuration) {
                 playNext()
             }
         }
@@ -435,7 +435,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
         var moveDuration = delay
         dst.visibility = CardContainer.Visibility.ALL
 
-        doDelayed(moveDuration) {
+        postDelayed(moveDuration) {
             for (i in 0 until trick.capacity) {
                 cardAnimationLayer.moveCard(trick, dst, i, 0, replaceSrc = true)
             }
@@ -443,7 +443,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
         }
         moveDuration += CardAnimationLayer.UPDATE_DURATION
 
-        doDelayed(moveDuration) {
+        postDelayed(moveDuration) {
             dst.visibility = CardContainer.Visibility.NONE
         }
 
@@ -497,7 +497,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
 
                     } else {
                         val delay = if (state.currentTrick.cards.size == 0 && state.tricksPlayed == 0) 0f else 3f
-                        idleAction = doDelayed(delay) {
+                        idleAction = postDelayed(delay) {
                             idlePopup.show(playerHand, Popup.Side.ABOVE)
                             idleAction = null
                         }
@@ -530,19 +530,5 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
             }
         }
     }
-
-    private inline fun doDelayed(delay: Float, crossinline action: () -> Unit): TimeAction? =
-            if (delay <= 0f) {
-                action()
-                null
-            } else {
-                val delayedAction = object : TimeAction(delay / SPEED_MULTIPLIER) {
-                    override fun end() {
-                        action()
-                    }
-                }
-                addAction(delayedAction)
-                delayedAction
-            }
 
 }

@@ -76,7 +76,7 @@ class MctsPlayer : Player {
             // Do random simulations of trading and not trading.
             // Choose the option that maximizes the average result.
             // This is better than MCTS itself because we don't want exploitation, both
-            // options must be tested the same. With MCTS, an option can be only tested
+            // options must be tested the same. With full MCTS, an option could be only tested
             // once in 10000 simulations if the initial result is bad enough.
             state.getMoves().maxBy { Mcts.simulate(state, it, 1000) }!!
         } else {
