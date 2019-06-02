@@ -17,7 +17,9 @@
 package com.maltaisn.nines.core
 
 import com.badlogic.gdx.assets.AssetManager
+import com.badlogic.gdx.scenes.scene2d.Action
 import com.badlogic.gdx.scenes.scene2d.Stage
+import com.badlogic.gdx.scenes.scene2d.Touchable
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Stack
 import com.badlogic.gdx.utils.Align
@@ -61,6 +63,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
 
     private val tradePopup: Popup
     private val collectPopup: Popup
+    private val idlePopup: Popup
 
     private val gameSpeedDelay: Float
         get() = when (settings.getChoice(PrefKeys.GAME_SPEED)) {
@@ -73,9 +76,10 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
     /** System time when the last move was made. */
     private var lastMoveTime = 0L
 
+    private var idleAction: Action? = null
+
     private lateinit var dispatcher: AsyncExecutorDispatcher
     private var aiPlayerJob: Job? = null
-
 
     init {
         val cardSkin = assetManager.get<Skin>(CoreRes.PCARD_SKIN)
@@ -116,13 +120,13 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
             centerTable.add(playerHand).growX()
         }
 
-        cardAnimationLayer.register(playerHand, *hiddenStacks.toTypedArray(), trick, extraHand)
+        cardAnimationLayer.register(trick, extraHand, playerHand, *hiddenStacks.toTypedArray())
 
         // Trade hand popup
         tradePopup = Popup(coreSkin)
         popupGroup.addActor(tradePopup)
 
-        val tradeBtn = PopupButton(coreSkin, bundle["action_trade"])
+        val tradeBtn = PopupButton(coreSkin, bundle["popup_trade"])
         tradeBtn.onClick {
             val game = game as Game
             val state = game.gameState as GameState
@@ -130,7 +134,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
             tradePopup.hide()
         }
 
-        val noTradeBtn = PopupButton(coreSkin, bundle["action_no_trade"])
+        val noTradeBtn = PopupButton(coreSkin, bundle["popup_no_trade"])
         noTradeBtn.onClick {
             val game = game as Game
             val state = game.gameState as GameState
@@ -147,7 +151,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
         collectPopup = Popup(coreSkin)
         popupGroup.addActor(collectPopup)
 
-        val collectBtn = PopupButton(coreSkin, bundle["action_ok"])
+        val collectBtn = PopupButton(coreSkin, bundle["popup_ok"])
         collectBtn.onClick {
             val moveDuration = collectTrick(hiddenStacks.first(), 0f)
             collectPopup.hide()
@@ -157,6 +161,14 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
             }
         }
         collectPopup.add(collectBtn).minWidth(150f)
+
+        // Idle popup
+        idlePopup = Popup(coreSkin)
+        popupGroup.addActor(idlePopup)
+
+        val idleBtn = PopupButton(coreSkin, bundle["popup_your_turn"])
+        idlePopup.add(idleBtn).minWidth(150f)
+        idlePopup.touchable = Touchable.disabled
     }
 
 
@@ -219,6 +231,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
         playerHand.slide(false, CardContainer.Direction.DOWN)
         tradePopup.hide()
         collectPopup.hide()
+        idlePopup.hide()
 
         // Cancel AI job
         aiPlayerJob?.cancel()
@@ -483,6 +496,12 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
                         tradePopup.show(playerHand, Popup.Side.ABOVE)
 
                     } else {
+                        val delay = if (state.currentTrick.cards.size == 0 && state.tricksPlayed == 0) 0f else 3f
+                        idleAction = doDelayed(delay) {
+                            idlePopup.show(playerHand, Popup.Side.ABOVE)
+                            idleAction = null
+                        }
+
                         if (settings.getBoolean(PrefKeys.SELECT_PLAYABLE)) {
                             val playableCards = moves.map { (it as PlayMove).card }
                             if (playableCards.size < playerHand.size) {
@@ -499,6 +518,11 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
 
                                 // Remove click listener
                                 playerHand.clickListener = null
+
+                                // Hide and cancel idle popup
+                                idlePopup.hide()
+                                removeAction(idleAction)
+                                idleAction = null
                             }
                         }
                     }
@@ -507,12 +531,18 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
         }
     }
 
-    private inline fun doDelayed(delay: Float, crossinline action: () -> Unit) {
-        addAction(object : TimeAction(delay / SPEED_MULTIPLIER) {
-            override fun end() {
+    private inline fun doDelayed(delay: Float, crossinline action: () -> Unit): TimeAction? =
+            if (delay <= 0f) {
                 action()
+                null
+            } else {
+                val delayedAction = object : TimeAction(delay / SPEED_MULTIPLIER) {
+                    override fun end() {
+                        action()
+                    }
+                }
+                addAction(delayedAction)
+                delayedAction
             }
-        })
-    }
 
 }
