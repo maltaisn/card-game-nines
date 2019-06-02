@@ -19,11 +19,11 @@ package com.maltaisn.nines.core
 import com.maltaisn.cardgame.core.PCard
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.prefs.buildGamePrefsFromMap
-import com.maltaisn.nines.core.core.GameEvent
-import com.maltaisn.nines.core.core.GameState
-import com.maltaisn.nines.core.core.MctsPlayer
-import com.maltaisn.nines.core.core.MctsPlayer.Difficulty
-import com.maltaisn.nines.core.core.Player
+import com.maltaisn.nines.core.game.GameEvent
+import com.maltaisn.nines.core.game.GameState
+import com.maltaisn.nines.core.game.MctsPlayer
+import com.maltaisn.nines.core.game.MctsPlayer.Difficulty
+import com.maltaisn.nines.core.game.Player
 
 
 fun main() {

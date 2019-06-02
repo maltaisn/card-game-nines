@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.maltaisn.nines.core.core
+package com.maltaisn.nines.core.game
+
+import com.maltaisn.cardgame.core.PCard
 
 
 /**
- * Defines a human player
+ * A player's hand. Each hand have an ID.
  */
-class HumanPlayer : Player {
+class Hand(val id: Int, val cards: MutableList<PCard>) : Cloneable {
 
-    constructor() : super()
+    public override fun clone() = Hand(id, cards.toMutableList())
 
-    private constructor(player: Player) : super(player)
-
-    override fun clone() = HumanPlayer(this)
+    override fun toString() = cards.sortWith(PCard.DEFAULT_SORTER).toString()
 
 }

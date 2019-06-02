@@ -29,7 +29,6 @@ import com.maltaisn.cardgame.CoreRes
 import com.maltaisn.cardgame.core.CardGame
 import com.maltaisn.cardgame.core.CardGameEvent
 import com.maltaisn.cardgame.core.PCard
-import com.maltaisn.cardgame.core.sortWith
 import com.maltaisn.cardgame.postDelayed
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.prefs.PrefEntry
@@ -37,7 +36,7 @@ import com.maltaisn.cardgame.widget.CardGameLayout
 import com.maltaisn.cardgame.widget.Popup
 import com.maltaisn.cardgame.widget.PopupButton
 import com.maltaisn.cardgame.widget.card.*
-import com.maltaisn.nines.core.core.*
+import com.maltaisn.nines.core.game.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

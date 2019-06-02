@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package com.maltaisn.nines.core.core
-
-import com.maltaisn.cardgame.core.PCard
-import com.maltaisn.cardgame.core.sortWith
+package com.maltaisn.nines.core.game
 
 
 /**
- * A player's hand. Each hand have an ID.
+ * A move representing a player trading his hand with the extra hand
  */
-class Hand(val id: Int, val cards: MutableList<PCard>) : Cloneable {
+class TradeHandMove(player: Int, val trade: Boolean) : GameEvent.Move(player) {
 
-    public override fun clone() = Hand(id, cards.toMutableList())
+    override fun toString() = if (trade) "Trade hand" else "Don't trade hand"
 
-    override fun toString() = cards.sortWith(PCard.DEFAULT_SORTER).toString()
+    override fun equals(other: Any?): Boolean {
+        if (other !is TradeHandMove) return false
+        return super.equals(other) && trade == other.trade
+    }
+
+    override fun hashCode() = playerPos.hashCode()
 
 }

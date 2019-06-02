@@ -23,9 +23,9 @@ import com.maltaisn.cardgame.core.PCard
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.prefs.PlayerNamesPref
 import com.maltaisn.cardgame.prefs.PrefEntry
-import com.maltaisn.nines.core.core.GameEvent
-import com.maltaisn.nines.core.core.GameState
-import com.maltaisn.nines.core.core.Player
+import com.maltaisn.nines.core.game.GameEvent
+import com.maltaisn.nines.core.game.GameState
+import com.maltaisn.nines.core.game.Player
 import kotlin.math.max
 import kotlin.random.Random
 

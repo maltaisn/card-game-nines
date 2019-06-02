@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.maltaisn.nines.core.core
+package com.maltaisn.nines.core.game
 
 import com.maltaisn.cardgame.core.*
 import com.maltaisn.cardgame.prefs.GamePrefs

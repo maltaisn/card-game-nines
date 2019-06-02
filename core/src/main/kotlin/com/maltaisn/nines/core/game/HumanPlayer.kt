@@ -14,24 +14,18 @@
  * limitations under the License.
  */
 
-package com.maltaisn.nines.core.core
-
-import com.maltaisn.cardgame.core.PCard
+package com.maltaisn.nines.core.game
 
 
 /**
- * A move representing a player playing a card in a trick
+ * Defines a human player
  */
-class PlayMove(player: Int, val card: PCard) : GameEvent.Move(player) {
+class HumanPlayer : Player {
 
-    override fun toString() = "Play $card"
+    constructor() : super()
 
-    override fun equals(other: Any?): Boolean {
-        if (other === this) return true
-        if (other !is PlayMove) return false
-        return super.equals(other) && card == other.card
-    }
+    private constructor(player: Player) : super(player)
 
-    override fun hashCode() = card.hashCode()
+    override fun clone() = HumanPlayer(this)
 
 }

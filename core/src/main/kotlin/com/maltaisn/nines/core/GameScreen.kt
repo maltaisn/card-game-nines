@@ -22,8 +22,8 @@ import com.maltaisn.cardgame.CardGameScreen
 import com.maltaisn.cardgame.markdown.Markdown
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.widget.menu.DefaultGameMenu
-import com.maltaisn.nines.core.core.HumanPlayer
-import com.maltaisn.nines.core.core.MctsPlayer
+import com.maltaisn.nines.core.game.HumanPlayer
+import com.maltaisn.nines.core.game.MctsPlayer
 import ktx.assets.load
 import ktx.log.info
 
