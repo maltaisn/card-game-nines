@@ -16,16 +16,46 @@
 
 package com.maltaisn.nines.core.game
 
+import com.badlogic.gdx.utils.Json
+import com.badlogic.gdx.utils.JsonValue
 import com.maltaisn.cardgame.core.PCard
+import com.maltaisn.cardgame.core.sortWith
+import com.maltaisn.cardgame.readArrayValue
 
 
 /**
  * A player's hand. Each hand have an ID.
  */
-class Hand(val id: Int, val cards: MutableList<PCard>) : Cloneable {
+class Hand() : Cloneable, Json.Serializable {
 
-    public override fun clone() = Hand(id, cards.toMutableList())
+    var id = NO_ID
+        private set
 
-    override fun toString() = cards.sortWith(PCard.DEFAULT_SORTER).toString()
+    val cards = mutableListOf<PCard>()
+
+
+    constructor(id: Int, cards: List<PCard>): this() {
+        this.id = id
+        this.cards += cards
+    }
+
+    public override fun clone() = Hand(id, cards)
+
+    override fun toString() = cards.apply { sortWith(PCard.DEFAULT_SORTER) }.toString()
+
+
+    override fun read(json: Json, jsonData: JsonValue) {
+        id = jsonData.getInt("id")
+        cards += json.readArrayValue<ArrayList<PCard>, PCard>("cards", jsonData)
+    }
+
+    override fun write(json: Json) {
+        json.writeValue("id", id)
+        json.writeValue("cards", cards)
+    }
+
+    companion object {
+        const val NO_ID = -1
+    }
 
 }

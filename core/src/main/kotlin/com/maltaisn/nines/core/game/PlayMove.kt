@@ -16,22 +16,48 @@
 
 package com.maltaisn.nines.core.game
 
+import com.badlogic.gdx.utils.Json
+import com.badlogic.gdx.utils.JsonValue
 import com.maltaisn.cardgame.core.PCard
+import com.maltaisn.cardgame.readValue
 
 
 /**
  * A move representing a player playing a card in a trick
  */
-class PlayMove(player: Int, val card: PCard) : GameEvent.Move(player) {
+class PlayMove() : GameEvent.Move() {
 
-    override fun toString() = "Play $card"
+    /**
+     * The card played.
+     */
+    lateinit var card: PCard
+        private set
+
+
+    constructor(playerPos: Int, card: PCard) : this() {
+        this.playerPos = playerPos
+        this.card = card
+    }
 
     override fun equals(other: Any?): Boolean {
         if (other === this) return true
         if (other !is PlayMove) return false
-        return super.equals(other) && card == other.card
+        return playerPos == other.playerPos && card == other.card
     }
 
-    override fun hashCode() = card.hashCode()
+    override fun hashCode() = card.value
+
+    override fun toString() = "Play $card"
+
+
+    override fun read(json: Json, jsonData: JsonValue) {
+        super.read(json, jsonData)
+        card = json.readValue("card", jsonData)
+    }
+
+    override fun write(json: Json) {
+        super.write(json)
+        json.writeValue("card", card)
+    }
 
 }

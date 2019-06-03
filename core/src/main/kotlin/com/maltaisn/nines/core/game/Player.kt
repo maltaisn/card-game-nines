@@ -16,10 +16,14 @@
 
 package com.maltaisn.nines.core.game
 
+import com.badlogic.gdx.utils.Json
+import com.badlogic.gdx.utils.JsonValue
 import com.maltaisn.cardgame.core.CardPlayer
+import com.maltaisn.cardgame.readArrayValue
+import com.maltaisn.cardgame.readValue
 
 
-abstract class Player : CardPlayer {
+abstract class Player : CardPlayer(), Json.Serializable {
 
     /** The player score at the start of the round. */
     var score = 0
@@ -29,16 +33,6 @@ abstract class Player : CardPlayer {
 
     /** List of the tricks taken by a player. */
     val tricksTaken = mutableListOf<Trick>()
-
-
-    constructor() : super()
-
-    protected constructor(player: Player) : super(player) {
-        hand = player.hand.clone()
-        for (trick in player.tricksTaken) {
-            tricksTaken += trick.clone()
-        }
-    }
 
     /**
      * Initialize this player to a [position] and with a [hand].
@@ -50,11 +44,36 @@ abstract class Player : CardPlayer {
         this.hand = hand
     }
 
+    abstract override fun clone(): Player
+
+    protected fun <T : Player> cloneTo(player: T) = super.cloneTo(player).also {
+        it.score = score
+        it.hand = hand.clone()
+        for (trick in tricksTaken) {
+            it.tricksTaken += trick.clone()
+        }
+    }
+
+
     override fun toString() = super.toString().dropLast(1) +
             ", score: $score, ${tricksTaken.size} tricks taken, hand: $hand]"
 
+
+    override fun read(json: Json, jsonData: JsonValue) {
+        score = jsonData.getInt("score")
+        hand = json.readValue("hand", jsonData)
+        tricksTaken += json.readArrayValue<ArrayList<Trick>, Trick>("tricksTaken", jsonData)
+    }
+
+    override fun write(json: Json) {
+        json.writeValue("score", score)
+        json.writeValue("hand", hand)
+        json.writeValue("tricksTaken", tricksTaken)
+    }
+
+
     companion object {
-        private val EMPTY_HAND = Hand(-1, mutableListOf())
+        private val EMPTY_HAND = Hand(Hand.NO_ID, mutableListOf())
     }
 
 }

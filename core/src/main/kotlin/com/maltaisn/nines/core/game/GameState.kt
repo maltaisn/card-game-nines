@@ -16,64 +16,54 @@
 
 package com.maltaisn.nines.core.game
 
+import com.badlogic.gdx.utils.Json
+import com.badlogic.gdx.utils.JsonValue
 import com.maltaisn.cardgame.core.*
 import com.maltaisn.cardgame.prefs.GamePrefs
+import com.maltaisn.cardgame.readValue
 import kotlin.random.Random
 
 /**
  * Nines game state for a single round.
- *
- * ## Rules
- * - 4 hands are dealt from a 52-card deck, one for each player and one extra.
- * - The player to the left of the dealer decides if he wants to trade his hand with the extra hand.
- *   The next players can also trade their hand on their turn, even if others already did.
- * - The trump suit goes Hearts, Spades, Diamond, Club, No trump.
- * - Each trick is won by the highest card or the highest trump card if trick was ruffed.
- * - A player must follow the trick's suit whenever possible.
- * - For each trick in excess of 4, score decreases by 1, and for each trick shy of 4,
- *   score increases by 1. First player down to 0 wins.
- *
- * [Wikipedia page](https://en.wikipedia.org/wiki/Nines_(card_game)).
  */
-class GameState : CardGameState {
-
-    @Suppress("UNCHECKED_CAST")
-    override val players: List<Player>
-        get() = super.players as List<Player>
+class GameState() : CardGameState<Player>() {
 
     /** Position of the dealer. */
-    val dealerPos: Int
+    var dealerPos = CardPlayer.NO_POSITION
+        private set
 
     /** The extra hand dealt. */
-    var extraHand: Hand
+    lateinit var extraHand: Hand
         private set
 
     /** The trump suit, a PCard suit constant or [NO_TRUMP]. */
-    val trumpSuit: Int
+    var trumpSuit = -1
+        private set
 
     /** The current game phase. */
-    var phase: Phase
+    var phase = Phase.TRADE
         private set
 
     /** How many trades took place during the trade phase. */
-    var tradesCount: Int
+    var tradesCount = 0
         private set
 
     /** How many tricks have been played. */
-    var tricksPlayed: Int
+    var tricksPlayed = 0
         private set
 
     /** The current trick being played. */
-    val currentTrick: Trick
-
-    override var result: GameResult? = null
+    lateinit var currentTrick: Trick
         private set
 
 
     constructor(settings: GamePrefs, players: List<Player>,
-                dealer: Int, trumpSuit: Int) : super(settings, players, dealer) {
-        this.dealerPos = dealer
+                dealerPos: Int, trumpSuit: Int) : this() {
+        initialize(settings, players, dealerPos)
+        this.dealerPos = dealerPos
         this.trumpSuit = trumpSuit
+
+        currentTrick = Trick(trumpSuit)
 
         // Create and shuffle a 52-card deck.
         val deck = PCard.fullDecks(shuffled = true)
@@ -85,25 +75,7 @@ class GameState : CardGameState {
             id++
         }
         extraHand = Hand(id, deck.drawTop(CARDS_COUNT))
-
-        tradesCount = 0
-        posToMove = dealer
-        phase = Phase.TRADE
-        tricksPlayed = 0
-        currentTrick = Trick(trumpSuit)
     }
-
-    private constructor(state: GameState) : super(state) {
-        result = state.result
-        dealerPos = state.dealerPos
-        extraHand = state.extraHand.clone()
-        trumpSuit = state.trumpSuit
-        phase = state.phase
-        tradesCount = state.tradesCount
-        tricksPlayed = state.tricksPlayed
-        currentTrick = state.currentTrick.clone()
-    }
-
 
     override fun doMove(move: CardGameEvent.Move) {
         val player = players[posToMove]
@@ -222,7 +194,15 @@ class GameState : CardGameState {
         }
     }
 
-    override fun clone() = GameState(this)
+    override fun clone() = cloneTo(GameState()).also {
+        it.dealerPos = dealerPos
+        it.trumpSuit = trumpSuit
+        it.extraHand = extraHand.clone()
+        it.phase = phase
+        it.tradesCount = tradesCount
+        it.tricksPlayed = tricksPlayed
+        it.currentTrick = currentTrick.clone()
+    }
 
     override fun randomizedClone(observer: Int): GameState {
         val state = clone()
@@ -231,9 +211,33 @@ class GameState : CardGameState {
         return state
     }
 
-    override fun toString() = "posToMove: $posToMove, " +
+    override fun toString() = "[posToMove: $posToMove, " +
             "tricksPlayed: $tricksPlayed, phase: $phase, trump: ${if (trumpSuit == NO_TRUMP)
                 "none" else PCard.SUIT_STR[trumpSuit].toString()}, currentTrick: $currentTrick]"
+
+
+    override fun read(json: Json, jsonData: JsonValue) {
+        super.read(json, jsonData)
+        dealerPos = jsonData.getInt("dealerPos")
+        extraHand = json.readValue("extraHand", jsonData)
+        trumpSuit = jsonData.getInt("trumpSuit")
+        phase = json.readValue("phase", jsonData)
+        tradesCount = jsonData.getInt("tradesCount")
+        tricksPlayed = jsonData.getInt("tricksPlayed")
+        currentTrick = json.readValue("currentTrick", jsonData)
+    }
+
+    override fun write(json: Json) {
+        super.write(json)
+        json.writeValue("dealerPos", dealerPos)
+        json.writeValue("extraHand", extraHand)
+        json.writeValue("trumpSuit", trumpSuit)
+        json.writeValue("phase", phase)
+        json.writeValue("tradesCount", tradesCount)
+        json.writeValue("tricksPlayed", tricksPlayed)
+        json.writeValue("currentTrick", currentTrick)
+    }
+
 
     enum class Phase {
         TRADE, PLAY

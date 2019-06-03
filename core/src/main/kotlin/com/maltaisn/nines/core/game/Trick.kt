@@ -16,15 +16,33 @@
 
 package com.maltaisn.nines.core.game
 
+import com.badlogic.gdx.utils.Json
+import com.badlogic.gdx.utils.JsonValue
 import com.maltaisn.cardgame.core.PCard
+import com.maltaisn.cardgame.readArrayValue
 
 
 /**
  * A game trick, made of 0 to 3 cards.
- * @property trumpSuit Trump suit when this trick was played.
- * @property cards The cards in the trick. There should always be between 0 and 3 cards.
  */
-class Trick(val trumpSuit: Int, val cards: MutableList<PCard> = ArrayList(3)) : Cloneable {
+class Trick() : Cloneable, Json.Serializable {
+
+    /**
+     * Trump suit when this trick was played.
+     */
+    var trumpSuit = 0
+        private set
+
+    /**
+     * The cards in the trick. There should always be between 0 and 3 cards.
+     */
+    val cards = mutableListOf<PCard>()
+
+
+    constructor(trumpSuit: Int, cards: List<PCard> = ArrayList(3)): this() {
+        this.trumpSuit = trumpSuit
+        this.cards += cards
+    }
 
     /**
      * Get the required suit in this trick if there's at least one card in it.
@@ -61,8 +79,19 @@ class Trick(val trumpSuit: Int, val cards: MutableList<PCard> = ArrayList(3)) : 
         return highestIndex
     }
 
-    public override fun clone() = Trick(trumpSuit, cards.toMutableList())
+    public override fun clone() = Trick(trumpSuit, cards)
 
     override fun toString() = cards.toString()
+
+
+    override fun read(json: Json, jsonData: JsonValue) {
+        trumpSuit = jsonData.getInt("trump")
+        cards += json.readArrayValue<ArrayList<PCard>, PCard>("cards", jsonData)
+    }
+
+    override fun write(json: Json) {
+        json.writeValue("trump", trumpSuit)
+        json.writeValue("cards", cards)
+    }
 
 }

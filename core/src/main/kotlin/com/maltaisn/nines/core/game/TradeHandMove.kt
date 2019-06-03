@@ -16,19 +16,46 @@
 
 package com.maltaisn.nines.core.game
 
+import com.badlogic.gdx.utils.Json
+import com.badlogic.gdx.utils.JsonValue
+
 
 /**
  * A move representing a player trading his hand with the extra hand
  */
-class TradeHandMove(player: Int, val trade: Boolean) : GameEvent.Move(player) {
+class TradeHandMove() : GameEvent.Move() {
 
-    override fun toString() = if (trade) "Trade hand" else "Don't trade hand"
+    /**
+     * Whether the move is a hand trade or a pass.
+     */
+    var trade = false
+        private set
+
+
+    constructor(playerPos: Int, trade: Boolean) : this() {
+        this.playerPos = playerPos
+        this.trade = trade
+    }
+
 
     override fun equals(other: Any?): Boolean {
         if (other !is TradeHandMove) return false
-        return super.equals(other) && trade == other.trade
+        return playerPos == other.playerPos && trade == other.trade
     }
 
-    override fun hashCode() = playerPos.hashCode()
+    override fun hashCode() = playerPos
+
+    override fun toString() = if (trade) "Trade hand" else "Don't trade hand"
+
+
+    override fun read(json: Json, jsonData: JsonValue) {
+        super.read(json, jsonData)
+        trade = jsonData.getBoolean("trade")
+    }
+
+    override fun write(json: Json) {
+        super.write(json)
+        json.writeValue("trade", trade)
+    }
 
 }

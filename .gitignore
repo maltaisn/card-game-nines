@@ -1,4 +1,5 @@
 production/
+assets/saved-game.json
 
 ## Android Studio and Intellij and Android in general
 /android/libs/armeabi/

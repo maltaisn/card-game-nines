@@ -16,7 +16,11 @@
 
 package com.maltaisn.nines.core.game
 
+import com.badlogic.gdx.utils.Json
+import com.badlogic.gdx.utils.JsonValue
 import com.maltaisn.cardgame.core.CardGameEvent
+import com.maltaisn.cardgame.core.CardPlayer
+import com.maltaisn.cardgame.core.Mcts
 
 
 sealed class GameEvent : CardGameEvent {
@@ -25,23 +29,27 @@ sealed class GameEvent : CardGameEvent {
 
     object End : GameEvent()
 
+    // TODO RoundStart should be a class with info about all hands at start
     object RoundStart : GameEvent()
 
     object RoundEnd : GameEvent()
 
     /**
-     * The base class for any move in any game made by a player at [playerPos].
+     * The base class for any move in any game made by a player at a [position][playerPos].
      * All subclasses MUST implement [equals] for [Mcts] to work.
      */
-    abstract class Move(val playerPos: Int) : GameEvent(), CardGameEvent.Move {
+    abstract class Move : GameEvent(), CardGameEvent.Move, Json.Serializable {
 
-        override fun equals(other: Any?): Boolean {
-            if (other === this) return true
-            if (other !is Move) return false
-            return playerPos == other.playerPos
+        var playerPos = CardPlayer.NO_POSITION
+            protected set
+
+        override fun read(json: Json, jsonData: JsonValue) {
+            playerPos = jsonData.getInt("playerPos")
         }
 
-        override fun hashCode() = playerPos
+        override fun write(json: Json) {
+            json.writeValue("playerPos", playerPos)
+        }
     }
 
 }

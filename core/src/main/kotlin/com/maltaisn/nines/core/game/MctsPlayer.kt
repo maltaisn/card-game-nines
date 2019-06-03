@@ -16,61 +16,44 @@
 
 package com.maltaisn.nines.core.game
 
+import com.badlogic.gdx.utils.Json
+import com.badlogic.gdx.utils.JsonValue
 import com.maltaisn.cardgame.core.*
+import com.maltaisn.cardgame.readValue
 
 
 /**
  * Defines a player played by the computer using MCTS algorithm.
  */
-class MctsPlayer : Player {
+class MctsPlayer() : Player() {
 
     /**
-     * IDs of known hands. They won't be randomized by [GameState.randomizedClone].
-     * TODO Replaceable with bit field
+     * Bitfield of known hand IDs. These won't be randomized by [randomizeState].
      */
-    val knownHands = mutableListOf<Int>()
+    var knownHands = 0
 
     /**
      * The playing difficulty for this player.
      */
-    val difficulty: Difficulty
-
-    /**
-     * Array indexed by hand ID. Each index is a list of
-     * possible suits a hand can have. If the player with the hand cannot
-     * follow the suit on a trick, a suit is removed from the list.
-     * TODO ArrayList<Int> can be replaced with bit field
-     */
-    lateinit var handSuits: Array<ArrayList<Int>>
-        private set
+    lateinit var difficulty: Difficulty
 
 
-    constructor(difficulty: Difficulty) : super() {
+    constructor(difficulty: Difficulty) : this() {
         this.difficulty = difficulty
-    }
-
-    private constructor(player: MctsPlayer) : super(player) {
-        difficulty = player.difficulty
-        knownHands += player.knownHands
-        handSuits = Array(4) { ArrayList(player.handSuits[it]) }
     }
 
 
     override fun initialize(position: Int, hand: Hand) {
         super.initialize(position, hand)
 
-        knownHands.clear()
-        knownHands += hand.id
-        handSuits = Array(4) {
-            arrayListOf(PCard.HEART, PCard.SPADE, PCard.DIAMOND, PCard.CLUB)
-        }
+        knownHands = 1 shl hand.id
     }
 
     /**
      * Find the best move to play given the current game state.
      * This always gets moves from [CardGameState.getMoves], never creates them.
      */
-    fun findMove(state: CardGameState): CardGameEvent.Move {
+    fun findMove(state: CardGameState<*>): CardGameEvent.Move {
         state as GameState
         return if (state.phase == GameState.Phase.TRADE) {
             // Do random simulations of trading and not trading.
@@ -84,24 +67,13 @@ class MctsPlayer : Player {
         }
     }
 
-    override fun onMove(state: CardGameState, move: CardGameEvent.Move) {
+    override fun onMove(state: CardGameState<*>, move: CardGameEvent.Move) {
         state as GameState
 
         if (move is TradeHandMove) {
             if (move.playerPos == position && move.trade) {
                 // Now two hands are known.
-                knownHands += hand.id
-            }
-        } else if (move is PlayMove) {
-            val trick = if (state.currentTrick.cards.isEmpty()) {
-                state.players[state.posToMove].tricksTaken.last()
-            } else {
-                state.currentTrick
-            }
-            val trickSuit = trick.suit
-            if (trick.cards.last().suit != trickSuit) {
-                // The player that moved couldn't follow suit, remember that.
-                handSuits[state.players[move.playerPos].hand.id].remove(trickSuit)
+                knownHands = knownHands or (1 shl hand.id)
             }
         }
     }
@@ -116,11 +88,11 @@ class MctsPlayer : Player {
         // Create a list of all hands unknown to the observer.
         val hands = mutableListOf<Hand>()
         for (p in state.players) {
-            if (p.hand.id !in knownHands) {
+            if (knownHands and (1 shl p.hand.id) == 0) {
                 hands += p.hand
             }
         }
-        if (state.extraHand.id !in knownHands) {
+        if (knownHands and (1 shl state.extraHand.id) == 0) {
             hands += state.extraHand
         }
 
@@ -140,34 +112,28 @@ class MctsPlayer : Player {
                 cards += unseen.drawTop(size)
             }
         }
-
-//        // Sort the unseen cards by suit
-//        val suitCards = List(4) { mutableListOf<PCard>() }
-//        for (card in unseen) {
-//            suitCards[card.suit] += card
-//        }
-//
-//        // Redistribute the cards to the unknown hands.
-//        // If the observer knows the hand doesn't have cards of a suit, don't give any.
-//        // FIXME hungarian algorithm
-//        //   https://cs.stackexchange.com/questions/102999/split-a-list-of-elements-into-sub-lists-each-with-different-criteria
-//        for (hand in hands) {
-//            val handSuits = handSuits[hand.id]
-//            val size = hand.cards.size
-//            hand.cards.clear()
-//            while (hand.size < size) {
-//                val cards = suitCards[handSuits.random()]
-//                if (cards.isNotEmpty()) {
-//                    hand.cards += cards.drawTop()
-//                }
-//            }
-//        }
     }
 
 
-    override fun clone() = MctsPlayer(this)
+    override fun clone() = cloneTo(MctsPlayer(difficulty)).also {
+        it.knownHands = knownHands
+    }
 
     override fun toString() = super.toString().dropLast(1) + ", difficulty: $difficulty]"
+
+
+    override fun read(json: Json, jsonData: JsonValue) {
+        super.read(json, jsonData)
+        knownHands = jsonData.getInt("knownHands")
+        difficulty = json.readValue("difficulty", jsonData)
+    }
+
+    override fun write(json: Json) {
+        super.write(json)
+        json.writeValue("knownHands", knownHands)
+        json.writeValue("difficulty", difficulty)
+    }
+
 
     enum class Difficulty {
         BEGINNER,

@@ -20,12 +20,8 @@ package com.maltaisn.nines.core.game
 /**
  * Defines a human player
  */
-class HumanPlayer : Player {
+class HumanPlayer : Player() {
 
-    constructor() : super()
-
-    private constructor(player: Player) : super(player)
-
-    override fun clone() = HumanPlayer(this)
+    override fun clone() = cloneTo(HumanPlayer())
 
 }

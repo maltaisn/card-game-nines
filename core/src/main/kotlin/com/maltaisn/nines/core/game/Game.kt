@@ -14,30 +14,34 @@
  * limitations under the License.
  */
 
-package com.maltaisn.nines.core
+package com.maltaisn.nines.core.game
 
 import com.badlogic.gdx.files.FileHandle
+import com.badlogic.gdx.utils.Json
+import com.badlogic.gdx.utils.JsonValue
 import com.maltaisn.cardgame.core.CardGame
 import com.maltaisn.cardgame.core.CardGameEvent
+import com.maltaisn.cardgame.core.CardPlayer
 import com.maltaisn.cardgame.core.PCard
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.prefs.PlayerNamesPref
 import com.maltaisn.cardgame.prefs.PrefEntry
-import com.maltaisn.nines.core.game.GameEvent
-import com.maltaisn.nines.core.game.GameState
-import com.maltaisn.nines.core.game.Player
+import com.maltaisn.cardgame.readArrayValue
+import com.maltaisn.cardgame.readValue
+import com.maltaisn.nines.core.PrefKeys
 import kotlin.math.max
 import kotlin.random.Random
 
 
-class Game : CardGame {
+class Game : CardGame<GameState> {
+
+    lateinit var players: List<Player>
+        private set
 
     override val events: List<GameEvent>
         get() = _events
 
     private val _events = mutableListOf<GameEvent>()
-
-    val players: List<Player>
 
     /** The current phase of the game. */
     var phase = Phase.ENDED
@@ -55,25 +59,28 @@ class Game : CardGame {
     val trumpSuit: Int
         get() = TRUMP_SUITS[max(0, round - 1) % TRUMP_SUITS.size]
 
-    /** The player who won if the game has ended. */
-    var winner: Player? = null
+    /**
+     * The position of the player who won if the game has ended.
+     * If no player has won yet, value is [CardPlayer.NO_POSITION].
+     */
+    var winnerPos = CardPlayer.NO_POSITION
 
     /** Whether the game is done or not. */
     val isDone: Boolean
-        get() = winner != null
+        get() = winnerPos != CardPlayer.NO_POSITION
 
 
-    constructor(settings: GamePrefs, south: Player, east: Player, north: Player) : super(settings) {
+    constructor() : super()
+
+    constructor(settings: GamePrefs, south: Player, east: Player, north: Player) : super() {
+        initialize(settings)
         players = listOf(south, east, north)
     }
 
-    constructor(settings: GamePrefs, file: FileHandle) : super(settings, file) {
-        dealerPos = 0
-        players = emptyList()
-        // TODO
-    }
 
-    /** Start the game. */
+    /**
+     * Start the game.
+     */
     fun start() {
         check(phase == Phase.ENDED) { "Game has already started." }
         phase = Phase.GAME_STARTED
@@ -88,7 +95,7 @@ class Game : CardGame {
         updatePlayerNames()
 
         dealerPos = Random.nextInt(3)
-        winner = null
+        winnerPos = CardPlayer.NO_POSITION
 
         _events.clear()
         _events += GameEvent.Start
@@ -150,9 +157,8 @@ class Game : CardGame {
             }
         }
 
-        val minPlayer = players[minIndex]
-        if (minPlayer.score <= 0 && !tie) {
-            winner = minPlayer
+        if (players[minIndex].score <= 0 && !tie) {
+            winnerPos = minIndex
             end()
         }
 
@@ -183,14 +189,35 @@ class Game : CardGame {
         }
     }
 
-    override fun save(file: FileHandle) {
-        // TODO
-    }
-
 
     override fun toString() = super.toString().dropLast(1) +
             ", phase: $phase, round: $round, dealer: ${players[dealerPos].name}, trumpSuit: " +
             (if (trumpSuit == GameState.NO_TRUMP) "none" else PCard.SUIT_STR[trumpSuit]) + "]"
+
+
+    override fun read(json: Json, jsonData: JsonValue) {
+        players = json.readArrayValue("players", jsonData)
+        gameState = json.readValue("state", jsonData)
+        _events += json.readArrayValue<ArrayList<GameEvent>, GameEvent>("events", jsonData)
+        phase = json.readValue("phase", jsonData)
+        round = jsonData.getInt("round")
+        winnerPos = jsonData.getInt("winnerPos")
+
+        gameState?.players = players
+    }
+
+    override fun write(json: Json) {
+        json.writeValue("players", players)
+        json.writeValue("state", gameState)
+        json.writeValue("events", events)
+        json.writeValue("phase", phase)
+        json.writeValue("round", round)
+        json.writeValue("winnerPos", winnerPos)
+    }
+
+    override fun save(json: Json, file: FileHandle) {
+        json.toJson(this, file)
+    }
 
 
     enum class Phase {
@@ -205,6 +232,14 @@ class Game : CardGame {
     companion object {
         private val TRUMP_SUITS = intArrayOf(PCard.HEART, PCard.SPADE,
                 PCard.DIAMOND, PCard.SPADE, GameState.NO_TRUMP)
+
+        /**
+         * Load a game instance with [settings] from a [file] using [json].
+         */
+        fun load(settings: GamePrefs, json: Json, file: FileHandle) =
+                json.fromJson(Game::class.java, file).apply {
+                    initialize(settings)
+                }
     }
 
 }

@@ -26,9 +26,7 @@ import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.I18NBundle
 import com.gmail.blueboxware.libgdxplugin.annotations.GDXAssets
 import com.maltaisn.cardgame.CoreRes
-import com.maltaisn.cardgame.core.CardGame
-import com.maltaisn.cardgame.core.CardGameEvent
-import com.maltaisn.cardgame.core.PCard
+import com.maltaisn.cardgame.core.*
 import com.maltaisn.cardgame.postDelayed
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.prefs.PrefEntry
@@ -182,12 +180,12 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
         }
     }
 
-    override fun initGame(game: CardGame) {
+    override fun initGame(game: CardGame<*>) {
+        game as Game
         super.initGame(game)
 
         cardAnimationLayer.completeAnimation(true)
 
-        game as Game
         when (game.phase) {
             Game.Phase.ENDED, Game.Phase.GAME_STARTED -> {
                 // Round wasn't started yet or has just ended. Hide all containers.
@@ -195,7 +193,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
             }
             Game.Phase.ROUND_STARTED -> {
                 // Round has started
-                val state = game.gameState as GameState
+                val state = game.gameState!!
 
                 if (state.phase == GameState.Phase.TRADE) {
                     // Trade phase: show extra hand
@@ -206,7 +204,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
                 } else {
                     // Play phase: show trick
                     trick.apply {
-                        cards = state.currentTrick.cards
+                        cards = List(3) { state.currentTrick.cards.getOrNull(it) }
                         fade(true)
                     }
                 }
