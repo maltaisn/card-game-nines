@@ -243,7 +243,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
         when (event) {
             GameEvent.Start -> startGame()
             GameEvent.End -> endGame()
-            GameEvent.RoundStart -> startRound()
+            is GameEvent.RoundStart -> startRound()
             GameEvent.RoundEnd -> endRound()
             is GameEvent.Move -> doMove(event)
         }

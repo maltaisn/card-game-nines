@@ -21,6 +21,7 @@ import com.badlogic.gdx.utils.JsonValue
 import com.maltaisn.cardgame.core.CardGameEvent
 import com.maltaisn.cardgame.core.CardPlayer
 import com.maltaisn.cardgame.core.Mcts
+import com.maltaisn.cardgame.readArrayValue
 
 
 sealed class GameEvent : CardGameEvent {
@@ -29,8 +30,22 @@ sealed class GameEvent : CardGameEvent {
 
     object End : GameEvent()
 
-    // TODO RoundStart should be a class with info about all hands at start
-    object RoundStart : GameEvent()
+    class RoundStart() : GameEvent(), Json.Serializable {
+
+        var hands = emptyList<Hand>()
+
+        constructor(hands: List<Hand>) : this() {
+            this.hands = hands
+        }
+
+        override fun read(json: Json, jsonData: JsonValue) {
+            hands = json.readArrayValue("hands", jsonData)
+        }
+
+        override fun write(json: Json) {
+            json.writeValue("hands", hands)
+        }
+    }
 
     object RoundEnd : GameEvent()
 

@@ -125,10 +125,12 @@ class Game : CardGame<GameState> {
 
         round++
 
-        gameState = GameState(settings, players, dealerPos, trumpSuit)
+        val state = GameState(settings, players, dealerPos, trumpSuit)
+        gameState = state
 
-        _events += GameEvent.RoundStart
-        eventListener?.invoke(GameEvent.RoundStart)
+        val event = GameEvent.RoundStart(players.map { it.hand.clone() } + state.extraHand.clone())
+        _events += event
+        eventListener?.invoke(event)
     }
 
     /** End the current round. */

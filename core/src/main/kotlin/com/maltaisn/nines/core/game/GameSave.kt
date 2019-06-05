@@ -36,6 +36,7 @@ val gameSaveJson = Json().apply {
     addClassTag<GameResult>("result")
     addClassTag<Trick>("trick")
     addClassTag<Hand>("hand")
+    addClassTag<GameEvent.RoundStart>("roundStart")
     addClassTag<TradeHandMove>("tradeHandMove")
     addClassTag<PlayMove>("playMove")
     addClassTag<HumanPlayer>("humanPlayer")
@@ -45,7 +46,6 @@ val gameSaveJson = Json().apply {
     setSerializer(PCard.JsonSerializer)
     setSerializer(GameEventSerializer(GameEvent.Start, "start"))
     setSerializer(GameEventSerializer(GameEvent.End, "end"))
-    setSerializer(GameEventSerializer(GameEvent.RoundStart, "roundStart"))
     setSerializer(GameEventSerializer(GameEvent.RoundEnd, "roundEnd"))
 }
 

@@ -47,7 +47,7 @@ private fun playGame(settings: GamePrefs,
     game.eventListener = { event ->
         event as GameEvent
         when (event) {
-            is GameEvent.Start -> {
+            GameEvent.Start -> {
                 println("=== GAME STARTED ===")
             }
             is GameEvent.RoundStart -> {
@@ -59,7 +59,7 @@ private fun playGame(settings: GamePrefs,
                 }
                 println(">>> Round ${game.round} started, trump: $trumpStr")
             }
-            is GameEvent.RoundEnd -> {
+            GameEvent.RoundEnd -> {
                 // >>> Round 1 ended, diff: [-2, 1, 0], scores: [7, 10, 9]
                 val scores = IntArray(3) { players[it].score }
                 val diff = IntArray(3) { scores[it] - lastScores[it] }
@@ -68,7 +68,7 @@ private fun playGame(settings: GamePrefs,
                         "diff: ${diff.contentToString()}, " +
                         "scores: ${scores.contentToString()}\n")
             }
-            is GameEvent.End -> {
+            GameEvent.End -> {
                 // === GAME ENDED after 13 rounds, scores: [-1, 6, 9], winner: South ===
                 val scores = IntArray(3) { players[it].score }
                 println("=== GAME ENDED after ${game.round} rounds, " +
