@@ -19,11 +19,8 @@ package com.maltaisn.nines.core
 import com.maltaisn.cardgame.core.PCard
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.prefs.buildGamePrefsFromMap
-import com.maltaisn.nines.core.game.GameEvent
-import com.maltaisn.nines.core.game.GameState
-import com.maltaisn.nines.core.game.MctsPlayer
+import com.maltaisn.nines.core.game.*
 import com.maltaisn.nines.core.game.MctsPlayer.Difficulty
-import com.maltaisn.nines.core.game.Player
 
 
 fun main() {
@@ -76,7 +73,7 @@ private fun playGame(settings: GamePrefs,
                 val scores = IntArray(3) { players[it].score }
                 println("=== GAME ENDED after ${game.round} rounds, " +
                         "scores: ${scores.contentToString()}, " +
-                        "winner: ${game.winner!!.name} ===\n")
+                        "winner: ${game.players[game.winnerPos].name} ===\n")
             }
             is GameEvent.Move -> {
                 if (verbosity > VERBOSE_ROUNDS) {
@@ -141,7 +138,7 @@ private fun playGames(settings: GamePrefs,
     repeat(count) {
         println("=== GAME ${it + 1} / $count ===")
         val game = playGame(settings, south, east, north, verbosity)
-        gamesWon[game.winner!!.position]++
+        gamesWon[game.winnerPos]++
     }
     println("Games won: ${gamesWon.contentToString()}")
 }

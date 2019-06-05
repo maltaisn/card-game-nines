@@ -26,7 +26,10 @@ import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.I18NBundle
 import com.gmail.blueboxware.libgdxplugin.annotations.GDXAssets
 import com.maltaisn.cardgame.CoreRes
-import com.maltaisn.cardgame.core.*
+import com.maltaisn.cardgame.core.CardGame
+import com.maltaisn.cardgame.core.CardGameEvent
+import com.maltaisn.cardgame.core.PCard
+import com.maltaisn.cardgame.core.sortWith
 import com.maltaisn.cardgame.postDelayed
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.prefs.PrefEntry
@@ -300,6 +303,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
     }
 
     private fun endRound() {
+        hide()
         // TODO show scoreboard
     }
 
@@ -453,14 +457,18 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
         }
     }
 
+    /**
+     * Start the next player's turn, with a delay to follow game speed.
+     */
     private fun playNext() {
         lastMoveTime = System.currentTimeMillis()
 
         val game = game as Game
         val state = game.gameState as GameState
+
         if (state.isGameDone) {
             // Round is done
-            endRound()
+            game.endRound()
         } else {
             val next = state.playerToMove
             if (next is MctsPlayer) {
