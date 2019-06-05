@@ -29,6 +29,9 @@ import com.maltaisn.cardgame.prefs.PrefEntry
 import com.maltaisn.cardgame.readArrayValue
 import com.maltaisn.cardgame.readValue
 import com.maltaisn.nines.core.PrefKeys
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import ktx.async.KtxAsync
 import kotlin.math.max
 import kotlin.random.Random
 
@@ -170,8 +173,10 @@ class Game : CardGame<GameState> {
         move as GameEvent.Move
         check(phase != Phase.ENDED) { "Game has not started." }
 
+        val state = gameState!!
+
         _events += move
-        gameState?.doMove(move)
+        state.doMove(move)
         eventListener?.invoke(move)
     }
 
@@ -216,7 +221,9 @@ class Game : CardGame<GameState> {
     }
 
     override fun save(json: Json, file: FileHandle) {
-        json.toJson(this, file)
+        KtxAsync.launch(Dispatchers.IO) {
+            json.toJson(this@Game, file)
+        }
     }
 
 
@@ -235,11 +242,17 @@ class Game : CardGame<GameState> {
 
         /**
          * Load a game instance with [settings] from a [file] using [json].
+         * Calls [onDone] when done loading.
          */
-        fun load(settings: GamePrefs, json: Json, file: FileHandle) =
-                json.fromJson(Game::class.java, file).apply {
-                    initialize(settings)
+        fun load(settings: GamePrefs, json: Json, file: FileHandle, onDone: (Game) -> Unit) {
+            if (file.exists()) {
+                KtxAsync.launch(Dispatchers.IO) {
+                    val game = json.fromJson(Game::class.java, file)
+                    game.initialize(settings)
+                    onDone(game)
                 }
+            }
+        }
     }
 
 }

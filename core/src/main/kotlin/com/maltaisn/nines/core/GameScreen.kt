@@ -19,11 +19,13 @@ package com.maltaisn.nines.core
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.utils.I18NBundle
 import com.maltaisn.cardgame.CardGameScreen
-import com.maltaisn.cardgame.core.CardGame
 import com.maltaisn.cardgame.markdown.Markdown
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.widget.menu.DefaultGameMenu
-import com.maltaisn.nines.core.game.*
+import com.maltaisn.nines.core.game.Game
+import com.maltaisn.nines.core.game.HumanPlayer
+import com.maltaisn.nines.core.game.MctsPlayer
+import com.maltaisn.nines.core.game.gameSaveJson
 import ktx.assets.load
 import ktx.log.info
 
@@ -118,8 +120,8 @@ class GameScreen : CardGameScreen() {
     }
 
     private fun loadGame() {
-        if (SAVED_GAME_FILE.exists()) {
-            initGame(Game.load(settings, gameSaveJson, SAVED_GAME_FILE))
+        Game.load(settings, gameSaveJson, SAVED_GAME_FILE) {
+            initGame(it)
         }
     }
 
