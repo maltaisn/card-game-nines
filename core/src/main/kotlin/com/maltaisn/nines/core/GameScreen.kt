@@ -80,6 +80,7 @@ class GameScreen : CardGameScreen() {
         menu.exitGameListener = {
             saveGame()
             (gameLayout as GameLayout).hide()
+            menu.continueItem.enabled = true
         }
         menu.scoreboardListener = {
             info { "Show scoreboard" }
