@@ -17,7 +17,6 @@
 package com.maltaisn.nines.core.game
 
 import com.badlogic.gdx.utils.Json
-import com.badlogic.gdx.utils.JsonValue
 import com.badlogic.gdx.utils.JsonWriter
 import com.maltaisn.cardgame.addClassTag
 import com.maltaisn.cardgame.core.GameResult
@@ -36,7 +35,10 @@ val gameSaveJson = Json().apply {
     addClassTag<GameResult>("result")
     addClassTag<Trick>("trick")
     addClassTag<Hand>("hand")
-    addClassTag<GameEvent.RoundStart>("roundStart")
+    addClassTag<GameEvent.Start>("startEvent")
+    addClassTag<GameEvent.End>("endEvent")
+    addClassTag<GameEvent.RoundStart>("roundStartEvent")
+    addClassTag<GameEvent.RoundEnd>("roundEndEvent")
     addClassTag<TradeHandMove>("tradeHandMove")
     addClassTag<PlayMove>("playMove")
     addClassTag<HumanPlayer>("humanPlayer")
@@ -44,12 +46,4 @@ val gameSaveJson = Json().apply {
 
     // Register custom serializers
     setSerializer(PCard.JsonSerializer)
-    setSerializer(GameEventSerializer(GameEvent.Start, "start"))
-    setSerializer(GameEventSerializer(GameEvent.End, "end"))
-    setSerializer(GameEventSerializer(GameEvent.RoundEnd, "roundEnd"))
-}
-
-private class GameEventSerializer<T : GameEvent>(val event: T, val value: String) : Json.Serializer<T> {
-    override fun write(json: Json, obj: T, knownType: Class<*>?) = json.writeValue(value)
-    override fun read(json: Json, jsonData: JsonValue, type: Class<*>?) = event
 }

@@ -96,7 +96,7 @@ class GameState() : CardGameState<Player>() {
                     // Everyone had the chance to trade hands.
                     // Player to the left of the dealer starts.
                     phase = Phase.PLAY
-                    posToMove = dealerPos + 1
+                    posToMove = (dealerPos + 1) % 3
                 }
             }
             is PlayMove -> {

@@ -77,6 +77,10 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
     private var lastMoveTime = 0L
 
     private var idleAction: Action? = null
+        set(value) {
+            if (value == null) removeAction(field)
+            field = value
+        }
 
     private lateinit var dispatcher: AsyncExecutorDispatcher
     private var aiPlayerJob: Job? = null
@@ -210,12 +214,17 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
                         cards = List(3) { state.currentTrick.cards.getOrNull(it) }
                         fade(true)
                     }
+                    if (state.posToMove == 0) {
+                        idlePopup.show(playerHand, Popup.Side.ABOVE)
+                    }
                 }
 
                 playerHand.apply {
                     cards = state.players.first().hand.cards
                     slide(true, CardContainer.Direction.DOWN)
                 }
+
+                playNext()
             }
         }
     }
@@ -226,12 +235,18 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
         clearActions()
 
         // Hide all containers and all popups
+        playerHand.highlightAllCards(false)
+        playerHand.slide(false, CardContainer.Direction.DOWN)
+        playerHand.clickListener = null
+
         extraHand.fade(false)
         trick.fade(false)
-        playerHand.slide(false, CardContainer.Direction.DOWN)
+
         tradePopup.hide()
         collectPopup.hide()
+
         idlePopup.hide()
+        idleAction = null
 
         // Cancel AI job
         aiPlayerJob?.cancel()
@@ -241,10 +256,10 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
     override fun doEvent(event: CardGameEvent) {
         event as GameEvent
         when (event) {
-            GameEvent.Start -> startGame()
-            GameEvent.End -> endGame()
+            is GameEvent.Start -> startGame()
+            is GameEvent.End -> endGame()
             is GameEvent.RoundStart -> startRound()
-            GameEvent.RoundEnd -> endRound()
+            is GameEvent.RoundEnd -> endRound()
             is GameEvent.Move -> doMove(event)
         }
     }
@@ -501,17 +516,24 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
                         tradePopup.show(playerHand, Popup.Side.ABOVE)
 
                     } else {
-                        val delay = if (state.currentTrick.cards.size == 0 && state.tricksPlayed == 0) 0f else 3f
-                        idleAction = postDelayed(delay) {
-                            idlePopup.show(playerHand, Popup.Side.ABOVE)
-                            idleAction = null
+                        // Show idle popup after some time if not already shown (by initGame)
+                        if (!idlePopup.shown) {
+                            val delay = if (state.currentTrick.cards.size == 0 && state.tricksPlayed == 0) 0f else 3f
+                            idleAction = postDelayed(delay) {
+                                idlePopup.show(playerHand, Popup.Side.ABOVE)
+                                idleAction = null
+                            }
                         }
 
+                        // Highlight playable cards if necessary
                         if (settings.getBoolean(PrefKeys.SELECT_PLAYABLE)) {
                             val playableCards = moves.map { (it as PlayMove).card }
                             if (playableCards.size < playerHand.size) {
-                                // Highlight playable cards
-                                playerHand.highlightCards(playableCards)
+                                // Highlight playable cards. This is delayed so that the player hand
+                                // has time to layout if cards were set on same frame
+                                postDelayed(0.1f) {
+                                    playerHand.highlightCards(playableCards)
+                                }
                             }
                         }
 
@@ -526,7 +548,6 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
 
                                 // Hide and cancel idle popup
                                 idlePopup.hide()
-                                removeAction(idleAction)
                                 idleAction = null
                             }
                         }

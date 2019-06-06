@@ -101,8 +101,8 @@ class Game : CardGame<GameState> {
         winnerPos = CardPlayer.NO_POSITION
 
         _events.clear()
-        _events += GameEvent.Start
-        eventListener?.invoke(GameEvent.Start)
+
+        doEvent(GameEvent.Start())
     }
 
     /** End the game. */
@@ -114,8 +114,7 @@ class Game : CardGame<GameState> {
         check(phase == Phase.GAME_STARTED) { "Game has already ended." }
         phase = Phase.ENDED
 
-        _events += GameEvent.End
-        eventListener?.invoke(GameEvent.End)
+        doEvent(GameEvent.End())
     }
 
     /** Start a new round. */
@@ -128,9 +127,7 @@ class Game : CardGame<GameState> {
         val state = GameState(settings, players, dealerPos, trumpSuit)
         gameState = state
 
-        val event = GameEvent.RoundStart(players.map { it.hand.clone() } + state.extraHand.clone())
-        _events += event
-        eventListener?.invoke(event)
+        doEvent(GameEvent.RoundStart(players.map { it.hand.clone() } + state.extraHand.clone()))
     }
 
     /** End the current round. */
@@ -144,8 +141,7 @@ class Game : CardGame<GameState> {
             player.score += 4 - result[i].toInt()
         }
 
-        _events += GameEvent.RoundEnd
-        eventListener?.invoke(GameEvent.RoundEnd)
+        doEvent(GameEvent.RoundEnd())
 
         // Check if any player has won
         // If there's any tie, continue playing
@@ -177,9 +173,13 @@ class Game : CardGame<GameState> {
 
         val state = gameState!!
 
-        _events += move
         state.doMove(move)
-        eventListener?.invoke(move)
+        doEvent(move)
+    }
+
+    private fun doEvent(event: GameEvent) {
+        _events += event
+        eventListener?.invoke(event)
     }
 
     override fun onPreferenceValueChanged(pref: PrefEntry) {

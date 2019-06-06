@@ -24,13 +24,24 @@ import com.maltaisn.cardgame.core.Mcts
 import com.maltaisn.cardgame.readArrayValue
 
 
-sealed class GameEvent : CardGameEvent {
+/**
+ * Any event in a nines game.
+ * Some events could be `object` but that's harder to deserialize.
+ */
+@Suppress("CanSealedSubClassBeObject")
+sealed class GameEvent : CardGameEvent, Json.Serializable {
 
-    object Start : GameEvent()
+    class Start : GameEvent() {
+        override fun read(json: Json, jsonData: JsonValue) = Unit
+        override fun write(json: Json) = Unit
+    }
 
-    object End : GameEvent()
+    class End : GameEvent() {
+        override fun read(json: Json, jsonData: JsonValue) = Unit
+        override fun write(json: Json) = Unit
+    }
 
-    class RoundStart() : GameEvent(), Json.Serializable {
+    class RoundStart() : GameEvent() {
 
         var hands = emptyList<Hand>()
 
@@ -47,13 +58,16 @@ sealed class GameEvent : CardGameEvent {
         }
     }
 
-    object RoundEnd : GameEvent()
+    class RoundEnd : GameEvent() {
+        override fun read(json: Json, jsonData: JsonValue) = Unit
+        override fun write(json: Json) = Unit
+    }
 
     /**
      * The base class for any move in any game made by a player at a [position][playerPos].
      * All subclasses MUST implement [equals] for [Mcts] to work.
      */
-    abstract class Move : GameEvent(), CardGameEvent.Move, Json.Serializable {
+    abstract class Move : GameEvent(), CardGameEvent.Move {
 
         var playerPos = CardPlayer.NO_POSITION
             protected set
