@@ -1,19 +1,3 @@
-/*
- * Copyright 2019 Nicolas Maltais
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 plugins {
     id("com.android.application")
     kotlin("android")
@@ -25,14 +9,6 @@ val appVersion: String by project
 android {
     buildToolsVersion("28.0.3")
     compileSdkVersion(28)
-    sourceSets {
-        named("main") {
-            java.srcDir("src/main/kotlin")
-            res.srcDir("res")
-            assets.srcDir("assets")
-            jniLibs.srcDir("libs")
-        }
-    }
     defaultConfig {
         applicationId = "com.maltaisn.nines.android"
         minSdkVersion(14)
@@ -75,8 +51,10 @@ dependencies {
 // so they get packed with the APK.
 tasks.register("copyAndroidNatives") {
     doFirst {
-        configurations.named("natives").get().files.forEach { jar ->
-            val outputDir = file("libs/" + jar.nameWithoutExtension.substringAfterLast("natives-"))
+        val jniLibsPath = android.sourceSets.named("main").get().jniLibs.srcDirs.last().path
+        natives.files.forEach { jar ->
+            val nativeName = jar.nameWithoutExtension.substringAfterLast("natives-")
+            val outputDir = File(jniLibsPath, nativeName)
             outputDir.mkdirs()
             copy {
                 from(zipTree(jar))
@@ -92,17 +70,19 @@ tasks.whenTaskAdded {
     }
 }
 
-// Tasks to copy the tests assets to the android module assets dir
+// Tasks to copy the assets to the android module assets dir
+val assetsPath = android.sourceSets.named("main").get().assets.srcDirs.last().path
+
 tasks.register("copyTestAssets") {
-    file("assets").mkdirs()
+    file(assetsPath).mkdirs()
     copy {
         from("../assets")
-        into("assets")
+        into(assetsPath)
     }
 }
 
 tasks.register<Delete>("cleanTestAssets") {
-    delete("assets")
+    delete(assetsPath)
 }
 
 tasks.named("clean") {
