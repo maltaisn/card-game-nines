@@ -55,7 +55,7 @@ class Game : CardGame<GameState> {
         private set
 
     /** The position of the current dealer. */
-    var dealerPos = 0
+    var dealerPos = CardPlayer.NO_POSITION
         private set
 
     /** The trump suit for the current round. */
@@ -208,6 +208,7 @@ class Game : CardGame<GameState> {
         _events += json.readArrayValue<ArrayList<GameEvent>, GameEvent>("events", jsonData)
         phase = json.readValue("phase", jsonData)
         round = jsonData.getInt("round")
+        dealerPos = jsonData.getInt("dealerPos")
         winnerPos = jsonData.getInt("winnerPos")
 
         gameState?.players = players
@@ -219,6 +220,7 @@ class Game : CardGame<GameState> {
         json.writeValue("events", events)
         json.writeValue("phase", phase)
         json.writeValue("round", round)
+        json.writeValue("dealerPos", dealerPos)
         json.writeValue("winnerPos", winnerPos)
     }
 
@@ -251,6 +253,7 @@ class Game : CardGame<GameState> {
                 KtxAsync.launch(Dispatchers.IO) {
                     val game = json.fromJson(Game::class.java, file)
                     game.initialize(settings)
+                    game.updatePlayerNames()
                     onDone(game)
                 }
             }

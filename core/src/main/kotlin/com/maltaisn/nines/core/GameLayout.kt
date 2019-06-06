@@ -437,7 +437,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
             }
         }
 
-        if (moveDuration != Float.POSITIVE_INFINITY) {
+        if (moveDuration.isFinite()) {
             // After move animation is done, start next player turn.
             postDelayed(moveDuration) {
                 playNext()

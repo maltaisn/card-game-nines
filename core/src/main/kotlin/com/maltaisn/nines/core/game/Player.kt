@@ -60,12 +60,14 @@ abstract class Player : CardPlayer(), Json.Serializable {
 
 
     override fun read(json: Json, jsonData: JsonValue) {
+        super.read(json, jsonData)
         score = jsonData.getInt("score")
         hand = json.readValue("hand", jsonData)
         tricksTaken += json.readArrayValue<ArrayList<Trick>, Trick>("tricksTaken", jsonData)
     }
 
     override fun write(json: Json) {
+        super.write(json)
         json.writeValue("score", score)
         json.writeValue("hand", hand)
         json.writeValue("tricksTaken", tricksTaken)
