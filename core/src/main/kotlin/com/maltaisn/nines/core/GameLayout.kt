@@ -191,7 +191,8 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
         game as Game
         super.initGame(game)
 
-        cardAnimationLayer.completeAnimation(true)
+        cardAnimationLayer.clearDelayedMoves()
+        cardAnimationLayer.completeAnimation()
 
         when (game.phase) {
             Game.Phase.ENDED, Game.Phase.GAME_STARTED -> {
@@ -231,7 +232,8 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
 
     fun hide() {
         // Clear all animations
-        cardAnimationLayer.completeAnimation(true)
+        cardAnimationLayer.clearDelayedMoves()
+        cardAnimationLayer.completeAnimation()
         clearActions()
 
         // Hide all containers and all popups
