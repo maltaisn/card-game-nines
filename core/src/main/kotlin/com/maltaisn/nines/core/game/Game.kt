@@ -19,10 +19,11 @@ package com.maltaisn.nines.core.game
 import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
-import com.maltaisn.cardgame.core.CardGame
-import com.maltaisn.cardgame.core.CardGameEvent
-import com.maltaisn.cardgame.core.CardPlayer
-import com.maltaisn.cardgame.core.PCard
+import com.maltaisn.cardgame.fromJson
+import com.maltaisn.cardgame.game.CardGame
+import com.maltaisn.cardgame.game.CardGameEvent
+import com.maltaisn.cardgame.game.CardPlayer
+import com.maltaisn.cardgame.game.PCard
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.prefs.PlayerNamesPref
 import com.maltaisn.cardgame.prefs.PrefEntry
@@ -34,7 +35,6 @@ import kotlinx.coroutines.launch
 import ktx.async.KtxAsync
 import kotlin.math.max
 import kotlin.random.Random
-
 
 class Game : CardGame<GameState> {
 
@@ -251,7 +251,7 @@ class Game : CardGame<GameState> {
         fun load(settings: GamePrefs, json: Json, file: FileHandle, onDone: (Game) -> Unit) {
             if (file.exists()) {
                 KtxAsync.launch(Dispatchers.IO) {
-                    val game = json.fromJson(Game::class.java, file)
+                    val game: Game = json.fromJson(file)
                     game.initialize(settings)
                     game.updatePlayerNames()
                     onDone(game)

@@ -18,7 +18,7 @@ package com.maltaisn.nines.core.game
 
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
-import com.maltaisn.cardgame.core.PCard
+import com.maltaisn.cardgame.game.PCard
 import com.maltaisn.cardgame.readArrayValue
 
 
@@ -39,7 +39,7 @@ class Trick() : Cloneable, Json.Serializable {
     val cards = mutableListOf<PCard>()
 
 
-    constructor(trumpSuit: Int, cards: List<PCard> = ArrayList(3)): this() {
+    constructor(trumpSuit: Int, cards: List<PCard> = ArrayList(3)) : this() {
         this.trumpSuit = trumpSuit
         this.cards += cards
     }

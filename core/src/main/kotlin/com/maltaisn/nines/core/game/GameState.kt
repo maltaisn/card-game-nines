@@ -18,7 +18,7 @@ package com.maltaisn.nines.core.game
 
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
-import com.maltaisn.cardgame.core.*
+import com.maltaisn.cardgame.game.*
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.readValue
 import kotlin.random.Random
@@ -44,10 +44,6 @@ class GameState() : CardGameState<Player>() {
     var phase = Phase.TRADE
         private set
 
-    /** How many trades took place during the trade phase. */
-    var tradesCount = 0
-        private set
-
     /** How many tricks have been played. */
     var tricksPlayed = 0
         private set
@@ -55,6 +51,10 @@ class GameState() : CardGameState<Player>() {
     /** The current trick being played. */
     lateinit var currentTrick: Trick
         private set
+
+    /** How many trades took place during the trade phase. */
+    val tradesCount: Int
+        get() = players.count { it.trade == Player.Trade.TRADE }
 
 
     constructor(settings: GamePrefs, players: List<Player>,
@@ -85,9 +85,10 @@ class GameState() : CardGameState<Player>() {
                 if (move.trade) {
                     val temp = player.hand
                     player.hand = extraHand
+                    player.trade = Player.Trade.TRADE
                     extraHand = temp
-
-                    tradesCount++
+                } else {
+                    player.trade = Player.Trade.NO_TRADE
                 }
 
                 posToMove = getPositionNextTo(posToMove)
@@ -199,7 +200,6 @@ class GameState() : CardGameState<Player>() {
         it.trumpSuit = trumpSuit
         it.extraHand = extraHand.clone()
         it.phase = phase
-        it.tradesCount = tradesCount
         it.tricksPlayed = tricksPlayed
         it.currentTrick = currentTrick.clone()
     }
@@ -222,7 +222,6 @@ class GameState() : CardGameState<Player>() {
         extraHand = json.readValue("extraHand", jsonData)
         trumpSuit = jsonData.getInt("trumpSuit")
         phase = json.readValue("phase", jsonData)
-        tradesCount = jsonData.getInt("tradesCount")
         tricksPlayed = jsonData.getInt("tricksPlayed")
         currentTrick = json.readValue("currentTrick", jsonData)
     }

@@ -23,12 +23,10 @@ import com.maltaisn.cardgame.markdown.Markdown
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.widget.menu.DefaultGameMenu
 import com.maltaisn.nines.core.game.Game
-import com.maltaisn.nines.core.game.HumanPlayer
 import com.maltaisn.nines.core.game.MctsPlayer
 import com.maltaisn.nines.core.game.gameSaveJson
 import ktx.assets.load
 import ktx.log.info
-
 
 class GameScreen : CardGameScreen() {
 
@@ -107,7 +105,8 @@ class GameScreen : CardGameScreen() {
         }
 
         // Create players
-        val south = HumanPlayer()
+        //val south = HumanPlayer()
+        val south = MctsPlayer(difficulty)
         val east = MctsPlayer(difficulty)
         val north = MctsPlayer(difficulty)
 

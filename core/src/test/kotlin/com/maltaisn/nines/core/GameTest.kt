@@ -16,7 +16,7 @@
 
 package com.maltaisn.nines.core
 
-import com.maltaisn.cardgame.core.PCard
+import com.maltaisn.cardgame.game.PCard
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.prefs.buildGamePrefsFromMap
 import com.maltaisn.nines.core.game.*
@@ -77,7 +77,7 @@ private fun playGame(settings: GamePrefs,
             }
             is GameEvent.Move -> {
                 if (verbosity > VERBOSE_ROUNDS) {
-                    val state = game.gameState as GameState
+                    val state = game.gameState!!
                     val player = players[event.playerPos]
                     // South did: Trade hand, trick: []
                     print("${player.name} did: $event, trick: ${state.currentTrick}")

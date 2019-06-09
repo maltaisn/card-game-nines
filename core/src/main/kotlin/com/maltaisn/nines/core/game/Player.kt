@@ -18,7 +18,7 @@ package com.maltaisn.nines.core.game
 
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
-import com.maltaisn.cardgame.core.CardPlayer
+import com.maltaisn.cardgame.game.CardPlayer
 import com.maltaisn.cardgame.readArrayValue
 import com.maltaisn.cardgame.readValue
 
@@ -30,6 +30,9 @@ abstract class Player : CardPlayer(), Json.Serializable {
 
     /** The player's hand. */
     var hand = EMPTY_HAND
+
+    /** Whether the player has traded his hand or not. */
+    var trade = Trade.UNKNOWN
 
     /** List of the tricks taken by a player. */
     val tricksTaken = mutableListOf<Trick>()
@@ -44,11 +47,10 @@ abstract class Player : CardPlayer(), Json.Serializable {
         this.hand = hand
     }
 
-    abstract override fun clone(): Player
-
     protected fun <T : Player> cloneTo(player: T) = super.cloneTo(player).also {
         it.score = score
         it.hand = hand.clone()
+        it.trade = trade
         for (trick in tricksTaken) {
             it.tricksTaken += trick.clone()
         }
@@ -63,6 +65,7 @@ abstract class Player : CardPlayer(), Json.Serializable {
         super.read(json, jsonData)
         score = jsonData.getInt("score")
         hand = json.readValue("hand", jsonData)
+        trade = json.readValue("trade", jsonData)
         tricksTaken += json.readArrayValue<ArrayList<Trick>, Trick>("tricksTaken", jsonData)
     }
 
@@ -70,9 +73,15 @@ abstract class Player : CardPlayer(), Json.Serializable {
         super.write(json)
         json.writeValue("score", score)
         json.writeValue("hand", hand)
+        json.writeValue("trade", trade)
         json.writeValue("tricksTaken", tricksTaken)
     }
 
+    enum class Trade {
+        TRADE,  // Has traded
+        NO_TRADE,  // Hasn't traded
+        UNKNOWN  // Hasn't had the choice yet
+    }
 
     companion object {
         private val EMPTY_HAND = Hand(Hand.NO_ID, mutableListOf())

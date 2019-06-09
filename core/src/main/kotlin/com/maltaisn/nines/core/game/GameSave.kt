@@ -19,8 +19,8 @@ package com.maltaisn.nines.core.game
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonWriter
 import com.maltaisn.cardgame.addClassTag
-import com.maltaisn.cardgame.core.GameResult
-import com.maltaisn.cardgame.core.PCard
+import com.maltaisn.cardgame.game.GameResult
+import com.maltaisn.cardgame.game.PCard
 import com.maltaisn.cardgame.setSerializer
 
 

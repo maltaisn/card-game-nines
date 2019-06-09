@@ -18,9 +18,9 @@ package com.maltaisn.nines.core.game
 
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
-import com.maltaisn.cardgame.core.CardGameEvent
-import com.maltaisn.cardgame.core.CardPlayer
-import com.maltaisn.cardgame.core.Mcts
+import com.maltaisn.cardgame.game.CardGameEvent
+import com.maltaisn.cardgame.game.CardPlayer
+import com.maltaisn.cardgame.game.ai.Mcts
 import com.maltaisn.cardgame.readArrayValue
 
 

@@ -18,9 +18,12 @@ package com.maltaisn.nines.core.game
 
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
-import com.maltaisn.cardgame.core.*
+import com.maltaisn.cardgame.game.CardGameEvent
+import com.maltaisn.cardgame.game.CardGameState
+import com.maltaisn.cardgame.game.PCard
+import com.maltaisn.cardgame.game.ai.Mcts
+import com.maltaisn.cardgame.game.drawTop
 import com.maltaisn.cardgame.readValue
-
 
 /**
  * Defines a player played by the computer using MCTS algorithm.

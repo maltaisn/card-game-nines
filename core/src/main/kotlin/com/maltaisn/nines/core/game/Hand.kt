@@ -18,8 +18,8 @@ package com.maltaisn.nines.core.game
 
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
-import com.maltaisn.cardgame.core.PCard
-import com.maltaisn.cardgame.core.sortWith
+import com.maltaisn.cardgame.game.PCard
+import com.maltaisn.cardgame.game.sortWith
 import com.maltaisn.cardgame.readArrayValue
 
 
@@ -34,7 +34,7 @@ class Hand() : Cloneable, Json.Serializable {
     val cards = mutableListOf<PCard>()
 
 
-    constructor(id: Int, cards: List<PCard>): this() {
+    constructor(id: Int, cards: List<PCard>) : this() {
         this.id = id
         this.cards += cards
     }
