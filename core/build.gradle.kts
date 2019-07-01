@@ -1,13 +1,12 @@
 plugins {
     kotlin("jvm")
+    idea
 }
 
-sourceSets {
-    main {
-        java.srcDir("src/main/kotlin")
-    }
-    test {
-        java.srcDir("src/test/kotlin")
+idea {
+    module {
+        outputDir = file("build/classes/main")
+        testOutputDir = file("build/classes/test")
     }
 }
 
@@ -20,7 +19,7 @@ dependencies {
 
     implementation(kotlin("stdlib"))
 
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1")
     implementation("io.github.libktx:ktx-async:$ktxVersion")
 
     implementation("com.badlogicgames.gdx:gdx:$gdxVersion")

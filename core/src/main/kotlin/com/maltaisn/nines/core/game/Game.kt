@@ -16,7 +16,7 @@
 
 package com.maltaisn.nines.core.game
 
-import com.badlogic.gdx.files.FileHandle
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
 import com.maltaisn.cardgame.fromJson
@@ -30,18 +30,25 @@ import com.maltaisn.cardgame.prefs.PrefEntry
 import com.maltaisn.cardgame.readArrayValue
 import com.maltaisn.cardgame.readValue
 import com.maltaisn.nines.core.PrefKeys
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import ktx.async.KtxAsync
+import ktx.async.newSingleThreadAsyncContext
+import ktx.async.onRenderingThread
 import kotlin.math.max
 import kotlin.random.Random
 
-class Game : CardGame<GameState> {
+class Game() : CardGame() {
+
+    lateinit var settings: GamePrefs
+        private set
 
     lateinit var players: List<Player>
         private set
 
-    override val events: List<GameEvent>
+    var state: GameState? = null
+        private set
+
+    val events: List<GameEvent>
         get() = _events
 
     private val _events = mutableListOf<GameEvent>()
@@ -73,23 +80,75 @@ class Game : CardGame<GameState> {
         get() = winnerPos != CardPlayer.NO_POSITION
 
 
-    constructor() : super()
+    val gameSpeedDelay: Float
+        get() = when (settings.getChoice(PrefKeys.GAME_SPEED)) {
+            "slow" -> 1.5f
+            "normal" -> 1f
+            "fast" -> 0.5f
+            else -> 0f
+        }
 
-    constructor(settings: GamePrefs, south: Player, east: Player, north: Player) : super() {
-        initialize(settings)
+    var tradePhaseEnded = false
+
+    /** Listener called when a game event happens, or `null` for none. */
+    var eventListener: ((GameEvent) -> Unit)? = null
+
+    /** System time when the last move was made. */
+    private var lastMoveTime = 0L
+
+    private val dispatcher = newSingleThreadAsyncContext()
+    private var aiPlayerJob: Job? = null
+
+
+    constructor(settings: GamePrefs, south: Player, east: Player, north: Player) : this() {
+        this.settings = settings
+        settings.addListener(this)
         players = listOf(south, east, north)
     }
 
+    /**
+     * Start the next player's turn, with a delay to follow game speed.
+     */
+    fun playNext() {
+        lastMoveTime = System.currentTimeMillis()
+
+        val state = state!!
+        if (state.isGameDone) {
+            // Round is done
+            endRound()
+        } else {
+            val next = state.playerToMove
+            if (next is MctsPlayer) {
+                // Find next AI move asynchronously
+                aiPlayerJob = KtxAsync.launch(dispatcher) {
+                    // Wait between AI players moves to adjust game speed
+                    delay((gameSpeedDelay * 1000).toLong() -
+                            (System.currentTimeMillis() - lastMoveTime))
+
+                    // Find move
+                    yield()
+                    val move = next.findMove(state)
+
+                    // Do move
+                    yield()
+                    onRenderingThread {
+                        aiPlayerJob = null
+                        doMove(move)
+                    }
+                }
+            }
+        }
+    }
 
     /**
-     * Start the game.
+     * Start or restart the game.
      */
     fun start() {
         check(phase == Phase.ENDED) { "Game has already started." }
         phase = Phase.GAME_STARTED
 
         round = 0
-        gameState = null
+        state = null
 
         val startScore = settings.getInt(PrefKeys.START_SCORE)
         for (player in players) {
@@ -125,7 +184,7 @@ class Game : CardGame<GameState> {
         round++
 
         val state = GameState(settings, players, dealerPos, trumpSuit)
-        gameState = state
+        this.state = state
 
         doEvent(GameEvent.RoundStart(players.map { it.hand.clone() } + state.extraHand.clone()))
     }
@@ -136,12 +195,12 @@ class Game : CardGame<GameState> {
         phase = Phase.GAME_STARTED
 
         // Update the scores
-        val result = gameState?.result!!.playerResults
+        val result = state?.result!!
         for ((i, player) in players.withIndex()) {
-            player.score += 4 - result[i].toInt()
+            player.score += 4 - result.playerResults[i].toInt()
         }
 
-        doEvent(GameEvent.RoundEnd())
+        doEvent(GameEvent.RoundEnd(result))
 
         // Check if any player has won
         // If there's any tie, continue playing
@@ -171,10 +230,16 @@ class Game : CardGame<GameState> {
         move as GameEvent.Move
         check(phase != Phase.ENDED) { "Game has not started." }
 
-        val state = gameState!!
-
-        state.doMove(move)
+        state?.doMove(move)
         doEvent(move)
+    }
+
+    /**
+     * Cancel the next AI player turn.
+     */
+    fun cancelAiTurn() {
+        aiPlayerJob?.cancel()
+        aiPlayerJob = null
     }
 
     private fun doEvent(event: GameEvent) {
@@ -196,27 +261,37 @@ class Game : CardGame<GameState> {
         }
     }
 
+    override fun dispose() {
+        if (::settings.isInitialized) {
+            settings.removeListener(this)
+        }
 
-    override fun toString() = super.toString().dropLast(1) +
-            ", phase: $phase, round: $round, dealer: ${players[dealerPos].name}, trumpSuit: " +
-            (if (trumpSuit == GameState.NO_TRUMP) "none" else PCard.SUIT_STR[trumpSuit]) + "]"
+        eventListener = null
+
+        cancelAiTurn()
+        dispatcher.dispose()
+    }
+
+    override fun toString() = "${events.size} events, phase: $phase, round: $round, " +
+            "dealer: ${players[dealerPos].name}, trumpSuit: " +
+            (PCard.SUIT_STR.getOrNull(trumpSuit) ?: "none") + "]"
 
 
     override fun read(json: Json, jsonData: JsonValue) {
         players = json.readArrayValue("players", jsonData)
-        gameState = json.readValue("state", jsonData)
+        state = json.readValue("state", jsonData)
         _events += json.readArrayValue<ArrayList<GameEvent>, GameEvent>("events", jsonData)
         phase = json.readValue("phase", jsonData)
         round = jsonData.getInt("round")
         dealerPos = jsonData.getInt("dealerPos")
         winnerPos = jsonData.getInt("winnerPos")
 
-        gameState?.players = players
+        state?.players = players
     }
 
     override fun write(json: Json) {
         json.writeValue("players", players)
-        json.writeValue("state", gameState)
+        json.writeValue("state", state)
         json.writeValue("events", events)
         json.writeValue("phase", phase)
         json.writeValue("round", round)
@@ -224,9 +299,9 @@ class Game : CardGame<GameState> {
         json.writeValue("winnerPos", winnerPos)
     }
 
-    override fun save(json: Json, file: FileHandle) {
+    fun save(json: Json) {
         KtxAsync.launch(Dispatchers.IO) {
-            json.toJson(this@Game, file)
+            json.toJson(this@Game, GAME_SAVE_FILE)
         }
     }
 
@@ -244,15 +319,24 @@ class Game : CardGame<GameState> {
         private val TRUMP_SUITS = intArrayOf(PCard.HEART, PCard.SPADE,
                 PCard.DIAMOND, PCard.SPADE, GameState.NO_TRUMP)
 
+        /** The game save file location. */
+        val GAME_SAVE_FILE = Gdx.files.local("saved-game.json")
+
+        /** Returns whether or not there's a game saved on the disk. */
+        val hasSavedGame: Boolean
+            get() = GAME_SAVE_FILE.exists()
+
         /**
-         * Load a game instance with [settings] from a [file] using [json].
+         * Load a game instance with [settings] using [json].
          * Calls [onDone] when done loading.
          */
-        fun load(settings: GamePrefs, json: Json, file: FileHandle, onDone: (Game) -> Unit) {
-            if (file.exists()) {
+        fun load(settings: GamePrefs, json: Json, onDone: (Game) -> Unit) {
+            if (hasSavedGame) {
                 KtxAsync.launch(Dispatchers.IO) {
-                    val game: Game = json.fromJson(file)
-                    game.initialize(settings)
+                    val game: Game = json.fromJson(GAME_SAVE_FILE)
+                    game.settings = settings
+                    game.state?.settings = settings
+                    settings.addListener(game)
                     game.updatePlayerNames()
                     onDone(game)
                 }

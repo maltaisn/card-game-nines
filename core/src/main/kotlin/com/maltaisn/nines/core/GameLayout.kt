@@ -20,40 +20,46 @@ import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.scenes.scene2d.Action
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.Touchable
+import com.badlogic.gdx.scenes.scene2d.ui.Container
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Stack
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.I18NBundle
 import com.maltaisn.cardgame.CoreRes
-import com.maltaisn.cardgame.game.CardGame
-import com.maltaisn.cardgame.game.CardGameEvent
 import com.maltaisn.cardgame.game.PCard
 import com.maltaisn.cardgame.game.sortWith
 import com.maltaisn.cardgame.postDelayed
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.prefs.PlayerNamesPref
 import com.maltaisn.cardgame.prefs.PrefEntry
+import com.maltaisn.cardgame.prefs.SliderPref
 import com.maltaisn.cardgame.widget.*
 import com.maltaisn.cardgame.widget.card.*
+import com.maltaisn.cardgame.widget.menu.DefaultGameMenu
+import com.maltaisn.cardgame.widget.menu.MenuIcons
+import com.maltaisn.cardgame.widget.menu.PagedSubMenu
+import com.maltaisn.cardgame.widget.menu.SubMenu
+import com.maltaisn.cardgame.widget.menu.table.ScoresTable
 import com.maltaisn.nines.core.game.*
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
+import com.maltaisn.nines.core.game.MctsPlayer.Difficulty
 import ktx.actors.onClick
-import ktx.async.AsyncExecutorDispatcher
-import ktx.async.KtxAsync
-import ktx.async.newSingleThreadAsyncContext
-import ktx.async.onRenderingThread
+import java.text.NumberFormat
 import kotlin.math.PI
 
 
-class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
-        CardGameLayout(assetManager, settings) {
+class GameLayout(assetManager: AssetManager,
+                 val newGameOptions: GamePrefs,
+                 val settings: GamePrefs) :
+        CardGameLayout(assetManager) {
+
+    var game: Game? = null
+        private set
 
     //@GDXAssets(propertiesFiles = ["assets/strings.properties"])
-    private val bundle = assetManager.get<I18NBundle>(Res.STRINGS_BUNDLE)
+    private val bundle: I18NBundle = assetManager.get(Res.STRINGS_BUNDLE)
+
+    private val menu: DefaultGameMenu
 
     private val hiddenStacks: List<CardStack>
     private val playerHand: CardHand
@@ -67,18 +73,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
     private val collectPopup: Popup
     private val idlePopup: Popup
 
-    private val gameSpeedDelay: Float
-        get() = when (settings.getChoice(PrefKeys.GAME_SPEED)) {
-            "slow" -> 1.5f
-            "normal" -> 1f
-            "fast" -> 0.5f
-            else -> 0f
-        }
-
-    /** System time when the last move was made. */
-    private var lastMoveTime = 0L
-
-    private var tradePhaseEnded = false
+    private val scoresTable: ScoresTable
 
     private var idleAction: Action? = null
         set(value) {
@@ -86,13 +81,65 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
             field = value
         }
 
-    private lateinit var dispatcher: AsyncExecutorDispatcher
-    private var aiPlayerJob: Job? = null
+    private val numberFormat = NumberFormat.getInstance()
 
     init {
-        val cardSkin = assetManager.get<Skin>(CoreRes.PCARD_SKIN)
+        // Menu
+        menu = object : DefaultGameMenu(coreSkin) {
+            override fun onContinueClicked() {
+                Game.load(this@GameLayout.settings, GameSaveJson) {
+                    initGame(it)
+                }
+            }
+
+            override fun onStartGameClicked() {
+                val difficulty = when (this@GameLayout.newGameOptions.getInt(PrefKeys.DIFFICULTY)) {
+                    0 -> Difficulty.BEGINNER
+                    1 -> Difficulty.INTERMEDIATE
+                    2 -> Difficulty.ADVANCED
+                    3 -> Difficulty.EXPERT
+                    else -> error("Unknown difficulty level.")
+                }
+
+                // Create players
+                //val south = HumanPlayer()
+                val south = MctsPlayer(difficulty)
+                val east = MctsPlayer(difficulty)
+                val north = MctsPlayer(difficulty)
+
+                val game = Game(this@GameLayout.settings, south, east, north)
+                initGame(game)
+                game.start()
+            }
+
+            override fun onExitGameClicked() {
+                game?.save(GameSaveJson)
+                hide()
+                continueItem.enabled = true
+            }
+
+            override fun onScoreboardOpened() {
+                hide()
+            }
+
+            override fun onScoreboardClosed() {
+                val game = game!!
+                initGame(game)
+                if (game.phase == Game.Phase.GAME_STARTED) {
+                    // Last round has ended, start a new one.
+                    game.startRound()
+                }
+            }
+        }
+        menu.continueItem.enabled = Game.hasSavedGame
+        menu.newGameOptions = newGameOptions
+        menu.settings = settings
+        menu.rules = assetManager.get(Res.MD_RULES)
+        addActor(menu)
 
         // Card containers
+        val cardSkin: Skin = assetManager.get(CoreRes.PCARD_SKIN)
+
         playerHand = CardHand(coreSkin, cardSkin).apply {
             sorter = PCard.DEFAULT_SORTER
             clipPercent = 0.3f
@@ -124,7 +171,6 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
 
         // Player labels
         playerLabels = List(3) { PlayerLabel(coreSkin) }
-        updatePlayerNames()
 
         // Do the layout
         gameLayer.apply {
@@ -151,17 +197,15 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
 
         val tradeBtn = PopupButton(coreSkin, bundle["popup_trade"])
         tradeBtn.onClick {
-            val game = game as Game
-            val state = game.gameState!!
-            game.doMove(state.getMoves().find { it is TradeHandMove && it.trade }!!)
+            val game = game!!
+            game.doMove(game.state?.getMoves()?.find { (it as TradeHandMove).trade }!!)
             tradePopup.hide()
         }
 
         val noTradeBtn = PopupButton(coreSkin, bundle["popup_no_trade"])
         noTradeBtn.onClick {
-            val game = game as Game
-            val state = game.gameState!!
-            game.doMove(state.getMoves().find { it is TradeHandMove && !it.trade }!!)
+            val game = game!!
+            game.doMove(game.state?.getMoves()?.find { !(it as TradeHandMove).trade }!!)
             tradePopup.hide()
         }
 
@@ -180,7 +224,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
             collectPopup.hide()
 
             postDelayed(moveDuration) {
-                playNext()
+                (game as Game).playNext()
             }
         }
         collectPopup.add(collectBtn).minWidth(150f)
@@ -192,30 +236,57 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
         val idleBtn = PopupButton(coreSkin, bundle["popup_your_turn"])
         idlePopup.add(idleBtn).minWidth(150f)
         idlePopup.touchable = Touchable.disabled
-    }
 
+        // Score table
+        scoresTable = ScoresTable(coreSkin, 3)
+        val scoresView = Container(scoresTable).pad(30f, 15f, 30f, 15f).fill()
+        val scoresPage = PagedSubMenu.Page(0, bundle["scoreboard_scores"],
+                coreSkin.getDrawable(MenuIcons.LIST), SubMenu.ITEM_POS_TOP)
+        scoresPage.content = scoresView
+        menu.scoreboardMenu.addItem(scoresPage)
+    }
 
     override fun setStage(stage: Stage?) {
         super.setStage(stage)
-        if (stage != null) {
-            dispatcher = newSingleThreadAsyncContext()
+        if (stage == null) {
+            settings.removeListener(this)
+            game?.dispose()
+            game = null
         } else {
-            aiPlayerJob?.cancel()
-            aiPlayerJob = null
-            dispatcher.dispose()
+            settings.addListener(this)
         }
     }
 
-    override fun initGame(game: CardGame<*>) {
-        game as Game
-        super.initGame(game)
+    fun initGame(game: Game) {
+        if (game !== this.game) {
+            this.game?.dispose()
+            this.game = game
+        }
+
+        game.eventListener = {
+            when (it) {
+                is GameEvent.Start -> startGame()
+                is GameEvent.End -> endGame()
+                is GameEvent.RoundStart -> startRound()
+                is GameEvent.RoundEnd -> endRound(it)
+                is GameEvent.Move -> doMove(it)
+            }
+        }
 
         cardAnimationLayer.clearDelayedMoves()
         cardAnimationLayer.completeAnimation()
 
-        if (game.players[0] !is HumanPlayer) {
-            playerHand.enabled = false
+        playerHand.enabled = (game.players[0] is HumanPlayer)
+
+        updatePlayerNames()
+
+        // Set scores in scores table
+        for (event in game.events) {
+            if (event is GameEvent.RoundEnd) {
+                addScoresTableRow(event)
+            }
         }
+        updateTotalScoreFooters()
 
         when (game.phase) {
             Game.Phase.ENDED, Game.Phase.GAME_STARTED -> {
@@ -224,7 +295,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
             }
             Game.Phase.ROUND_STARTED -> {
                 // Round has started
-                val state = game.gameState!!
+                val state = game.state!!
                 playerLabelTable.fade(true)
 
                 if (state.phase == GameState.Phase.TRADE) {
@@ -233,7 +304,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
                         cards = state.extraHand.cards
                         fade(true)
                     }
-                    tradePhaseEnded = false
+                    game.tradePhaseEnded = false
 
                 } else {
                     // Play phase: show and adjust trick
@@ -248,7 +319,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
                         idlePopup.show(playerHand, Popup.Side.ABOVE)
                     }
 
-                    tradePhaseEnded = true
+                    game.tradePhaseEnded = true
                 }
 
                 playerHand.apply {
@@ -263,7 +334,7 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
 
                 updatePlayerScores()
 
-                playNext()
+                game.playNext()
             }
         }
     }
@@ -290,24 +361,12 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
         idlePopup.hide()
         idleAction = null
 
-        // Cancel AI job
-        aiPlayerJob?.cancel()
-        aiPlayerJob = null
-    }
-
-    override fun doEvent(event: CardGameEvent) {
-        event as GameEvent
-        when (event) {
-            is GameEvent.Start -> startGame()
-            is GameEvent.End -> endGame()
-            is GameEvent.RoundStart -> startRound()
-            is GameEvent.RoundEnd -> endRound()
-            is GameEvent.Move -> doMove(event)
-        }
+        game?.cancelAiTurn()
     }
 
     private fun startGame() {
-        (game as Game?)?.startRound()
+        updateTotalScoreFooters()
+        game?.startRound()
     }
 
     private fun endGame() {
@@ -315,12 +374,12 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
     }
 
     private fun startRound() {
-        val game = game as Game
-        val state = game.gameState!!
+        val game = game!!
+        val state = game.state!!
 
         var moveDuration = 0.5f
 
-        tradePhaseEnded = false
+        game.tradePhaseEnded = false
 
         // Set player hand
         val playerCards = game.players[0].hand.cards.toMutableList()
@@ -360,19 +419,24 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
         // Start playing
         moveDuration += 0.5f
         postDelayed(moveDuration) {
-            playNext()
+            game.playNext()
         }
     }
 
-    private fun endRound() {
-        hide()
+    private fun endRound(event: GameEvent.RoundEnd) {
+        // Update scores table
+        addScoresTableRow(event)
+        updateTotalScoreFooters()
 
-        // TODO show scoreboard
+        // Show scoreboard after a small delay
+        postDelayed(1f) {
+            menu.showScoreboard()
+        }
     }
 
     private fun doMove(move: GameEvent.Move) {
-        val game = game as Game
-        val state = game.gameState!!
+        val game = game!!
+        val state = game.state!!
 
         val isSouth = move.playerPos == 0
 
@@ -440,10 +504,10 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
 
                 // If this player had the last choice
                 if ((move.playerPos + 1) % 3 == game.dealerPos) {
-                    tradePhaseEnded = true
+                    game.tradePhaseEnded = true
 
                     // Hide extra hand
-                    moveDuration += gameSpeedDelay + 0.5f
+                    moveDuration += game.gameSpeedDelay + 0.5f
                     postDelayed(moveDuration) {
                         extraHand.fade(false)
                         trick.shown = true
@@ -498,14 +562,20 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
         if (moveDuration.isFinite()) {
             // After move animation is done, start next player turn.
             postDelayed(moveDuration) {
-                playNext()
+                if (state.playerToMove is HumanPlayer) {
+                    prepareHumanTurn()
+                }
+                game.playNext()
             }
         }
     }
 
+    /**
+     * Collect the trick to the [dst] card container after a [delay].
+     * The destination container is temporarily shown so the cards are not hidden during the transition.
+     * Returns the duration of the collect animation.
+     */
     private fun collectTrick(dst: CardContainer, delay: Float): Float {
-        // Collect the trick to the destination container.
-        // Temporarily show the hidden stack so the trick is shown while collected.
         var moveDuration = delay
         dst.visibility = CardContainer.Visibility.ALL
 
@@ -526,9 +596,84 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
         return moveDuration
     }
 
-    /** Adjust the trick start angle so that the card of the player who led the trick (at [startPos]) is below. */
+    /**
+     * Prepare the layout for a human player's turn, at the south position.
+     */
+    private fun prepareHumanTurn() {
+        val game = game!!
+        val state = game.state!!
+
+        val moves = state.getMoves()
+        if (moves.size == 1 && settings.getBoolean(PrefKeys.AUTO_PLAY)) {
+            // Only one card is playable, auto-play it.
+            game.doMove(moves.first())
+
+        } else {
+            if (state.phase == GameState.Phase.TRADE) {
+                tradePopup.show(playerHand, Popup.Side.ABOVE)
+
+            } else {
+                // Show idle popup after some time if not already shown (by initGame)
+                if (!idlePopup.shown) {
+                    val delay = if (state.currentTrick.cards.size == 0 && state.tricksPlayed == 0) 0f else 3f
+                    idleAction = postDelayed(delay) {
+                        idlePopup.show(playerHand, Popup.Side.ABOVE)
+                        idleAction = null
+                    }
+                }
+
+                // Highlight playable cards if necessary
+                if (settings.getBoolean(PrefKeys.SELECT_PLAYABLE)) {
+                    val playableCards = moves.map { (it as PlayMove).card }
+                    if (playableCards.size < playerHand.size) {
+                        // Highlight playable cards. This is delayed so that the player hand
+                        // has time to layout if cards were set on same frame
+                        postDelayed(0.1f) {
+                            playerHand.highlightCards(playableCards)
+                        }
+                    }
+                }
+
+                playerHand.clickListener = { actor, _ ->
+                    val move = moves.find { it is PlayMove && it.card == actor.card }
+                    if (move != null) {
+                        // This card can be played, play it.
+                        game.doMove(move)
+
+                        // Remove click listener
+                        playerHand.clickListener = null
+
+                        // Hide and cancel idle popup
+                        idlePopup.hide()
+                        idleAction = null
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Adjust the trick start angle so that the card of
+     * the player who led the trick (at [startPos]) is below.
+     */
     private fun setTrickStartAngle(startPos: Int) {
         trick.startAngle = -((startPos + 3.0 / 8) * PI * 2 / 3).toFloat()
+    }
+
+    /** Update the total scores in the scores table footers. */
+    private fun updateTotalScoreFooters() {
+        val game = game!!
+        scoresTable.footerScores = List(3) {
+            ScoresTable.Score(numberFormat.format(game.players[it].score))
+        }
+    }
+
+    /** Add the scores row corresponding to the end [event] of a round. */
+    private fun addScoresTableRow(event: GameEvent.RoundEnd) {
+        scoresTable.scores += List(3) {
+            ScoresTable.Score(numberFormat.format(event.result.playerResults[it]))
+        }
+        scoresTable.cellAdapter?.notifyChanged()
     }
 
     override fun onPreferenceValueChanged(pref: PrefEntry) {
@@ -537,108 +682,42 @@ class GameLayout(assetManager: AssetManager, settings: GamePrefs) :
         }
     }
 
+    /**
+     * Update the name of players and the names displayed in player labels and the
+     * scores table headers. Also sets the difficulty shown in the headers.
+     */
     private fun updatePlayerNames() {
-        val pref = settings[PrefKeys.PLAYER_NAMES] as PlayerNamesPref
-        for (i in 0..2) {
-            playerLabels[i].name = pref.names[i]
+        val game = game!!
+
+        val namesPref = settings[PrefKeys.PLAYER_NAMES] as PlayerNamesPref
+        val diffPref = newGameOptions[PrefKeys.DIFFICULTY] as SliderPref
+
+        val scoresHeaders = mutableListOf<ScoresTable.Header>()
+        repeat(3) {
+            val player = game.players[it]
+            val name = namesPref.names[it]
+            player.name = name
+            playerLabels[it].name = name
+            scoresHeaders += ScoresTable.Header(name, if (player is MctsPlayer) {
+                diffPref.enumValues?.get(player.difficulty.ordinal)
+            } else {
+                null
+            })
         }
+        scoresTable.headers = scoresHeaders
     }
 
     private fun updatePlayerScores() {
-        for (i in 0..2) {
-            val player = (game as Game).players[i]
-            playerLabels[i].score = if (tradePhaseEnded) {
+        val game = game as Game
+        repeat(3) {
+            val player = game.players[it]
+            playerLabels[it].score = if (game.tradePhaseEnded) {
                 bundle.format("player_score", player.score, player.tricksTaken.size)
             } else {
                 when (player.trade) {
                     Player.Trade.TRADE -> bundle["player_trade"]
                     Player.Trade.NO_TRADE -> bundle["player_no_trade"]
                     Player.Trade.UNKNOWN -> null
-                }
-            }
-        }
-    }
-
-    /**
-     * Start the next player's turn, with a delay to follow game speed.
-     */
-    private fun playNext() {
-        lastMoveTime = System.currentTimeMillis()
-
-        val game = game as Game
-        val state = game.gameState!!
-
-        if (state.isGameDone) {
-            // Round is done
-            game.endRound()
-        } else {
-            val next = state.playerToMove
-            if (next is MctsPlayer) {
-                // Find next AI move asynchronously
-                aiPlayerJob = KtxAsync.launch(dispatcher) {
-                    // Wait between AI players moves to adjust game speed
-                    delay((gameSpeedDelay * 1000).toLong() -
-                            (System.currentTimeMillis() - lastMoveTime))
-
-                    // Find move
-                    yield()
-                    val move = next.findMove(state)
-
-                    // Do move
-                    yield()
-                    onRenderingThread {
-                        aiPlayerJob = null
-                        (game as Game?)?.doMove(move)
-                    }
-                }
-            } else {
-                // Human player turn
-                val moves = state.getMoves()
-                if (moves.size == 1 && settings.getBoolean(PrefKeys.AUTO_PLAY)) {
-                    // Only one card is playable, auto-play it.
-                    game.doMove(moves.first())
-
-                } else {
-                    if (state.phase == GameState.Phase.TRADE) {
-                        tradePopup.show(playerHand, Popup.Side.ABOVE)
-
-                    } else {
-                        // Show idle popup after some time if not already shown (by initGame)
-                        if (!idlePopup.shown) {
-                            val delay = if (state.currentTrick.cards.size == 0 && state.tricksPlayed == 0) 0f else 3f
-                            idleAction = postDelayed(delay) {
-                                idlePopup.show(playerHand, Popup.Side.ABOVE)
-                                idleAction = null
-                            }
-                        }
-
-                        // Highlight playable cards if necessary
-                        if (settings.getBoolean(PrefKeys.SELECT_PLAYABLE)) {
-                            val playableCards = moves.map { (it as PlayMove).card }
-                            if (playableCards.size < playerHand.size) {
-                                // Highlight playable cards. This is delayed so that the player hand
-                                // has time to layout if cards were set on same frame
-                                postDelayed(0.1f) {
-                                    playerHand.highlightCards(playableCards)
-                                }
-                            }
-                        }
-
-                        playerHand.clickListener = { actor, _ ->
-                            val move = moves.find { it is PlayMove && it.card == actor.card }
-                            if (move != null) {
-                                // This card can be played, play it.
-                                game.doMove(move)
-
-                                // Remove click listener
-                                playerHand.clickListener = null
-
-                                // Hide and cancel idle popup
-                                idlePopup.hide()
-                                idleAction = null
-                            }
-                        }
-                    }
                 }
             }
         }

@@ -24,26 +24,30 @@ import com.maltaisn.cardgame.game.PCard
 import com.maltaisn.cardgame.setSerializer
 
 
-val gameSaveJson = Json().apply {
-    setOutputType(JsonWriter.OutputType.javascript)
-    setUsePrototypes(false)
-    setEnumNames(true)
-    setTypeName("type")
+object GameSaveJson : Json() {
 
-    // Add class tags
-    addClassTag<GameState>("state")
-    addClassTag<GameResult>("result")
-    addClassTag<Trick>("trick")
-    addClassTag<Hand>("hand")
-    addClassTag<GameEvent.Start>("startEvent")
-    addClassTag<GameEvent.End>("endEvent")
-    addClassTag<GameEvent.RoundStart>("roundStartEvent")
-    addClassTag<GameEvent.RoundEnd>("roundEndEvent")
-    addClassTag<TradeHandMove>("tradeHandMove")
-    addClassTag<PlayMove>("playMove")
-    addClassTag<HumanPlayer>("humanPlayer")
-    addClassTag<MctsPlayer>("mctsPlayer")
+    init {
+        setOutputType(JsonWriter.OutputType.javascript)
+        setUsePrototypes(false)
+        setEnumNames(true)
+        setTypeName("type")
 
-    // Register custom serializers
-    setSerializer(PCard.JsonSerializer)
+        // Add class tags
+        addClassTag<GameState>("state")
+        addClassTag<GameResult>("result")
+        addClassTag<Trick>("trick")
+        addClassTag<Hand>("hand")
+        addClassTag<GameEvent.Start>("startEvent")
+        addClassTag<GameEvent.End>("endEvent")
+        addClassTag<GameEvent.RoundStart>("roundStartEvent")
+        addClassTag<GameEvent.RoundEnd>("roundEndEvent")
+        addClassTag<TradeHandMove>("tradeHandMove")
+        addClassTag<PlayMove>("playMove")
+        addClassTag<HumanPlayer>("humanPlayer")
+        addClassTag<MctsPlayer>("mctsPlayer")
+
+        // Register custom serializers
+        setSerializer(PCard.JsonSerializer)
+    }
+
 }

@@ -20,15 +20,15 @@ import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
 import com.maltaisn.cardgame.game.CardGameEvent
 import com.maltaisn.cardgame.game.CardPlayer
-import com.maltaisn.cardgame.game.ai.Mcts
+import com.maltaisn.cardgame.game.GameResult
 import com.maltaisn.cardgame.readArrayValue
+import com.maltaisn.cardgame.readValue
 
 
 /**
  * Any event in a nines game.
  * Some events could be `object` but that's harder to deserialize.
  */
-@Suppress("CanSealedSubClassBeObject")
 sealed class GameEvent : CardGameEvent, Json.Serializable {
 
     class Start : GameEvent() {
@@ -58,14 +58,25 @@ sealed class GameEvent : CardGameEvent, Json.Serializable {
         }
     }
 
-    class RoundEnd : GameEvent() {
-        override fun read(json: Json, jsonData: JsonValue) = Unit
-        override fun write(json: Json) = Unit
+    class RoundEnd() : GameEvent() {
+
+        lateinit var result: GameResult
+
+        constructor(result: GameResult) : this() {
+            this.result = result
+        }
+
+        override fun read(json: Json, jsonData: JsonValue) {
+            result = json.readValue("result", jsonData)
+        }
+
+        override fun write(json: Json) {
+            json.writeValue("result", result)
+        }
     }
 
     /**
      * The base class for any move in any game made by a player at a [position][playerPos].
-     * All subclasses MUST implement [equals] for [Mcts] to work.
      */
     abstract class Move : GameEvent(), CardGameEvent.Move {
 

@@ -41,6 +41,7 @@ abstract class Player : CardPlayer(), Json.Serializable {
      * Initialize this player to a [position] and with a [hand].
      */
     open fun initialize(position: Int, hand: Hand) {
+        trade = Trade.UNKNOWN
         tricksTaken.clear()
 
         this.position = position

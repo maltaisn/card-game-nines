@@ -16,22 +16,19 @@
 
 package com.maltaisn.nines.core
 
-import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.utils.I18NBundle
 import com.maltaisn.cardgame.CardGameScreen
 import com.maltaisn.cardgame.markdown.Markdown
 import com.maltaisn.cardgame.prefs.GamePrefs
-import com.maltaisn.cardgame.widget.menu.DefaultGameMenu
-import com.maltaisn.nines.core.game.Game
-import com.maltaisn.nines.core.game.MctsPlayer
-import com.maltaisn.nines.core.game.gameSaveJson
+import com.maltaisn.nines.core.game.GameSaveJson
 import ktx.assets.load
-import ktx.log.info
 
 class GameScreen : CardGameScreen() {
 
-    private lateinit var settings: GamePrefs
+    private lateinit var gameLayout: GameLayout
+
     private lateinit var newGameOptions: GamePrefs
+    private lateinit var settings: GamePrefs
 
     override fun load() {
         super.load()
@@ -46,87 +43,24 @@ class GameScreen : CardGameScreen() {
     override fun start() {
         super.start()
 
-        newGameOptions = assetManager.get<GamePrefs>(Res.PREFS_NEW_GAME)
-        settings = assetManager.get<GamePrefs>(Res.PREFS_SETTINGS)
+        newGameOptions = assetManager.get(Res.PREFS_NEW_GAME)
+        settings = assetManager.get(Res.PREFS_SETTINGS)
 
-        val menu = DefaultGameMenu(coreSkin)
-        val layout = GameLayout(assetManager, settings)
-        layout.gameMenu = menu
-        gameLayout = layout
+        gameLayout = GameLayout(assetManager, newGameOptions, settings)
+        addActor(gameLayout)
 
-        // Main menu
-        menu.continueListener = {
-            loadGame()
-        }
-        menu.continueItem.enabled = SAVED_GAME_FILE.exists()
-
-        // New game submenu
-        menu.newGameOptions = newGameOptions
         prefs += newGameOptions
-        menu.startGameListener = {
-            startGame()
-        }
-
-        // Settings submenu
-        menu.settings = settings
         prefs += settings
-
-        // Rules submenu
-        menu.rules = assetManager.get(Res.MD_RULES)
-
-        // In-game menu
-        menu.exitGameListener = {
-            saveGame()
-            (gameLayout as GameLayout).hide()
-            menu.continueItem.enabled = true
-        }
-        menu.scoreboardListener = {
-            info { "Show scoreboard" }
-        }
     }
 
     override fun pause() {
         super.pause()
-        saveGame()
+        gameLayout.game?.save(GameSaveJson)
     }
 
     override fun resume() {
-        super.resume()
-        loadGame()
-    }
-
-    private fun startGame() {
-        val difficulty = when (newGameOptions.getInt(PrefKeys.DIFFICULTY)) {
-            0 -> MctsPlayer.Difficulty.BEGINNER
-            1 -> MctsPlayer.Difficulty.INTERMEDIATE
-            2 -> MctsPlayer.Difficulty.ADVANCED
-            3 -> MctsPlayer.Difficulty.EXPERT
-            else -> error("Wrong difficulty level.")
-        }
-
-        // Create players
-        //val south = HumanPlayer()
-        val south = MctsPlayer(difficulty)
-        val east = MctsPlayer(difficulty)
-        val north = MctsPlayer(difficulty)
-
-        val game = Game(settings, south, east, north)
-        initGame(game)
-        game.start()
-    }
-
-    private fun saveGame() {
-        game?.save(gameSaveJson, SAVED_GAME_FILE)
-    }
-
-    private fun loadGame() {
-        Game.load(settings, gameSaveJson, SAVED_GAME_FILE) {
-            initGame(it)
-        }
-    }
-
-    companion object {
-        private val SAVED_GAME_FILE = Gdx.files.local("saved-game.json")
+        // TODO resume game correctly
+        //loadGame()
     }
 
 }

@@ -25,7 +25,7 @@ import com.maltaisn.nines.core.game.MctsPlayer.Difficulty
 
 fun main() {
     // Create players
-    val south = MctsPlayer(Difficulty.EXPERT)
+    val south = HumanPlayer()
     val east = MctsPlayer(Difficulty.INTERMEDIATE)
     val north = MctsPlayer(Difficulty.ADVANCED)
 
@@ -107,7 +107,7 @@ private fun playGame(settings: GamePrefs,
                 val move = next.findMove(state)
                 game.doMove(move)
             } else {
-                println("\n${next.name}'s turn, choose a move:")
+                println("\n${next.name}'s turn ${next.hand}, choose a move:")
                 for ((i, move) in moves.withIndex()) {
                     println("${i + 1}. $move")
                 }

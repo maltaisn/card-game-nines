@@ -5,12 +5,6 @@ plugins {
 val assetsDir = file("../assets")
 val mainClassName = "com.maltaisn.nines.desktop.DesktopLauncher"
 
-sourceSets {
-    main {
-        java.srcDir("src/main/kotlin")
-    }
-}
-
 dependencies {
     val gdxVersion: String by project
     
