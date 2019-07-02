@@ -16,8 +16,11 @@
 
 package com.maltaisn.nines.core
 
+import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.utils.I18NBundle
 import com.maltaisn.cardgame.CardGameScreen
+import com.maltaisn.cardgame.CoreRes
 import com.maltaisn.cardgame.markdown.Markdown
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.nines.core.game.GameSaveJson
@@ -27,30 +30,31 @@ class GameScreen : CardGameScreen() {
 
     private lateinit var gameLayout: GameLayout
 
-    private lateinit var newGameOptions: GamePrefs
-    private lateinit var settings: GamePrefs
-
     override fun load() {
         super.load()
+
+        coreSkin.load(Gdx.files.internal(Res.SKIN))
+
+        loadPCardSkin()
 
         assetManager.load<GamePrefs>(Res.PREFS_NEW_GAME)
         assetManager.load<GamePrefs>(Res.PREFS_SETTINGS)
         assetManager.load<Markdown>(Res.MD_RULES)
         assetManager.load<I18NBundle>(Res.STRINGS_BUNDLE)
-        loadPCardSkin()
     }
 
     override fun start() {
         super.start()
 
-        newGameOptions = assetManager.get(Res.PREFS_NEW_GAME)
-        settings = assetManager.get(Res.PREFS_SETTINGS)
+        val cardSkin: Skin = assetManager.get(CoreRes.PCARD_SKIN)
 
-        gameLayout = GameLayout(assetManager, newGameOptions, settings)
+        coreSkin.add("newGameOptions", assetManager.get<GamePrefs>(Res.PREFS_NEW_GAME))
+        coreSkin.add("settings", assetManager.get<GamePrefs>(Res.PREFS_SETTINGS))
+        coreSkin.add("rules", assetManager.get<Markdown>(Res.MD_RULES))
+        coreSkin.add("default", assetManager.get<I18NBundle>(Res.STRINGS_BUNDLE))
+
+        gameLayout = GameLayout(coreSkin, cardSkin)
         addActor(gameLayout)
-
-        prefs += newGameOptions
-        prefs += settings
     }
 
     override fun pause() {

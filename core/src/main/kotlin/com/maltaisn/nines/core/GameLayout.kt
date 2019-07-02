@@ -16,7 +16,6 @@
 
 package com.maltaisn.nines.core
 
-import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.scenes.scene2d.Action
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.Touchable
@@ -26,7 +25,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Stack
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.I18NBundle
-import com.maltaisn.cardgame.CoreRes
 import com.maltaisn.cardgame.game.PCard
 import com.maltaisn.cardgame.game.sortWith
 import com.maltaisn.cardgame.postDelayed
@@ -43,21 +41,23 @@ import com.maltaisn.cardgame.widget.menu.SubMenu
 import com.maltaisn.cardgame.widget.menu.table.ScoresTable
 import com.maltaisn.nines.core.game.*
 import com.maltaisn.nines.core.game.MctsPlayer.Difficulty
+import com.maltaisn.nines.core.widget.HandsTable
 import ktx.actors.onClick
+import ktx.style.get
 import java.text.NumberFormat
 import kotlin.math.PI
 
 
-class GameLayout(assetManager: AssetManager,
-                 val newGameOptions: GamePrefs,
-                 val settings: GamePrefs) :
-        CardGameLayout(assetManager) {
+class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
 
     var game: Game? = null
         private set
 
     //@GDXAssets(propertiesFiles = ["assets/strings.properties"])
-    private val bundle: I18NBundle = assetManager.get(Res.STRINGS_BUNDLE)
+    private val strings: I18NBundle = coreSkin.get()
+
+    private val newGameOptions: GamePrefs = coreSkin["newGameOptions"]
+    private val settings: GamePrefs = coreSkin["settings"]
 
     private val menu: DefaultGameMenu
 
@@ -73,7 +73,11 @@ class GameLayout(assetManager: AssetManager,
     private val collectPopup: Popup
     private val idlePopup: Popup
 
+    private val scoresPage: PagedSubMenu.Page
     private val scoresTable: ScoresTable
+
+    private val handsPage: PagedSubMenu.Page
+    private val handsTable: HandsTable
 
     private var idleAction: Action? = null
         set(value) {
@@ -84,7 +88,20 @@ class GameLayout(assetManager: AssetManager,
     private val numberFormat = NumberFormat.getInstance()
 
     init {
-        // Menu
+        // SCOREBOARD
+        // Scores page
+        scoresTable = ScoresTable(coreSkin, 3)
+        scoresPage = PagedSubMenu.Page(0, strings["scoreboard_scores"],
+                coreSkin.getDrawable(MenuIcons.LIST), SubMenu.ITEM_POS_TOP)
+        scoresPage.content = Container(scoresTable).pad(30f, 15f, 30f, 15f).fill()
+
+        // Hands page
+        handsTable = HandsTable(coreSkin, cardSkin)
+        handsPage = PagedSubMenu.Page(1, strings["scoreboard_hands"],
+                coreSkin.getDrawable(MenuIcons.CARDS), SubMenu.ITEM_POS_TOP)
+        handsPage.content = Container(handsTable).pad(30f, 15f, 30f, 15f).fill()
+
+        // MENU
         menu = object : DefaultGameMenu(coreSkin) {
             override fun onContinueClicked() {
                 Game.load(this@GameLayout.settings, GameSaveJson) {
@@ -120,6 +137,7 @@ class GameLayout(assetManager: AssetManager,
 
             override fun onScoreboardOpened() {
                 hide()
+                scoresPage.checked = true
             }
 
             override fun onScoreboardClosed() {
@@ -134,12 +152,14 @@ class GameLayout(assetManager: AssetManager,
         menu.continueItem.enabled = Game.hasSavedGame
         menu.newGameOptions = newGameOptions
         menu.settings = settings
-        menu.rules = assetManager.get(Res.MD_RULES)
+        menu.rules = coreSkin[Res.MD_RULES]
+
+        menu.scoreboardMenu.addItem(scoresPage)
+        menu.scoreboardMenu.addItem(handsPage)
+
         addActor(menu)
 
         // Card containers
-        val cardSkin: Skin = assetManager.get(CoreRes.PCARD_SKIN)
-
         playerHand = CardHand(coreSkin, cardSkin).apply {
             sorter = PCard.DEFAULT_SORTER
             clipPercent = 0.3f
@@ -195,14 +215,14 @@ class GameLayout(assetManager: AssetManager,
         tradePopup = Popup(coreSkin)
         popupGroup.addActor(tradePopup)
 
-        val tradeBtn = PopupButton(coreSkin, bundle["popup_trade"])
+        val tradeBtn = PopupButton(coreSkin, strings["popup_trade"])
         tradeBtn.onClick {
             val game = game!!
             game.doMove(game.state?.getMoves()?.find { (it as TradeHandMove).trade }!!)
             tradePopup.hide()
         }
 
-        val noTradeBtn = PopupButton(coreSkin, bundle["popup_no_trade"])
+        val noTradeBtn = PopupButton(coreSkin, strings["popup_no_trade"])
         noTradeBtn.onClick {
             val game = game!!
             game.doMove(game.state?.getMoves()?.find { !(it as TradeHandMove).trade }!!)
@@ -218,7 +238,7 @@ class GameLayout(assetManager: AssetManager,
         collectPopup = Popup(coreSkin)
         popupGroup.addActor(collectPopup)
 
-        val collectBtn = PopupButton(coreSkin, bundle["popup_ok"])
+        val collectBtn = PopupButton(coreSkin, strings["popup_ok"])
         collectBtn.onClick {
             val moveDuration = collectTrick(hiddenStacks[0], 0f)
             collectPopup.hide()
@@ -233,17 +253,9 @@ class GameLayout(assetManager: AssetManager,
         idlePopup = Popup(coreSkin)
         popupGroup.addActor(idlePopup)
 
-        val idleBtn = PopupButton(coreSkin, bundle["popup_your_turn"])
+        val idleBtn = PopupButton(coreSkin, strings["popup_your_turn"])
         idlePopup.add(idleBtn).minWidth(150f)
         idlePopup.touchable = Touchable.disabled
-
-        // Score table
-        scoresTable = ScoresTable(coreSkin, 3)
-        val scoresView = Container(scoresTable).pad(30f, 15f, 30f, 15f).fill()
-        val scoresPage = PagedSubMenu.Page(0, bundle["scoreboard_scores"],
-                coreSkin.getDrawable(MenuIcons.LIST), SubMenu.ITEM_POS_TOP)
-        scoresPage.content = scoresView
-        menu.scoreboardMenu.addItem(scoresPage)
     }
 
     override fun setStage(stage: Stage?) {
@@ -278,9 +290,12 @@ class GameLayout(assetManager: AssetManager,
 
         playerHand.enabled = (game.players[0] is HumanPlayer)
 
+        // Update player names displayed everywhere
+        // This also calls updateHandsPage()
         updatePlayerNames()
 
-        // Set scores in scores table
+        // Update scores page
+        scoresTable.scores.clear()
         for (event in game.events) {
             if (event is GameEvent.RoundEnd) {
                 addScoresTableRow(event)
@@ -339,6 +354,10 @@ class GameLayout(assetManager: AssetManager,
         }
     }
 
+    /**
+     * Hide the game layout with an animation, but not the menu.
+     * [initGame] must be called to show the game back.
+     */
     fun hide() {
         // Clear all animations
         cardAnimationLayer.clearDelayedMoves()
@@ -380,6 +399,9 @@ class GameLayout(assetManager: AssetManager,
         var moveDuration = 0.5f
 
         game.tradePhaseEnded = false
+
+        // Hide previous round scoreboard pages
+        handsPage.shown = false
 
         // Set player hand
         val playerCards = game.players[0].hand.cards.toMutableList()
@@ -424,9 +446,12 @@ class GameLayout(assetManager: AssetManager,
     }
 
     private fun endRound(event: GameEvent.RoundEnd) {
-        // Update scores table
+        // Update scores page
         addScoresTableRow(event)
         updateTotalScoreFooters()
+
+        // Update hands page
+        updateHandsPage()
 
         // Show scoreboard after a small delay
         postDelayed(1f) {
@@ -663,17 +688,57 @@ class GameLayout(assetManager: AssetManager,
     /** Update the total scores in the scores table footers. */
     private fun updateTotalScoreFooters() {
         val game = game!!
+
+        // Find the leader player position
+        var minIndex = 0
+        var tie = false
+        for (i in 1..2) {
+            val score = game.players[i].score
+            val min = game.players[minIndex].score
+            if (score < min) {
+                minIndex = i
+                tie = false
+            } else if (score == min) {
+                tie = true
+            }
+        }
+
         scoresTable.footerScores = List(3) {
-            ScoresTable.Score(numberFormat.format(game.players[it].score))
+            ScoresTable.Score(numberFormat.format(game.players[it].score),
+                    if (it == minIndex && !tie) ScoresTable.Score.Highlight.POSITIVE else ScoresTable.Score.Highlight.NONE)
         }
     }
 
     /** Add the scores row corresponding to the end [event] of a round. */
     private fun addScoresTableRow(event: GameEvent.RoundEnd) {
         scoresTable.scores += List(3) {
-            ScoresTable.Score(numberFormat.format(event.result.playerResults[it]))
+            val diff = 4 - event.result.playerResults[it]
+            ScoresTable.Score(numberFormat.format(diff))
         }
         scoresTable.cellAdapter?.notifyChanged()
+
+        /*
+        when {
+            diff > 0 -> ScoresTable.Score.Highlight.NEGATIVE
+            diff < 0 -> ScoresTable.Score.Highlight.POSITIVE
+            else -> ScoresTable.Score.Highlight.NONE
+        }
+         */
+    }
+
+    /** If round is done, update the hands page in scoreboard. */
+    private fun updateHandsPage() {
+        val game = game!!
+
+        val shown = game.round > 0 && game.phase == Game.Phase.GAME_STARTED
+        handsPage.shown = shown
+
+        if (shown) {
+            val hands = (game.events.last { it is GameEvent.RoundStart } as GameEvent.RoundStart).hands
+            handsTable.players = List(3) {
+                HandsTable.PlayerRow(game.players[it].name!!, hands[it].cards)
+            } + HandsTable.PlayerRow(strings["scoreboard_hands_extra"], hands.last().cards)
+        }
     }
 
     override fun onPreferenceValueChanged(pref: PrefEntry) {
@@ -683,8 +748,10 @@ class GameLayout(assetManager: AssetManager,
     }
 
     /**
-     * Update the name of players and the names displayed in player labels and the
-     * scores table headers. Also sets the difficulty shown in the headers.
+     * Update the name of players everywhere it's displayed:
+     * - The player labels.
+     * - The headers of the scores table. The difficulty is set at the same time.
+     * - The name column of the hands table.
      */
     private fun updatePlayerNames() {
         val game = game!!
@@ -697,12 +764,19 @@ class GameLayout(assetManager: AssetManager,
             val player = game.players[it]
             val name = namesPref.names[it]
             player.name = name
+
+            // Label
             playerLabels[it].name = name
+
+            // Scores page
             scoresHeaders += ScoresTable.Header(name, if (player is MctsPlayer) {
                 diffPref.enumValues?.get(player.difficulty.ordinal)
             } else {
                 null
             })
+
+            // Hands page
+            updateHandsPage()
         }
         scoresTable.headers = scoresHeaders
     }
@@ -712,11 +786,11 @@ class GameLayout(assetManager: AssetManager,
         repeat(3) {
             val player = game.players[it]
             playerLabels[it].score = if (game.tradePhaseEnded) {
-                bundle.format("player_score", player.score, player.tricksTaken.size)
+                strings.format("player_score", player.score, player.tricksTaken.size)
             } else {
                 when (player.trade) {
-                    Player.Trade.TRADE -> bundle["player_trade"]
-                    Player.Trade.NO_TRADE -> bundle["player_no_trade"]
+                    Player.Trade.TRADE -> strings["player_trade"]
+                    Player.Trade.NO_TRADE -> strings["player_no_trade"]
                     Player.Trade.UNKNOWN -> null
                 }
             }

@@ -1,0 +1,22 @@
+{
+  Color: {
+    textColorBlack: { hex: #1b1b1bff }
+    textColorGray: { hex: #797979ff }
+  }
+  com.maltaisn.cardgame.widget.FontStyle: {
+    normalBold: {
+      bold: true
+      fontSize: 22
+      fontColor: textColorBlack
+    }
+  }
+  com.maltaisn.nines.core.widget.HandsTable$HandsTableStyle: {
+    default: {
+      headerFontStyle: normalBold
+      playerNameFontStyle: {
+        fontSize: 22
+        fontColor: textColorGray
+      }
+    }
+  }
+}
