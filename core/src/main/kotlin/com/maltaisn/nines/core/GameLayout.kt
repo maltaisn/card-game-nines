@@ -39,6 +39,7 @@ import com.maltaisn.cardgame.widget.menu.MenuIcons
 import com.maltaisn.cardgame.widget.menu.PagedSubMenu
 import com.maltaisn.cardgame.widget.menu.SubMenu
 import com.maltaisn.cardgame.widget.menu.table.ScoresTable
+import com.maltaisn.cardgame.widget.menu.table.TableViewContent
 import com.maltaisn.cardgame.widget.menu.table.TricksTable
 import com.maltaisn.nines.core.game.*
 import com.maltaisn.nines.core.game.MctsPlayer.Difficulty
@@ -87,6 +88,9 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
     private val tricksPage: PagedSubMenu.Page
     private val tricksTable: TricksTable
 
+    private val lastTrickPage: PagedSubMenu.Page
+    private val lastTrick: CardTrick
+
     private var idleAction: Action? = null
         set(value) {
             if (value == null) removeAction(field)
@@ -111,9 +115,20 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
 
         // Tricks page
         tricksTable = TricksTable(coreSkin, cardSkin, 3)
-        tricksPage = PagedSubMenu.Page(1, strings["scoreboard_tricks"],
+        tricksPage = PagedSubMenu.Page(2, strings["scoreboard_tricks"],
                 coreSkin.getDrawable(MenuIcons.CARDS), SubMenu.ITEM_POS_TOP)
         tricksPage.content = Container(tricksTable).pad(30f, 15f, 30f, 15f).fill()
+
+        // Last trick page
+        lastTrick = CardTrick(coreSkin, cardSkin, 3).apply {
+            cardSize = CardActor.SIZE_BIG
+            enabled = false
+        }
+        lastTrickPage = PagedSubMenu.Page(3, strings["scoreboard_last_trick"],
+                coreSkin.getDrawable(MenuIcons.CARDS), SubMenu.ITEM_POS_TOP)
+        lastTrickPage.content = Container(TableViewContent(coreSkin).apply {
+            add(lastTrick).grow()
+        }).pad(30f, 15f, 30f, 15f).fill()
 
         // MENU
         menu = object : DefaultGameMenu(coreSkin) {
@@ -183,9 +198,12 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
         menu.settings = settings
         menu.rules = coreSkin[Res.MD_RULES]
 
-        menu.scoreboardMenu.addItem(scoresPage)
-        menu.scoreboardMenu.addItem(handsPage)
-        menu.scoreboardMenu.addItem(tricksPage)
+        menu.scoreboardMenu.apply {
+            addItem(scoresPage)
+            addItem(handsPage)
+            addItem(tricksPage)
+            addItem(lastTrickPage)
+        }
 
         addActor(menu)
 
@@ -214,6 +232,7 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
         }
 
         trick = CardTrick(coreSkin, cardSkin, 3).apply {
+            cardSize = CardActor.SIZE_NORMAL
             shown = false
         }
 
@@ -359,7 +378,9 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
                         cards = List(3) { state.currentTrick.cards.getOrNull(it) }
                         fade(true)
                     }
-                    setTrickStartAngle((state.posToMove - state.currentTrick.cards.size + 3) % 3)
+                    trick.startAngle = getTrickStartAngle(state.currentTrick.startPos)
+
+                    updateLastTrickPage()
 
                     // Immediately show idle popup if it's a human player's turn
                     if (state.posToMove == 0 && game.players[0] is HumanPlayer) {
@@ -435,6 +456,7 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
         // Hide previous round scoreboard pages
         handsPage.shown = false
         tricksPage.shown = false
+        lastTrickPage.shown = false
 
         // Set player hand
         val playerCards = game.players[0].hand.cards.toMutableList()
@@ -484,6 +506,7 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
         updateTotalScoreFooters()
         updateHandsPage()
         updateTricksPage()
+        updateLastTrickPage()
 
         // Show scoreboard after a small delay
         postDelayed(1f) {
@@ -610,7 +633,7 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
                     }
                     1 -> {
                         // Player plays first: adjust trick start angle
-                        setTrickStartAngle(move.playerPos)
+                        trick.startAngle = getTrickStartAngle(move.playerPos)
                     }
                 }
             }
@@ -636,6 +659,9 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
         var moveDuration = delay
         dst.visibility = CardContainer.Visibility.ALL
 
+        updateLastTrickPage()
+
+        // Move trick to the player's hidden stack
         postDelayed(moveDuration) {
             for (i in 0 until trick.capacity) {
                 cardAnimationLayer.moveCard(trick, dst, i, 0, replaceSrc = true)
@@ -711,12 +737,10 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
     }
 
     /**
-     * Adjust the trick start angle so that the card of
+     * Adjust a trick start angle so that the card of
      * the player who led the trick (at [startPos]) is below.
      */
-    private fun setTrickStartAngle(startPos: Int) {
-        trick.startAngle = -((startPos + 3.0 / 8) * PI * 2 / 3).toFloat()
-    }
+    private fun getTrickStartAngle(startPos: Int) = -((startPos + 3.0 / 8) * PI * 2 / 3).toFloat()
 
     /** Update the total scores in the scores table footers. */
     private fun updateTotalScoreFooters() {
@@ -802,6 +826,19 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
                 val winner = trick.findWinner(startEvent.trumpSuit)
                 List(3) { TricksTable.TrickCard(rotated[it], it == winner) }
             }
+        }
+    }
+
+    /** Copy the current trick to the last trick container and update the page visibility in scoreboard. */
+    private fun updateLastTrickPage() {
+        val game = game!!
+        val state = game.state!!
+
+        lastTrickPage.shown = (state.tricksPlayed.size > 0 && game.phase == Game.Phase.ROUND_STARTED)
+        if (lastTrickPage.shown) {
+            val trick = state.tricksPlayed.last()
+            lastTrick.cards = trick.cards
+            lastTrick.startAngle = getTrickStartAngle(trick.startPos)
         }
     }
 
