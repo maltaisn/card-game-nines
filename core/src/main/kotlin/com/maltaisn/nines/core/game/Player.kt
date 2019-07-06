@@ -19,7 +19,6 @@ package com.maltaisn.nines.core.game
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
 import com.maltaisn.cardgame.game.CardPlayer
-import com.maltaisn.cardgame.readArrayValue
 import com.maltaisn.cardgame.readValue
 
 
@@ -34,32 +33,30 @@ abstract class Player : CardPlayer(), Json.Serializable {
     /** Whether the player has traded his hand or not. */
     var trade = Trade.UNKNOWN
 
-    /** List of the tricks taken by a player. */
-    val tricksTaken = mutableListOf<Trick>()
+    /** The number of tricks taken by a player. */
+    var tricksTaken = 0
 
     /**
      * Initialize this player to a [position] and with a [hand].
      */
     open fun initialize(position: Int, hand: Hand) {
-        trade = Trade.UNKNOWN
-        tricksTaken.clear()
-
         this.position = position
         this.hand = hand
+
+        trade = Trade.UNKNOWN
+        tricksTaken = 0
     }
 
     protected fun <T : Player> cloneTo(player: T) = super.cloneTo(player).also {
         it.score = score
         it.hand = hand.clone()
         it.trade = trade
-        for (trick in tricksTaken) {
-            it.tricksTaken += trick.clone()
-        }
+        it.tricksTaken = tricksTaken
     }
 
 
     override fun toString() = super.toString().dropLast(1) +
-            ", score: $score, ${tricksTaken.size} tricks taken, hand: $hand]"
+            ", score: $score, tricksTaken: $tricksTaken, hand: $hand]"
 
 
     override fun read(json: Json, jsonData: JsonValue) {
@@ -67,7 +64,7 @@ abstract class Player : CardPlayer(), Json.Serializable {
         score = jsonData.getInt("score")
         hand = json.readValue("hand", jsonData)
         trade = json.readValue("trade", jsonData)
-        tricksTaken += json.readArrayValue<ArrayList<Trick>, Trick>("tricksTaken", jsonData)
+        tricksTaken = jsonData.getInt("tricksTaken")
     }
 
     override fun write(json: Json) {

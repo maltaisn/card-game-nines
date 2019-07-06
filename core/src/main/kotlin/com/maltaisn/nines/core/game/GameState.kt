@@ -20,7 +20,11 @@ import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
 import com.maltaisn.cardgame.game.*
 import com.maltaisn.cardgame.prefs.GamePrefs
+import com.maltaisn.cardgame.readArrayValue
 import com.maltaisn.cardgame.readValue
+import com.maltaisn.nines.core.game.event.MoveEvent
+import com.maltaisn.nines.core.game.event.PlayMove
+import com.maltaisn.nines.core.game.event.TradeHandMove
 import kotlin.random.Random
 
 /**
@@ -44,12 +48,11 @@ class GameState() : CardGameState<Player>() {
     var phase = Phase.TRADE
         private set
 
-    /** How many tricks have been played. */
-    var tricksPlayed = 0
-        private set
+    /** The list of tricks that were played during the round. */
+    val tricksPlayed = mutableListOf<Trick>()
 
     /** The current trick being played. */
-    lateinit var currentTrick: Trick
+    var currentTrick = Trick(CardPlayer.NO_POSITION)
         private set
 
     /** How many trades took place during the trade phase. */
@@ -62,8 +65,6 @@ class GameState() : CardGameState<Player>() {
         initialize(settings, players, dealerPos)
         this.dealerPos = dealerPos
         this.trumpSuit = trumpSuit
-
-        currentTrick = Trick(trumpSuit)
 
         // Create and shuffle a 52-card deck.
         val deck = PCard.fullDecks(shuffled = true)
@@ -98,6 +99,7 @@ class GameState() : CardGameState<Player>() {
                     // Player to the left of the dealer starts.
                     phase = Phase.PLAY
                     posToMove = (dealerPos + 1) % 3
+                    currentTrick = Trick(posToMove)
                 }
             }
             is PlayMove -> {
@@ -106,17 +108,18 @@ class GameState() : CardGameState<Player>() {
                 player.hand.cards -= move.card
 
                 if (currentTrick.cards.size == 3) {
-                    // All players have played, find who takes the trick.
-                    val trickWinner = (currentTrick.findHighest() + posToMove + 1) % 3
+                    // All players have played, find who takes the trick and leads next.
+                    val trickWinner = currentTrick.findWinner(trumpSuit)
 
-                    players[trickWinner].tricksTaken += currentTrick.clone()
-                    currentTrick.cards.clear()
+                    players[trickWinner].tricksTaken++
+                    tricksPlayed += currentTrick
+
                     posToMove = trickWinner
-                    tricksPlayed++
+                    currentTrick = Trick(posToMove)
 
-                    if (tricksPlayed == CARDS_COUNT) {
+                    if (tricksPlayed.size == CARDS_COUNT) {
                         // Round is done, create result.
-                        result = GameResult(List(3) { players[it].tricksTaken.size.toFloat() })
+                        result = GameResult(List(3) { players[it].tricksTaken.toFloat() })
                     }
                 } else {
                     posToMove = getPositionNextTo(posToMove)
@@ -164,7 +167,7 @@ class GameState() : CardGameState<Player>() {
         return moves
     }
 
-    override fun getRandomMove(): GameEvent.Move? {
+    override fun getRandomMove(): MoveEvent? {
         if (isGameDone) {
             return null
         }
@@ -200,7 +203,7 @@ class GameState() : CardGameState<Player>() {
         it.trumpSuit = trumpSuit
         it.extraHand = extraHand.clone()
         it.phase = phase
-        it.tricksPlayed = tricksPlayed
+        it.tricksPlayed += tricksPlayed
         it.currentTrick = currentTrick.clone()
     }
 
@@ -212,7 +215,7 @@ class GameState() : CardGameState<Player>() {
     }
 
     override fun toString() = "[posToMove: $posToMove, " +
-            "tricksPlayed: $tricksPlayed, phase: $phase, trump: ${if (trumpSuit == NO_TRUMP)
+            "tricksPlayed: ${tricksPlayed.size}, phase: $phase, trump: ${if (trumpSuit == NO_TRUMP)
                 "none" else PCard.SUIT_STR[trumpSuit].toString()}, currentTrick: $currentTrick]"
 
 
@@ -222,7 +225,7 @@ class GameState() : CardGameState<Player>() {
         extraHand = json.readValue("extraHand", jsonData)
         trumpSuit = jsonData.getInt("trumpSuit")
         phase = json.readValue("phase", jsonData)
-        tricksPlayed = jsonData.getInt("tricksPlayed")
+        tricksPlayed += json.readArrayValue<ArrayList<Trick>, Trick>("tricksPlayed", jsonData)
         currentTrick = json.readValue("currentTrick", jsonData)
     }
 

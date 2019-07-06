@@ -24,6 +24,7 @@ import com.maltaisn.cardgame.game.PCard
 import com.maltaisn.cardgame.game.ai.Mcts
 import com.maltaisn.cardgame.game.drawTop
 import com.maltaisn.cardgame.readValue
+import com.maltaisn.nines.core.game.event.TradeHandMove
 
 /**
  * Defines a player played by the computer using MCTS algorithm.

@@ -14,48 +14,39 @@
  * limitations under the License.
  */
 
-package com.maltaisn.nines.core.game
+package com.maltaisn.nines.core.game.event
 
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
-
+import com.maltaisn.cardgame.game.GameResult
+import com.maltaisn.cardgame.readArrayValue
+import com.maltaisn.cardgame.readValue
+import com.maltaisn.nines.core.game.Trick
 
 /**
- * A move representing a player trading his hand with the extra hand
+ * An event for the end of a round.
+ * The event saves the round results and tricks played.
  */
-class TradeHandMove() : GameEvent.Move() {
+class RoundEndEvent() : GameEvent() {
 
-    /**
-     * Whether the move is a hand trade or a pass.
-     */
-    var trade = false
+    lateinit var result: GameResult
         private set
 
+    lateinit var tricks: List<Trick>
+        private set
 
-    constructor(playerPos: Int, trade: Boolean) : this() {
-        this.playerPos = playerPos
-        this.trade = trade
+    constructor(result: GameResult, tricks: List<Trick>) : this() {
+        this.result = result
+        this.tricks = tricks
     }
-
-
-    override fun equals(other: Any?): Boolean {
-        if (other !is TradeHandMove) return false
-        return playerPos == other.playerPos && trade == other.trade
-    }
-
-    override fun hashCode() = playerPos
-
-    override fun toString() = if (trade) "Trade hand" else "Don't trade hand"
-
 
     override fun read(json: Json, jsonData: JsonValue) {
-        super.read(json, jsonData)
-        trade = jsonData.getBoolean("trade")
+        result = json.readValue("result", jsonData)
+        tricks = json.readArrayValue("tricks", jsonData)
     }
 
     override fun write(json: Json) {
-        super.write(json)
-        json.writeValue("trade", trade)
+        json.writeValue("result", result)
+        json.writeValue("tricks", tricks)
     }
-
 }

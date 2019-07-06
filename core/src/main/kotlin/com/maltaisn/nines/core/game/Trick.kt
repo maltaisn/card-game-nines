@@ -18,19 +18,20 @@ package com.maltaisn.nines.core.game
 
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
+import com.maltaisn.cardgame.game.CardPlayer
 import com.maltaisn.cardgame.game.PCard
 import com.maltaisn.cardgame.readArrayValue
 
 
 /**
- * A game trick, made of 0 to 3 cards.
+ * A card trick containing 0 to 3 cards.
  */
 class Trick() : Cloneable, Json.Serializable {
 
     /**
-     * Trump suit when this trick was played.
+     * The position of the player who played the first card of the trick.
      */
-    var trumpSuit = 0
+    var startPos = CardPlayer.NO_POSITION
         private set
 
     /**
@@ -38,28 +39,27 @@ class Trick() : Cloneable, Json.Serializable {
      */
     val cards = mutableListOf<PCard>()
 
-
-    constructor(trumpSuit: Int, cards: List<PCard> = ArrayList(3)) : this() {
-        this.trumpSuit = trumpSuit
-        this.cards += cards
-    }
-
     /**
-     * Get the required suit in this trick if there's at least one card in it.
+     * The required suit in this trick if there's at least one card in it.
      * Returns `-1` if there's no card in trick.
      */
     val suit: Int
         get() = if (cards.isEmpty()) -1 else cards.first().suit
 
+
+    constructor(startPos: Int) : this() {
+        this.startPos = startPos
+    }
+
+
     /**
-     * Find the index of the highest card in the trick.
+     * Find the position of the player who played the highest card in the trick.
      */
-    fun findHighest(): Int {
+    fun findWinner(trumpSuit: Int): Int {
         var highestIndex = 0
         var highest = cards.first()
         for (i in 1 until cards.size) {
-            val card = cards.get(i)
-
+            val card = cards[i]
             if ((card.suit == trumpSuit && (highest.suit != trumpSuit
                             || card.greaterThan(highest, true)))
                     || card.suit == highest.suit
@@ -76,21 +76,24 @@ class Trick() : Cloneable, Json.Serializable {
                 highest = card
             }
         }
-        return highestIndex
+        return (highestIndex + startPos) % 3
     }
 
-    public override fun clone() = Trick(trumpSuit, cards)
+    public override fun clone() = Trick().also {
+        it.startPos = startPos
+        it.cards += cards
+    }
 
-    override fun toString() = cards.toString()
+    override fun toString() = "[startPos: $startPos, cards: $cards]"
 
 
     override fun read(json: Json, jsonData: JsonValue) {
-        trumpSuit = jsonData.getInt("trump")
+        startPos = jsonData.getInt("startPos")
         cards += json.readArrayValue<ArrayList<PCard>, PCard>("cards", jsonData)
     }
 
     override fun write(json: Json) {
-        json.writeValue("trump", trumpSuit)
+        json.writeValue("startPos", startPos)
         json.writeValue("cards", cards)
     }
 

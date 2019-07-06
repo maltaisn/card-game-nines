@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.maltaisn.nines.core.game
+package com.maltaisn.nines.core.game.event
 
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
@@ -23,9 +23,9 @@ import com.maltaisn.cardgame.readValue
 
 
 /**
- * A move representing a player playing a card in a trick
+ * A move in which a player plays a card of his hand to a trick.
  */
-class PlayMove() : GameEvent.Move() {
+class PlayMove() : MoveEvent() {
 
     /**
      * The card played.

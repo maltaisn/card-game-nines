@@ -22,6 +22,7 @@ import com.maltaisn.cardgame.addClassTag
 import com.maltaisn.cardgame.game.GameResult
 import com.maltaisn.cardgame.game.PCard
 import com.maltaisn.cardgame.setSerializer
+import com.maltaisn.nines.core.game.event.*
 
 
 object GameSaveJson : Json() {
@@ -37,10 +38,10 @@ object GameSaveJson : Json() {
         addClassTag<GameResult>("result")
         addClassTag<Trick>("trick")
         addClassTag<Hand>("hand")
-        addClassTag<GameEvent.Start>("startEvent")
-        addClassTag<GameEvent.End>("endEvent")
-        addClassTag<GameEvent.RoundStart>("roundStartEvent")
-        addClassTag<GameEvent.RoundEnd>("roundEndEvent")
+        addClassTag<StartEvent>("startEvent")
+        addClassTag<EndEvent>("endEvent")
+        addClassTag<RoundStartEvent>("roundStartEvent")
+        addClassTag<RoundEndEvent>("roundEndEvent")
         addClassTag<TradeHandMove>("tradeHandMove")
         addClassTag<PlayMove>("playMove")
         addClassTag<HumanPlayer>("humanPlayer")

@@ -25,11 +25,10 @@ import com.maltaisn.cardgame.game.CardGameEvent
 import com.maltaisn.cardgame.game.CardPlayer
 import com.maltaisn.cardgame.game.PCard
 import com.maltaisn.cardgame.prefs.GamePrefs
-import com.maltaisn.cardgame.prefs.PlayerNamesPref
-import com.maltaisn.cardgame.prefs.PrefEntry
 import com.maltaisn.cardgame.readArrayValue
 import com.maltaisn.cardgame.readValue
 import com.maltaisn.nines.core.PrefKeys
+import com.maltaisn.nines.core.game.event.*
 import kotlinx.coroutines.*
 import ktx.async.KtxAsync
 import ktx.async.newSingleThreadAsyncContext
@@ -154,14 +153,13 @@ class Game() : CardGame() {
         for (player in players) {
             player.score = startScore
         }
-        updatePlayerNames()
 
         dealerPos = Random.nextInt(3)
         winnerPos = CardPlayer.NO_POSITION
 
         _events.clear()
 
-        doEvent(GameEvent.Start())
+        doEvent(StartEvent())
     }
 
     /** End the game. */
@@ -173,7 +171,7 @@ class Game() : CardGame() {
         check(phase == Phase.GAME_STARTED) { "Game has already ended." }
         phase = Phase.ENDED
 
-        doEvent(GameEvent.End())
+        doEvent(EndEvent())
     }
 
     /** Start a new round. */
@@ -186,7 +184,8 @@ class Game() : CardGame() {
         val state = GameState(settings, players, dealerPos, trumpSuit)
         this.state = state
 
-        doEvent(GameEvent.RoundStart(players.map { it.hand.clone() } + state.extraHand.clone()))
+        doEvent(RoundStartEvent(trumpSuit,
+                players.map { it.hand.clone() } + state.extraHand.clone()))
     }
 
     /** End the current round. */
@@ -194,13 +193,17 @@ class Game() : CardGame() {
         check(phase == Phase.ROUND_STARTED) { "Round has already ended or game has not started." }
         phase = Phase.GAME_STARTED
 
+        val state = state!!
+
         // Update the scores
-        val result = state?.result!!
+        val result = state.result!!
         for ((i, player) in players.withIndex()) {
             player.score += 4 - result.playerResults[i].toInt()
         }
 
-        doEvent(GameEvent.RoundEnd(result))
+        doEvent(RoundEndEvent(result, state.tricksPlayed))
+
+        this.state = null
 
         // Check if any player has won
         // If there's any tie, continue playing
@@ -227,7 +230,7 @@ class Game() : CardGame() {
 
     /** Do a [move] on the game state. */
     fun doMove(move: CardGameEvent.Move) {
-        move as GameEvent.Move
+        move as MoveEvent
         check(phase != Phase.ENDED) { "Game has not started." }
 
         state?.doMove(move)
@@ -247,20 +250,6 @@ class Game() : CardGame() {
         eventListener?.invoke(event)
     }
 
-    override fun onPreferenceValueChanged(pref: PrefEntry) {
-        if (pref.key == PrefKeys.PLAYER_NAMES) {
-            updatePlayerNames()
-        }
-    }
-
-    /** Update [players] names from the preference values. */
-    private fun updatePlayerNames() {
-        val pref = settings[PrefKeys.PLAYER_NAMES] as PlayerNamesPref
-        repeat(3) {
-            players[it].name = pref.names[it]
-        }
-    }
-
     override fun dispose() {
         if (::settings.isInitialized) {
             settings.removeListener(this)
@@ -273,8 +262,7 @@ class Game() : CardGame() {
     }
 
     override fun toString() = "${events.size} events, phase: $phase, round: $round, " +
-            "dealer: ${players[dealerPos].name}, trumpSuit: " +
-            (PCard.SUIT_STR.getOrNull(trumpSuit) ?: "none") + "]"
+            "dealerPos: $dealerPos, trumpSuit: ${(PCard.SUIT_STR.getOrNull(trumpSuit) ?: "none")}]"
 
 
     override fun read(json: Json, jsonData: JsonValue) {
@@ -337,7 +325,6 @@ class Game() : CardGame() {
                     game.settings = settings
                     game.state?.settings = settings
                     settings.addListener(game)
-                    game.updatePlayerNames()
                     onDone(game)
                 }
             }

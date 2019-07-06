@@ -39,12 +39,15 @@ import com.maltaisn.cardgame.widget.menu.MenuIcons
 import com.maltaisn.cardgame.widget.menu.PagedSubMenu
 import com.maltaisn.cardgame.widget.menu.SubMenu
 import com.maltaisn.cardgame.widget.menu.table.ScoresTable
+import com.maltaisn.cardgame.widget.menu.table.TricksTable
 import com.maltaisn.nines.core.game.*
 import com.maltaisn.nines.core.game.MctsPlayer.Difficulty
+import com.maltaisn.nines.core.game.event.*
 import com.maltaisn.nines.core.widget.HandsTable
 import ktx.actors.onClick
 import ktx.style.get
 import java.text.NumberFormat
+import java.util.*
 import kotlin.math.PI
 
 
@@ -58,6 +61,8 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
 
     private val newGameOptions: GamePrefs = coreSkin["newGameOptions"]
     private val settings: GamePrefs = coreSkin["settings"]
+
+    private val namesPref = settings[PrefKeys.PLAYER_NAMES] as PlayerNamesPref
 
     private val menu: DefaultGameMenu
 
@@ -78,6 +83,9 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
 
     private val handsPage: PagedSubMenu.Page
     private val handsTable: HandsTable
+
+    private val tricksPage: PagedSubMenu.Page
+    private val tricksTable: TricksTable
 
     private var idleAction: Action? = null
         set(value) {
@@ -100,6 +108,12 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
         handsPage = PagedSubMenu.Page(1, strings["scoreboard_hands"],
                 coreSkin.getDrawable(MenuIcons.CARDS), SubMenu.ITEM_POS_TOP)
         handsPage.content = Container(handsTable).pad(30f, 15f, 30f, 15f).fill()
+
+        // Tricks page
+        tricksTable = TricksTable(coreSkin, cardSkin, 3)
+        tricksPage = PagedSubMenu.Page(1, strings["scoreboard_tricks"],
+                coreSkin.getDrawable(MenuIcons.CARDS), SubMenu.ITEM_POS_TOP)
+        tricksPage.content = Container(tricksTable).pad(30f, 15f, 30f, 15f).fill()
 
         // MENU
         menu = object : DefaultGameMenu(coreSkin) {
@@ -156,6 +170,7 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
 
         menu.scoreboardMenu.addItem(scoresPage)
         menu.scoreboardMenu.addItem(handsPage)
+        menu.scoreboardMenu.addItem(tricksPage)
 
         addActor(menu)
 
@@ -277,11 +292,11 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
 
         game.eventListener = {
             when (it) {
-                is GameEvent.Start -> startGame()
-                is GameEvent.End -> endGame()
-                is GameEvent.RoundStart -> startRound()
-                is GameEvent.RoundEnd -> endRound(it)
-                is GameEvent.Move -> doMove(it)
+                is StartEvent -> startGame()
+                is EndEvent -> endGame()
+                is RoundStartEvent -> startRound()
+                is RoundEndEvent -> endRound(it)
+                is MoveEvent -> doMove(it)
             }
         }
 
@@ -297,11 +312,13 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
         // Update scores page
         scoresTable.scores.clear()
         for (event in game.events) {
-            if (event is GameEvent.RoundEnd) {
+            if (event is RoundEndEvent) {
                 addScoresTableRow(event)
             }
         }
         updateTotalScoreFooters()
+
+        updateTricksPage()
 
         when (game.phase) {
             Game.Phase.ENDED, Game.Phase.GAME_STARTED -> {
@@ -402,6 +419,7 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
 
         // Hide previous round scoreboard pages
         handsPage.shown = false
+        tricksPage.shown = false
 
         // Set player hand
         val playerCards = game.players[0].hand.cards.toMutableList()
@@ -445,13 +463,12 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
         }
     }
 
-    private fun endRound(event: GameEvent.RoundEnd) {
-        // Update scores page
+    private fun endRound(event: RoundEndEvent) {
+        // Update scoreboard
         addScoresTableRow(event)
         updateTotalScoreFooters()
-
-        // Update hands page
         updateHandsPage()
+        updateTricksPage()
 
         // Show scoreboard after a small delay
         postDelayed(1f) {
@@ -459,7 +476,7 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
         }
     }
 
-    private fun doMove(move: GameEvent.Move) {
+    private fun doMove(move: MoveEvent) {
         val game = game!!
         val state = game.state!!
 
@@ -640,7 +657,8 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
             } else {
                 // Show idle popup after some time if not already shown (by initGame)
                 if (!idlePopup.shown) {
-                    val delay = if (state.currentTrick.cards.size == 0 && state.tricksPlayed == 0) 0f else 3f
+                    val delay = if (state.currentTrick.cards.size == 0
+                            && state.tricksPlayed.size == 0) 0f else 3f
                     idleAction = postDelayed(delay) {
                         idlePopup.show(playerHand, Popup.Side.ABOVE)
                         idleAction = null
@@ -710,7 +728,7 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
     }
 
     /** Add the scores row corresponding to the end [event] of a round. */
-    private fun addScoresTableRow(event: GameEvent.RoundEnd) {
+    private fun addScoresTableRow(event: RoundEndEvent) {
         scoresTable.scores += List(3) {
             val diff = 4 - event.result.playerResults[it]
             ScoresTable.Score(numberFormat.format(diff))
@@ -734,10 +752,39 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
         handsPage.shown = shown
 
         if (shown) {
-            val hands = (game.events.last { it is GameEvent.RoundStart } as GameEvent.RoundStart).hands
+            val hands = (game.events.last { it is RoundStartEvent } as RoundStartEvent).hands
             handsTable.players = List(3) {
-                HandsTable.PlayerRow(game.players[it].name!!, hands[it].cards)
+                HandsTable.PlayerRow(namesPref.names[it], hands[it].cards)
             } + HandsTable.PlayerRow(strings["scoreboard_hands_extra"], hands.last().cards)
+        }
+    }
+
+    /** If round is done, update the tricks page in scoreboard. */
+    private fun updateTricksPage() {
+        val game = game!!
+
+        val shown = game.round > 0 && game.phase == Game.Phase.GAME_STARTED
+        tricksPage.shown = shown
+
+        if (shown) {
+            tricksTable.cards.clear()
+
+            val startEvent = game.events.last { it is RoundStartEvent } as RoundStartEvent
+            val endEvent = game.events.last { it is RoundEndEvent } as RoundEndEvent
+            tricksTable.cards += endEvent.tricks.map { trick ->
+                val rotated = trick.cards.toMutableList()
+                Collections.rotate(rotated, trick.startPos)
+                val winner = trick.findWinner(startEvent.trumpSuit)
+                List(3) { TricksTable.TrickCard(rotated[it], it == winner) }
+            }
+
+            // The problem is the following: the state is erased after the round ends but
+            // not player fields like tricksTaken, hand, trade (?). These should be erased and
+            // the tricks info should be stored in the round end event, along with the results.
+
+            // After that remove useless fields: Trick.startPos, Trick.trumpSuit, Player.name, etc
+            // Put trumpSuit in the roundStart event. A game must be replayable with just the list
+            // of events from a round. (ignoring initial scores)
         }
     }
 
@@ -756,14 +803,12 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
     private fun updatePlayerNames() {
         val game = game!!
 
-        val namesPref = settings[PrefKeys.PLAYER_NAMES] as PlayerNamesPref
         val diffPref = newGameOptions[PrefKeys.DIFFICULTY] as SliderPref
 
         val scoresHeaders = mutableListOf<ScoresTable.Header>()
         repeat(3) {
             val player = game.players[it]
             val name = namesPref.names[it]
-            player.name = name
 
             // Label
             playerLabels[it].name = name
@@ -777,6 +822,9 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
 
             // Hands page
             updateHandsPage()
+
+            // Tricks page
+            tricksTable.headers = namesPref.names.toList()
         }
         scoresTable.headers = scoresHeaders
     }
@@ -786,7 +834,7 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
         repeat(3) {
             val player = game.players[it]
             playerLabels[it].score = if (game.tradePhaseEnded) {
-                strings.format("player_score", player.score, player.tricksTaken.size)
+                strings.format("player_score", player.score, player.tricksTaken)
             } else {
                 when (player.trade) {
                     Player.Trade.TRADE -> strings["player_trade"]

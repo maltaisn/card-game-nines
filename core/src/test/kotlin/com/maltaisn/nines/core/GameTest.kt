@@ -21,6 +21,7 @@ import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.prefs.buildGamePrefsFromMap
 import com.maltaisn.nines.core.game.*
 import com.maltaisn.nines.core.game.MctsPlayer.Difficulty
+import com.maltaisn.nines.core.game.event.*
 
 
 fun main() {
@@ -45,12 +46,11 @@ private fun playGame(settings: GamePrefs,
     var lastScores = IntArray(3) { settings.getInt(PrefKeys.START_SCORE) }
 
     game.eventListener = { event ->
-        event as GameEvent
         when (event) {
-            is GameEvent.Start -> {
+            is StartEvent -> {
                 println("=== GAME STARTED ===")
             }
-            is GameEvent.RoundStart -> {
+            is RoundStartEvent -> {
                 // >>> Round 1 started, trump: ♥
                 val trumpStr = if (game.trumpSuit == GameState.NO_TRUMP) {
                     "none"
@@ -59,7 +59,7 @@ private fun playGame(settings: GamePrefs,
                 }
                 println(">>> Round ${game.round} started, trump: $trumpStr")
             }
-            is GameEvent.RoundEnd -> {
+            is RoundEndEvent -> {
                 // >>> Round 1 ended, diff: [-2, 1, 0], scores: [7, 10, 9]
                 val scores = IntArray(3) { players[it].score }
                 val diff = IntArray(3) { scores[it] - lastScores[it] }
@@ -68,27 +68,27 @@ private fun playGame(settings: GamePrefs,
                         "diff: ${diff.contentToString()}, " +
                         "scores: ${scores.contentToString()}\n")
             }
-            is GameEvent.End -> {
+            is EndEvent -> {
                 // === GAME ENDED after 13 rounds, scores: [-1, 6, 9], winner: South ===
                 val scores = IntArray(3) { players[it].score }
                 println("=== GAME ENDED after ${game.round} rounds, " +
                         "scores: ${scores.contentToString()}, " +
-                        "winner: ${game.players[game.winnerPos].name} ===\n")
+                        "winner: ${NAMES[game.winnerPos]} ===\n")
             }
-            is GameEvent.Move -> {
+            is MoveEvent -> {
                 if (verbosity > VERBOSE_ROUNDS) {
-                    val state = game.gameState!!
+                    val state = game.state!!
                     val player = players[event.playerPos]
                     // South did: Trade hand, trick: []
-                    print("${player.name} did: $event, trick: ${state.currentTrick}")
+                    print("${NAMES[event.playerPos]} did: $event, trick: ${state.currentTrick}")
                     if (verbosity == VERBOSE_ALL) {
                         // East did: Play 5♥, trick: [A♥, 5♥], hand: [...]
                         print(", hand: ${player.hand}")
                     }
                     println()
-                    if (state.tricksPlayed > 0 && state.currentTrick.cards.isEmpty()) {
+                    if (state.tricksPlayed.size > 0 && state.currentTrick.cards.isEmpty()) {
                         // > Trick #5 taken by North
-                        println("> Trick #${state.tricksPlayed} taken by ${state.playerToMove.name}\n")
+                        println("> Trick #${state.tricksPlayed} taken by ${NAMES[state.posToMove]}\n")
                     }
                 }
             }
@@ -99,7 +99,7 @@ private fun playGame(settings: GamePrefs,
     game.start()
     while (!game.isDone) {
         game.startRound()
-        val state = game.gameState!!
+        val state = game.state!!
         var moves = state.getMoves()
         while (moves.isNotEmpty()) {
             val next = state.playerToMove
@@ -107,7 +107,7 @@ private fun playGame(settings: GamePrefs,
                 val move = next.findMove(state)
                 game.doMove(move)
             } else {
-                println("\n${next.name}'s turn ${next.hand}, choose a move:")
+                println("\n${NAMES[next.position]}'s turn ${next.hand}, choose a move:")
                 for ((i, move) in moves.withIndex()) {
                     println("${i + 1}. $move")
                 }
@@ -152,3 +152,5 @@ private val settings = buildGamePrefsFromMap(mapOf(
 private const val VERBOSE_ROUNDS = 0
 private const val VERBOSE_MOVES = 1
 private const val VERBOSE_ALL = 2
+
+private val NAMES = listOf("South", "East", "North")

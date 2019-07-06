@@ -25,17 +25,21 @@ internal class TrickTest {
 
     @Test
     fun findTrickWinner() {
-        val trick1 = Trick(PCard.SPADE, PCard.parseDeck("A♣,5♣,Q♣"))
-        assertEquals(0, trick1.findHighest())
+        val trick1 = Trick(0)
+        trick1.cards += PCard.parseDeck("A♣,5♣,Q♣")
+        assertEquals(0, trick1.findWinner(PCard.SPADE))
 
-        val trick2 = Trick(PCard.SPADE, PCard.parseDeck("A♣,5♣,5♠"))
-        assertEquals(2, trick2.findHighest())
+        val trick2 = Trick(0)
+        trick2.cards += PCard.parseDeck("A♣,5♣,5♠")
+        assertEquals(2, trick2.findWinner(PCard.SPADE))
 
-        val trick3 = Trick(PCard.SPADE, PCard.parseDeck("A♣,Q♠,5♠"))
-        assertEquals(1, trick3.findHighest())
+        val trick3 = Trick(0)
+        trick3.cards += PCard.parseDeck("A♣,Q♠,5♠")
+        assertEquals(1, trick3.findWinner(PCard.SPADE))
 
-        val trick4 = Trick(PCard.SPADE, PCard.parseDeck("2♣,A♦,A♥"))
-        assertEquals(0, trick4.findHighest())
+        val trick4 = Trick(0)
+        trick4.cards += PCard.parseDeck("2♣,A♦,A♥")
+        assertEquals(0, trick4.findWinner(PCard.SPADE))
     }
 
 }
