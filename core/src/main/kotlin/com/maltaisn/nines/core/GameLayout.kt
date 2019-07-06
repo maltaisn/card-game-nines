@@ -752,10 +752,22 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
         handsPage.shown = shown
 
         if (shown) {
-            val hands = (game.events.last { it is RoundStartEvent } as RoundStartEvent).hands
-            handsTable.players = List(3) {
+            // Get the starting hands and redo all the trade moves to get the correct initial hands.
+            val startIndex = game.events.indexOfLast { it is RoundStartEvent }
+            val hands = (game.events[startIndex] as RoundStartEvent).hands.toMutableList()
+            for (event in game.events.subList(startIndex + 1, startIndex + 4)) {
+                if ((event as TradeHandMove).trade) {
+                    val temp = hands[3]
+                    hands[3] = hands[event.playerPos]
+                    hands[event.playerPos] = temp
+                }
+            }
+
+            val playerRows = MutableList(3) {
                 HandsTable.PlayerRow(namesPref.names[it], hands[it].cards)
-            } + HandsTable.PlayerRow(strings["scoreboard_hands_extra"], hands.last().cards)
+            }
+            playerRows += HandsTable.PlayerRow(strings["scoreboard_hands_extra"], hands[3].cards)
+            handsTable.players = playerRows
         }
     }
 
@@ -767,24 +779,14 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
         tricksPage.shown = shown
 
         if (shown) {
-            tricksTable.cards.clear()
-
             val startEvent = game.events.last { it is RoundStartEvent } as RoundStartEvent
             val endEvent = game.events.last { it is RoundEndEvent } as RoundEndEvent
-            tricksTable.cards += endEvent.tricks.map { trick ->
+            tricksTable.cards = endEvent.tricks.map { trick ->
                 val rotated = trick.cards.toMutableList()
                 Collections.rotate(rotated, trick.startPos)
                 val winner = trick.findWinner(startEvent.trumpSuit)
                 List(3) { TricksTable.TrickCard(rotated[it], it == winner) }
             }
-
-            // The problem is the following: the state is erased after the round ends but
-            // not player fields like tricksTaken, hand, trade (?). These should be erased and
-            // the tricks info should be stored in the round end event, along with the results.
-
-            // After that remove useless fields: Trick.startPos, Trick.trumpSuit, Player.name, etc
-            // Put trumpSuit in the roundStart event. A game must be replayable with just the list
-            // of events from a round. (ignoring initial scores)
         }
     }
 

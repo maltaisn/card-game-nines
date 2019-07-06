@@ -83,13 +83,13 @@ class GameState() : CardGameState<Player>() {
         when (move) {
             is TradeHandMove -> {
                 // Swap player's hand with the extra hand
-                if (move.trade) {
+                player.trade = if (move.trade) {
                     val temp = player.hand
                     player.hand = extraHand
-                    player.trade = Player.Trade.TRADE
                     extraHand = temp
+                    Player.Trade.TRADE
                 } else {
-                    player.trade = Player.Trade.NO_TRADE
+                    Player.Trade.NO_TRADE
                 }
 
                 posToMove = getPositionNextTo(posToMove)
