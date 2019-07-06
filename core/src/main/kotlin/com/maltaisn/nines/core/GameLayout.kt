@@ -119,11 +119,20 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
         menu = object : DefaultGameMenu(coreSkin) {
             override fun onContinueClicked() {
                 Game.load(this@GameLayout.settings, GameSaveJson) {
-                    initGame(it)
+                    if (it != null) {
+                        super.onContinueClicked()
+                        initGame(it)
+                    } else {
+                        // Could not load save file, delete it and disable continue
+                        Game.GAME_SAVE_FILE.delete()
+                        continueItem.enabled = false
+                    }
                 }
             }
 
             override fun onStartGameClicked() {
+                super.onStartGameClicked()
+
                 val difficulty = when (this@GameLayout.newGameOptions.getInt(PrefKeys.DIFFICULTY)) {
                     0 -> Difficulty.BEGINNER
                     1 -> Difficulty.INTERMEDIATE
@@ -144,17 +153,23 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
             }
 
             override fun onExitGameClicked() {
+                super.onExitGameClicked()
+
                 game?.save(GameSaveJson)
                 hide()
                 continueItem.enabled = true
             }
 
             override fun onScoreboardOpened() {
+                super.onScoreboardOpened()
+
                 hide()
                 scoresPage.checked = true
             }
 
             override fun onScoreboardClosed() {
+                super.onScoreboardClosed()
+
                 val game = game!!
                 initGame(game)
                 if (game.phase == Game.Phase.GAME_STARTED) {

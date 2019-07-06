@@ -19,6 +19,7 @@ package com.maltaisn.nines.core.game
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
+import com.badlogic.gdx.utils.SerializationException
 import com.maltaisn.cardgame.fromJson
 import com.maltaisn.cardgame.game.CardGame
 import com.maltaisn.cardgame.game.CardGameEvent
@@ -33,6 +34,7 @@ import kotlinx.coroutines.*
 import ktx.async.KtxAsync
 import ktx.async.newSingleThreadAsyncContext
 import ktx.async.onRenderingThread
+import ktx.log.error
 import kotlin.math.max
 import kotlin.random.Random
 
@@ -316,19 +318,23 @@ class Game() : CardGame() {
 
         /**
          * Load a game instance with [settings] using [json].
-         * Calls [onDone] when done loading.
+         * Calls [onDone] when done loading, and with `null` if loading failed.
          */
-        fun load(settings: GamePrefs, json: Json, onDone: (Game) -> Unit) {
+        fun load(settings: GamePrefs, json: Json, onDone: (Game?) -> Unit) {
             if (hasSavedGame) {
                 KtxAsync.launch(Dispatchers.IO) {
-                    val game: Game = json.fromJson(GAME_SAVE_FILE)
-                    game.settings = settings
-                    game.state?.settings = settings
-                    settings.addListener(game)
-                    onDone(game)
+                    onDone(try {
+                        val game: Game = json.fromJson(GAME_SAVE_FILE)
+                        game.settings = settings
+                        game.state?.settings = settings
+                        settings.addListener(game)
+                        game
+                    } catch (e: SerializationException) {
+                        error(e) { "Could not deserialize saved game." }
+                        null
+                    })
                 }
             }
         }
     }
-
 }
