@@ -425,6 +425,12 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
         extraHand.fade(false)
         trick.fade(false)
 
+        // Hide all hidden stacks cards. If hide() is called during trick collection, hidden stack is
+        // visible and failing to hide it back will result in hands being shown during animations.
+        for (hiddenStack in hiddenStacks) {
+            hiddenStack.visibility = CardContainer.Visibility.NONE
+        }
+
         playerLabelTable.fade(false)
 
         tradePopup.hide()
