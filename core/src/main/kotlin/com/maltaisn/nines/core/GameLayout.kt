@@ -458,7 +458,7 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
         tricksPage.shown = false
         lastTrickPage.shown = false
 
-        // Set player hand
+        // Set player hand. They must be sorted first to be dealt in correct order.
         val playerCards = game.players[0].hand.cards.toMutableList()
         playerCards.sortWith(PCard.DEFAULT_SORTER)
 
@@ -574,6 +574,7 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin) {
                             for (i in 0 until GameState.CARDS_COUNT) {
                                 cardAnimationLayer.moveCard(hiddenStack, extraHand, 0, 0)
                             }
+                            extraHand.sort()
                             cardAnimationLayer.update()
                         }
                         moveDuration += CardAnimationLayer.UPDATE_DURATION
