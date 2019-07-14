@@ -121,6 +121,8 @@ interface GameContract {
 
         fun onSave()
 
+        fun onBackPress()
+
         fun onTradeBtnClicked(trade: Boolean)
         fun onCollectTrickBtnClicked()
 

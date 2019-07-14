@@ -16,6 +16,7 @@
 
 package com.maltaisn.nines.core
 
+import com.badlogic.gdx.Input
 import com.badlogic.gdx.scenes.scene2d.Action
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.Touchable
@@ -40,6 +41,7 @@ import com.maltaisn.cardgame.widget.menu.table.TricksTable
 import com.maltaisn.nines.core.game.Player
 import com.maltaisn.nines.core.widget.HandsTable
 import ktx.actors.onClick
+import ktx.actors.onKeyDown
 import ktx.style.get
 import java.text.NumberFormat
 import kotlin.properties.ReadWriteProperty
@@ -224,6 +226,13 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
         val idleBtn = PopupButton(coreSkin, strings["popup_your_turn"])
         idlePopup.add(idleBtn).minWidth(150f)
         idlePopup.touchable = Touchable.disabled
+
+        // Back key listener
+        onKeyDown(true) {
+            if (it == Input.Keys.BACK || it == Input.Keys.ESCAPE) {
+                presenter.onBackPress()
+            }
+        }
     }
 
 

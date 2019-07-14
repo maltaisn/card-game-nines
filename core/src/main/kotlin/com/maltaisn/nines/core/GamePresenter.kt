@@ -42,12 +42,20 @@ class GamePresenter : GameContract.Presenter, PrefEntry.PrefListener {
     private val namesPref: PlayerNamesPref
         get() = requireLayout().settings[PrefKeys.PLAYER_NAMES] as PlayerNamesPref
 
+    /** Whether a game is currently shown in the layout or not. */
+    private var gameShown = false
+
+    /** Whether the scoreboard menu is currently opened or not. */
+    private var scoreboardShown = false
+
     /**
      * Whether the trade phase has ended in the layout. This is used by [updatePlayerScores]
      * to make sure that the last player choice to trade is displayed for some time, because
      * [GameState.phase] is already changed at the time [doMove] is called.
      */
     private var tradePhaseEnded = false
+
+    private var lastBackPressTime = 0L
 
 
     override fun attach(layout: GameContract.View) {
@@ -74,6 +82,22 @@ class GamePresenter : GameContract.Presenter, PrefEntry.PrefListener {
 
     override fun onSave() {
         game?.save(GameSaveJson)
+    }
+
+
+    override fun onBackPress() {
+        if ((System.currentTimeMillis() - lastBackPressTime) / 1000f < BACK_PRESS_COOLDOWN) {
+            // Back was pressed too quickly, do nothing.
+            return
+        }
+        lastBackPressTime = System.currentTimeMillis()
+
+        // Do the same action as when the back arrow is pressed.
+        when {
+            gameShown -> onExitGameClicked()
+            scoreboardShown -> onScoreboardCloseClicked()
+            else -> requireLayout().goToPreviousMenu()
+        }
     }
 
 
@@ -145,6 +169,8 @@ class GamePresenter : GameContract.Presenter, PrefEntry.PrefListener {
             // Last round has ended, start a new one.
             game.startRound()
         }
+
+        scoreboardShown = false
     }
 
     override fun onTradeBtnClicked(trade: Boolean) {
@@ -229,8 +255,6 @@ class GamePresenter : GameContract.Presenter, PrefEntry.PrefListener {
 
         layout.completeAnimations()
 
-        layout.setPlayerHandEnabled(game.players[0] is HumanPlayer)
-
         // Update player names displayed everywhere
         // This also calls updateHandsPage()
         updatePlayerNames()
@@ -248,8 +272,10 @@ class GamePresenter : GameContract.Presenter, PrefEntry.PrefListener {
 
         if (game.phase == Game.Phase.ROUND_STARTED) {
             // Round has started
-            val state = game.state!!
+            val state = requireState()
+
             layout.setPlayerLabelsShown(true)
+            layout.setPlayerHandEnabled(game.players[0] is HumanPlayer)
 
             tradePhaseEnded = (state.phase == GameState.Phase.PLAY)
 
@@ -275,10 +301,10 @@ class GamePresenter : GameContract.Presenter, PrefEntry.PrefListener {
             }
 
             layout.setPlayerHandShown(true)
-            layout.setPlayerHandCards(state.players[0].hand.cards)
+            layout.setPlayerHandCards(game.players[0].hand.cards)
 
             for (i in 1..2) {
-                layout.setHiddenStackCards(i, state.players[i].hand.cards)
+                layout.setHiddenStackCards(i, game.players[i].hand.cards)
             }
 
             // NOTE: taken tricks cards are not put back in the hidden stack since they're not used
@@ -287,6 +313,8 @@ class GamePresenter : GameContract.Presenter, PrefEntry.PrefListener {
 
             playNext()
         }
+
+        gameShown = true
     }
 
     /**
@@ -317,6 +345,8 @@ class GamePresenter : GameContract.Presenter, PrefEntry.PrefListener {
         }
 
         game.cancelAiTurn()
+
+        gameShown = false
     }
 
     private fun startGame() {
@@ -645,6 +675,8 @@ class GamePresenter : GameContract.Presenter, PrefEntry.PrefListener {
         val layout = requireLayout()
         layout.checkScoreboardScoresPage()
         layout.showScoreboard()
+
+        scoreboardShown = true
     }
 
     /**
@@ -760,6 +792,9 @@ class GamePresenter : GameContract.Presenter, PrefEntry.PrefListener {
     companion object {
         /** The delay after the start of a human player turn before the idle popup is shown. */
         private const val IDLE_POPUP_DELAY = 3f
+
+        /** The minimum time between each back press needed to actually trigger it. */
+        private const val BACK_PRESS_COOLDOWN = 1f
     }
 
 }
