@@ -154,6 +154,7 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
 
         hiddenStacks = List(3) {
             CardStack(coreSkin, cardSkin).apply {
+                cardSize = CardActor.SIZE_NORMAL
                 visibility = CardContainer.Visibility.NONE
             }
         }
@@ -184,12 +185,13 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
             topTable.add(hiddenStacks[2]).grow()
 
             playerLabelTable = FadeTable().apply {
-                pad(40f, 30f, 140f, 30f)
+                pad(30f, 30f, 150f, 30f)
                 add(playerLabels[2]).align(Align.topRight).width(120f).expand().padRight(150f).row()
                 add(playerLabels[1]).align(Align.topLeft).width(120f).expand().row()
                 add(playerLabels[0]).align(Align.bottomLeft).width(120f).expand().padLeft(100f)
             }
             val containerTable = Table().apply {
+                pad(20f, 40f, 0f, 40f)
                 add(Stack(trick, extraHand)).grow().row()
                 add(playerHand).growX()
             }
