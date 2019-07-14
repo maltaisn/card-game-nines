@@ -19,7 +19,6 @@ package com.maltaisn.nines.core
 import com.maltaisn.cardgame.game.PCard
 import com.maltaisn.cardgame.game.sortWith
 import com.maltaisn.cardgame.prefs.PlayerNamesPref
-import com.maltaisn.cardgame.prefs.PrefEntry
 import com.maltaisn.cardgame.prefs.SliderPref
 import com.maltaisn.cardgame.widget.card.CardAnimationLayer
 import com.maltaisn.cardgame.widget.card.CardContainer
@@ -33,7 +32,7 @@ import java.util.*
 import kotlin.math.PI
 
 
-class GamePresenter : GameContract.Presenter, PrefEntry.PrefListener {
+class GamePresenter : GameContract.Presenter {
 
     private var layout: GameContract.View? = null
 
@@ -60,13 +59,11 @@ class GamePresenter : GameContract.Presenter, PrefEntry.PrefListener {
 
     override fun attach(layout: GameContract.View) {
         this.layout = layout
-        layout.settings.addListener(this)
 
         layout.setContinueItemEnabled(Game.hasSavedGame)
     }
 
     override fun detach() {
-        layout?.settings?.removeListener(this)
         layout = null
 
         disposeGame()
@@ -210,12 +207,6 @@ class GamePresenter : GameContract.Presenter, PrefEntry.PrefListener {
                 layout.idlePopupShown = false
                 layout.cancelDelayedIdlePopup()
             }
-        }
-    }
-
-    override fun onPreferenceValueChanged(pref: PrefEntry) {
-        if (pref.key == PrefKeys.PLAYER_NAMES) {
-            updatePlayerNames()
         }
     }
 
