@@ -80,6 +80,26 @@ class Game() : CardGame() {
     val isDone: Boolean
         get() = winnerPos != CardPlayer.NO_POSITION
 
+    /**
+     * The position of the leading player in the game.
+     * If there's a tie in scores, this returns [CardPlayer.NO_POSITION].
+     */
+    val leaderPos: Int
+        get() {
+            var minIndex = 0
+            var tie = false
+            for (i in 1..2) {
+                val score = players[i].score
+                val min = players[minIndex].score
+                if (score < min) {
+                    minIndex = i
+                    tie = false
+                } else if (score == min) {
+                    tie = true
+                }
+            }
+            return if (tie) CardPlayer.NO_POSITION else minIndex
+        }
 
     val gameSpeedDelay: Float
         get() = when (settings.getChoice(PrefKeys.GAME_SPEED)) {
@@ -89,9 +109,13 @@ class Game() : CardGame() {
             else -> 0f
         }
 
-    var tradePhaseEnded = false
-
-    /** Listener called when a game event happens, or `null` for none. */
+    /**
+     * Listener called when a game event happens, or `null` for none.
+     * Note that the listener is called at a point where the event has already happened
+     * so the game and the state are already changed. Everything must take this into account.
+     * When a move is made by player at pos 0, `state.posToMove` will be 1 not 0 when the
+     * event listener is called, since the state was changed already.
+     */
     var eventListener: ((GameEvent) -> Unit)? = null
 
     /** System time when the last move was made. */
@@ -208,22 +232,9 @@ class Game() : CardGame() {
         this.state = null
 
         // Check if any player has won
-        // If there's any tie, continue playing
-        var minIndex = 0
-        var tie = false
-        for (i in 1..2) {
-            val score = players[i].score
-            val min = players[minIndex].score
-            if (score < min) {
-                minIndex = i
-                tie = false
-            } else if (score == min) {
-                tie = true
-            }
-        }
-
-        if (players[minIndex].score <= 0 && !tie) {
-            winnerPos = minIndex
+        val leader = players.getOrNull(leaderPos)
+        if (leader != null && leader.score <= 0) {
+            winnerPos = leader.position
             end()
         }
 

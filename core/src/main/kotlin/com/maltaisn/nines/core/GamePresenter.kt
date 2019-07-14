@@ -1,0 +1,765 @@
+/*
+ * Copyright 2019 Nicolas Maltais
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.maltaisn.nines.core
+
+import com.maltaisn.cardgame.game.PCard
+import com.maltaisn.cardgame.game.sortWith
+import com.maltaisn.cardgame.prefs.PlayerNamesPref
+import com.maltaisn.cardgame.prefs.PrefEntry
+import com.maltaisn.cardgame.prefs.SliderPref
+import com.maltaisn.cardgame.widget.card.CardAnimationLayer
+import com.maltaisn.cardgame.widget.card.CardContainer
+import com.maltaisn.cardgame.widget.card.CardHand
+import com.maltaisn.cardgame.widget.menu.table.ScoresTable
+import com.maltaisn.cardgame.widget.menu.table.TricksTable
+import com.maltaisn.nines.core.game.*
+import com.maltaisn.nines.core.game.event.*
+import com.maltaisn.nines.core.widget.HandsTable
+import java.util.*
+import kotlin.math.PI
+
+
+class GamePresenter : GameContract.Presenter, PrefEntry.PrefListener {
+
+    private var layout: GameContract.View? = null
+
+    private var game: Game? = null
+
+    private val namesPref: PlayerNamesPref
+        get() = requireLayout().settings[PrefKeys.PLAYER_NAMES] as PlayerNamesPref
+
+    /**
+     * Whether the trade phase has ended in the layout. This is used by [updatePlayerScores]
+     * to make sure that the last player choice to trade is displayed for some time, because
+     * [GameState.phase] is already changed at the time [doMove] is called.
+     */
+    private var tradePhaseEnded = false
+
+
+    override fun attach(layout: GameContract.View) {
+        this.layout = layout
+        layout.settings.addListener(this)
+
+        layout.setContinueItemEnabled(Game.hasSavedGame)
+    }
+
+    override fun detach() {
+        layout?.settings?.removeListener(this)
+        layout = null
+
+        disposeGame()
+    }
+
+
+    private fun requireGame() = checkNotNull(game) { "Game must be initialized." }
+
+    private fun requireState() = checkNotNull(game?.state) { "Game must have a round started." }
+
+    private fun requireLayout() = checkNotNull(layout) { "Presenter must be attached." }
+
+
+    override fun onSave() {
+        game?.save(GameSaveJson)
+    }
+
+
+    override fun onContinueClicked() {
+        val layout = requireLayout()
+        Game.load(layout.settings, GameSaveJson) {
+            if (it != null) {
+                // Game loaded successfully, show the game.
+                layout.showInGameMenu(true)
+                initGame(it)
+                show()
+            } else {
+                // Could not load save file, delete it and disable continue.
+                Game.GAME_SAVE_FILE.delete()
+                layout.setContinueItemEnabled(false)
+            }
+        }
+    }
+
+    override fun onStartGameClicked() {
+        val layout = requireLayout()
+
+        layout.showInGameMenu(false)
+
+        val difficulty = when (layout.newGameOptions.getInt(PrefKeys.DIFFICULTY)) {
+            0 -> MctsPlayer.Difficulty.BEGINNER
+            1 -> MctsPlayer.Difficulty.INTERMEDIATE
+            2 -> MctsPlayer.Difficulty.ADVANCED
+            3 -> MctsPlayer.Difficulty.EXPERT
+            else -> error("Unknown difficulty level.")
+        }
+
+        // Create players
+        val south = HumanPlayer()
+        //val south = MctsPlayer(difficulty)
+        val east = MctsPlayer(difficulty)
+        val north = MctsPlayer(difficulty)
+
+        // Create and start the game
+        val game = Game(layout.settings, south, east, north)
+        initGame(game)
+        show()
+        game.start()
+    }
+
+    override fun onExitGameClicked() {
+        val layout = requireLayout()
+
+        hide()
+        layout.goToPreviousMenu()
+
+        game?.save(GameSaveJson)
+        layout.setContinueItemEnabled(true)
+        disposeGame()
+    }
+
+    override fun onScoreboardOpenClicked() {
+        showScoreboard()
+    }
+
+    override fun onScoreboardCloseClicked() {
+        val game = requireGame()
+        val layout = requireLayout()
+
+        layout.goToPreviousMenu()
+        show()
+
+        if (game.phase == Game.Phase.GAME_STARTED) {
+            // Last round has ended, start a new one.
+            game.startRound()
+        }
+    }
+
+    override fun onTradeBtnClicked(trade: Boolean) {
+        val game = requireGame()
+        val state = requireState()
+        val layout = requireLayout()
+
+        // Do the trade move and hide the popup
+        game.doMove(state.getMoves().find { (it as TradeHandMove).trade == trade }!!)
+        layout.tradePopupShown = false
+    }
+
+    override fun onCollectTrickBtnClicked() {
+        collectTrick()
+
+        val layout = requireLayout()
+        layout.collectPopupShown = false
+        layout.doDelayed(CardAnimationLayer.UPDATE_DURATION) {
+            playNext()
+        }
+    }
+
+    override fun onPlayerCardClicked(card: PCard) {
+        val game = requireGame()
+        val state = requireState()
+        val layout = requireLayout()
+
+        if (game.players[0] is HumanPlayer && state.posToMove == 0
+                && state.phase == GameState.Phase.PLAY) {
+            // If it's south turn and south is human, play the clicked card if it can be played.
+            val move = state.getMoves().find { (it as PlayMove).card == card }
+            if (move != null) {
+                // This card can be played, play it.
+                game.doMove(move)
+
+                // Hide and cancel idle popup
+                layout.idlePopupShown = false
+                layout.cancelDelayedIdlePopup()
+            }
+        }
+    }
+
+    override fun onPreferenceValueChanged(pref: PrefEntry) {
+        if (pref.key == PrefKeys.PLAYER_NAMES) {
+            updatePlayerNames()
+        }
+    }
+
+    /**
+     * Initialize a new [game], if no game is currently set.
+     */
+    private fun initGame(game: Game) {
+        check(this.game == null) { "A game is already shown in the layout." }
+        this.game = game
+        game.eventListener = {
+            when (it) {
+                is StartEvent -> startGame()
+                is EndEvent -> endGame()
+                is RoundStartEvent -> startRound()
+                is RoundEndEvent -> endRound(it)
+                is MoveEvent -> doMove(it)
+            }
+        }
+    }
+
+    /**
+     * Dispose the current game if one is set.
+     */
+    private fun disposeGame() {
+        game?.dispose()
+        game = null
+    }
+
+    /**
+     * Show and initialize all layout components for a [game].
+     * If the game has started, player turns will begin or continue.
+     * If the game hasn't started, layout will stay hidden.
+     */
+    private fun show() {
+        val game = requireGame()
+        val layout = requireLayout()
+
+        layout.completeAnimations()
+
+        layout.setPlayerHandEnabled(game.players[0] is HumanPlayer)
+
+        // Update player names displayed everywhere
+        // This also calls updateHandsPage()
+        updatePlayerNames()
+
+        // Update scores page
+        layout.clearScoresTable()
+        for (event in game.events) {
+            if (event is RoundEndEvent) {
+                addScoresTableRow(event)
+            }
+        }
+        updateTotalScoreFooters()
+
+        updateTricksPage()
+
+        if (game.phase == Game.Phase.ROUND_STARTED) {
+            // Round has started
+            val state = game.state!!
+            layout.setPlayerLabelsShown(true)
+
+            tradePhaseEnded = (state.phase == GameState.Phase.PLAY)
+
+            val humanPlayerTurn = (state.posToMove == 0 && game.players[0] is HumanPlayer)
+
+            if (tradePhaseEnded) {
+                // Play phase: show and adjust trick
+                layout.setTrickShown(true)
+                layout.setTrickCards(List(3) { state.currentTrick.cards.getOrNull(it) })
+                layout.setTrickStartAngle(getTrickStartAngle(state.currentTrick.startPos))
+
+                if (humanPlayerTurn) {
+                    // Immediately show idle popup if it's a human player's turn
+                    layout.idlePopupShown = true
+                }
+
+                updateLastTrickPage()
+
+            } else {
+                // Trade phase: show extra hand
+                layout.setExtraHandShown(true)
+                layout.setExtraHandCards(state.extraHand.cards)
+            }
+
+            layout.setPlayerHandShown(true)
+            layout.setPlayerHandCards(state.players[0].hand.cards)
+
+            for (i in 1..2) {
+                layout.setHiddenStackCards(i, state.players[i].hand.cards)
+            }
+
+            // NOTE: taken tricks cards are not put back in the hidden stack since they're not used
+
+            updatePlayerScores()
+
+            playNext()
+        }
+    }
+
+    /**
+     * Hide the layout cancelling all animations and disposes of the game.
+     */
+    private fun hide() {
+        val game = requireGame()
+
+        requireLayout().apply {
+            completeAnimations()
+
+            unhighlightAllPlayerCards()
+
+            setPlayerHandShown(false)
+            setExtraHandShown(false)
+            setTrickShown(false)
+
+            setPlayerLabelsShown(false)
+
+            tradePopupShown = false
+            collectPopupShown = false
+            idlePopupShown = false
+            cancelDelayedIdlePopup()
+
+            // Hide all hidden stacks cards. If hide() is called during trick collection, hidden stack is
+            // visible and failing to hide it back will result in hands being shown during animations.
+            repeat(3) { setHiddenStackCardsShown(it, false) }
+        }
+
+        game.cancelAiTurn()
+    }
+
+    private fun startGame() {
+        updateTotalScoreFooters()
+        game?.startRound()
+    }
+
+    private fun endGame() {
+        // TODO Show game over dialog
+    }
+
+    /**
+     * Change the layout for the start of a round, showing the extra hand and setting initial hands
+     * for all players. The player turns are then initiated.
+     */
+    private fun startRound() {
+        val game = requireGame()
+        val state = requireState()
+        val layout = requireLayout()
+
+        tradePhaseEnded = false
+
+        var moveDuration = 0.5f
+
+        // Hide previous round scoreboard pages
+        layout.setHandsPageShown(false)
+        layout.setTricksPageShown(false)
+        layout.setLastTrickPageShown(false)
+
+        // Set player hand. They must be sorted first to be dealt in correct order.
+        val playerCards = game.players[0].hand.cards.toMutableList()
+        playerCards.sortWith(PCard.DEFAULT_SORTER)
+
+        if (layout.settings.getBoolean(PrefKeys.CARD_DEAL_ANIMATION)) {
+            layout.setHiddenStackCards(0, playerCards)
+            layout.setPlayerHandCards(emptyList())
+            layout.setPlayerHandShown(true, animate = false)
+
+            layout.doDelayed(moveDuration) {
+                layout.dealPlayerCards()
+            }
+            moveDuration += CardAnimationLayer.DEAL_DELAY * playerCards.size
+
+        } else {
+            layout.setHiddenStackCards(0, emptyList())
+            layout.setPlayerHandCards(playerCards)
+            layout.setPlayerHandShown(true)
+            moveDuration += CardContainer.TRANSITION_DURATION
+        }
+
+        // Set cards in containers
+        layout.setExtraHandCards(state.extraHand.cards)
+        layout.setExtraHandShown(true)
+
+        for (i in 1..2) {
+            layout.setHiddenStackCards(i, state.players[i].hand.cards)
+        }
+        layout.setTrickCards(List(3) { null })
+
+        layout.setPlayerLabelsShown(true)
+        updatePlayerScores()
+
+        // Start playing
+        moveDuration += 0.5f
+        layout.doDelayed(moveDuration) {
+            playNext()
+        }
+    }
+
+    /**
+     * End the round by updating and then showing the scoreboard.
+     */
+    private fun endRound(event: RoundEndEvent) {
+        // Update scoreboard
+        addScoresTableRow(event)
+        updateTotalScoreFooters()
+        updateHandsPage()
+        updateTricksPage()
+        updateLastTrickPage()
+
+        // Show scoreboard after a small delay
+        val layout = requireLayout()
+        layout.doDelayed(1f) {
+            showScoreboard()
+        }
+    }
+
+    /**
+     * Do a [move] in the layout.
+     * If the move is a trade move, the extra hand will be exchanged with the player hand.
+     * If the move is a play move, the played card will be moved to the trick. When the
+     * trick is done, it is collected by the player. The next player turn is then initiated.
+     */
+    private fun doMove(move: MoveEvent) {
+        val game = requireGame()
+        val state = requireState()
+        val layout = requireLayout()
+
+        val pos = move.playerPos
+        val isSouth = (pos == 0)
+
+        var moveDuration = 0f
+        when (move) {
+            is TradeHandMove -> {
+                // Update the "Traded" or "Didn't trade" status on the player label.
+                updatePlayerScores()
+
+                if (move.trade) {
+                    // Do swap hand animation
+                    if (isSouth) {
+                        // Hide player hand
+                        layout.setPlayerHandShown(false)
+                        moveDuration += CardContainer.TRANSITION_DURATION
+
+                        moveDuration += 0.1f
+                        layout.doDelayed(moveDuration) {
+                            // Move player hand cards to hidden stack
+                            // Extra hand is used since the move has already been done in the state
+                            layout.setHiddenStackCards(0, state.extraHand.cards)
+                            layout.setPlayerHandCards(emptyList())
+                            layout.setPlayerHandShown(true, animate = false)
+
+                            // Move cards from extra hand to player hand
+                            layout.moveCardsFromExtraHandToPlayerHand(GameState.CARDS_COUNT)
+                        }
+
+                    } else {
+                        // Move cards from extra hand to hidden stack
+                        layout.moveCardsFromExtraHandToHiddenStack(pos, GameState.CARDS_COUNT)
+                    }
+
+                    // Move cards from hidden stack to extra hand
+                    moveDuration += CardAnimationLayer.UPDATE_DURATION + 0.1f
+                    layout.doDelayed(moveDuration) {
+                        layout.moveCardsFromHiddenStackToExtraHand(pos, GameState.CARDS_COUNT)
+                    }
+                    moveDuration += CardAnimationLayer.UPDATE_DURATION
+
+                } else {
+                    moveDuration = 0f
+                }
+
+                // If this player had the last choice
+                if ((move.playerPos + 1) % 3 == game.dealerPos) {
+                    tradePhaseEnded = true
+
+                    // Hide extra hand and show trick
+                    moveDuration += game.gameSpeedDelay + 0.5f
+                    layout.doDelayed(moveDuration) {
+                        layout.setExtraHandShown(false)
+                        layout.setTrickShown(true, animate = false)
+                    }
+                    moveDuration += CardContainer.TRANSITION_DURATION
+
+                    moveDuration += 0.1f
+                    layout.doDelayed(moveDuration) {
+                        updatePlayerScores()
+                    }
+                }
+            }
+            is PlayMove -> {
+                // Move card from player hand to the trick
+                layout.movePlayerCardToTrick(pos, move.card)
+                moveDuration = CardAnimationLayer.UPDATE_DURATION
+
+                if (isSouth && layout.settings.getBoolean(PrefKeys.SELECT_PLAYABLE)) {
+                    // Unhighlight cards in case they were highlighted before move
+                    moveDuration += 0.1f
+                    layout.doDelayed(moveDuration) {
+                        layout.unhighlightAllPlayerCards()
+                    }
+                    moveDuration += CardHand.HIGHLIGHT_DURATION
+                }
+
+                when (state.currentTrick.cards.size) {
+                    0 -> {
+                        // Player plays last
+                        if (layout.settings.getBoolean(PrefKeys.AUTO_COLLECT)) {
+                            // Collect the trick automatically.
+                            moveDuration += 1f
+                            layout.doDelayed(moveDuration) {
+                                collectTrick()
+                            }
+                            moveDuration += CardAnimationLayer.UPDATE_DURATION
+
+                        } else {
+                            // Show the collect popup for confirmation
+                            layout.doDelayed(moveDuration + 0.2f) {
+                                layout.collectPopupShown = true
+                            }
+                            moveDuration = Float.POSITIVE_INFINITY
+                        }
+                    }
+                    1 -> {
+                        // Player plays first: adjust trick start angle
+                        layout.setTrickStartAngle(getTrickStartAngle(move.playerPos))
+                    }
+                }
+            }
+        }
+
+        if (moveDuration.isFinite()) {
+            // After move animation is done, start next player turn.
+            layout.doDelayed(moveDuration) {
+                playNext()
+            }
+        }
+    }
+
+    /**
+     * Collect the trick to the hidden stack of the player who won the trick.
+     * Also updates the scores in the labels and the last trick in the scoreboard.
+     */
+    private fun collectTrick() {
+        val layout = requireLayout()
+        val state = requireState()
+
+        layout.collectTrick(state.posToMove)
+
+        updateLastTrickPage()
+        updatePlayerScores()
+    }
+
+    /**
+     * Start the next player's turn. If player is human, prepare the layout for the turn.
+     */
+    private fun playNext() {
+        val game = requireGame()
+        val state = requireState()
+        val layout = requireLayout()
+
+        if (state.playerToMove is HumanPlayer) {
+            // Prepare the layout for a human player's turn, at the south position.
+            val moves = state.getMoves()
+            if (moves.size == 1 && layout.settings.getBoolean(PrefKeys.AUTO_PLAY)) {
+                // Only one card is playable, auto-play it.
+                game.doMove(moves.first())
+
+            } else {
+                if (state.phase == GameState.Phase.TRADE) {
+                    layout.tradePopupShown = true
+
+                } else {
+                    // Show idle popup after some time if not already shown
+                    if (!layout.idlePopupShown) {
+                        layout.showIdlePopupAfterDelay(if (state.currentTrick.cards.size == 0
+                                && state.tricksPlayed.size == 0) 0f else IDLE_POPUP_DELAY)
+                    }
+
+                    // Highlight playable cards if necessary
+                    if (layout.settings.getBoolean(PrefKeys.SELECT_PLAYABLE)) {
+                        val playableCards = moves.map { (it as PlayMove).card }
+                        if (playableCards.size < state.players[0].hand.cards.size) {
+                            // Highlight playable cards. This is delayed so that the player hand
+                            // has time to layout if cards were set on same frame
+                            layout.doDelayed(0.1f) {
+                                layout.highlightPlayerCards(playableCards)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        game.playNext()
+    }
+
+    /**
+     * Returns the start angle for a card trick if the
+     * first player to play is at the [startPos] position.
+     */
+    private fun getTrickStartAngle(startPos: Int) =
+            -((startPos + 3.0 / 8) * PI * 2 / 3).toFloat()
+
+    /**
+     * Update the player labels to display either the scores and tricks taken for the player
+     * if in play phase, or the trade status if in trade phase.
+     */
+    private fun updatePlayerScores() {
+        val game = requireGame()
+        val layout = requireLayout()
+
+        if (tradePhaseEnded) {
+            layout.setPlayerScores(List(3) { game.players[it].score },
+                    List(3) { game.players[it].tricksTaken })
+        } else {
+            layout.setPlayerTradeStatus(List(3) { game.players[it].trade })
+        }
+    }
+
+    /**
+     * Update the name of players everywhere it's displayed:
+     * - The player labels.
+     * - The headers of the scores table. The difficulty is set at the same time.
+     * - The name column of the hands table.
+     */
+    private fun updatePlayerNames() {
+        val game = requireGame()
+        val layout = requireLayout()
+
+        // Player labels
+        val names = namesPref.names.toList()
+        layout.setPlayerNames(names)
+
+        // Scores table headers
+        val diffPref = layout.newGameOptions[PrefKeys.DIFFICULTY] as SliderPref
+        layout.setScoresTableHeaders(List(3) {
+            val player = game.players[it]
+            ScoresTable.Header(names[it], if (player is MctsPlayer) {
+                diffPref.enumValues?.get(player.difficulty.ordinal)
+            } else {
+                null
+            })
+        })
+
+        // Hands page
+        updateHandsPage()
+
+        // Tricks page
+        layout.setTricksTableHeaders(names)
+    }
+
+    private fun showScoreboard() {
+        hide()
+
+        val layout = requireLayout()
+        layout.checkScoreboardScoresPage()
+        layout.showScoreboard()
+    }
+
+    /**
+     * Update the total scores in the scores table footers.
+     */
+    private fun updateTotalScoreFooters() {
+        val game = requireGame()
+        val layout = requireLayout()
+
+        // Find the leader player position
+        val leaderPos = game.leaderPos
+        layout.setScoresTableFooters(List(3) {
+            val highlight = if (it == leaderPos) {
+                ScoresTable.Score.Highlight.POSITIVE
+            } else {
+                ScoresTable.Score.Highlight.NONE
+            }
+            ScoresTable.Score(layout.numberFormat.format(game.players[it].score), highlight)
+        })
+    }
+
+    /**
+     * Add the scores row corresponding to the end [event] of a round.
+     */
+    private fun addScoresTableRow(event: RoundEndEvent) {
+        val layout = requireLayout()
+        layout.addScoresTableRow(List(3) {
+            val diff = 4 - event.result.playerResults[it]
+            ScoresTable.Score(layout.numberFormat.format(diff))
+        })
+
+        /*
+        when {
+            diff > 0 -> ScoresTable.Score.Highlight.NEGATIVE
+            diff < 0 -> ScoresTable.Score.Highlight.POSITIVE
+            else -> ScoresTable.Score.Highlight.NONE
+        }
+         */
+    }
+
+    /**
+     * If round is done, update the hands page in scoreboard.
+     */
+    private fun updateHandsPage() {
+        val game = requireGame()
+        val layout = requireLayout()
+
+        val shown = game.round > 0 && game.phase == Game.Phase.GAME_STARTED
+        layout.setHandsPageShown(shown)
+
+        if (shown) {
+            // Get the starting hands and redo all the trade moves to get the correct initial hands.
+            val startIndex = game.events.indexOfLast { it is RoundStartEvent }
+            val hands = (game.events[startIndex] as RoundStartEvent).hands.toMutableList()
+            for (event in game.events.subList(startIndex + 1, startIndex + 4)) {
+                if ((event as TradeHandMove).trade) {
+                    val temp = hands[3]
+                    hands[3] = hands[event.playerPos]
+                    hands[event.playerPos] = temp
+                }
+            }
+
+            val playerRows = MutableList(3) {
+                HandsTable.PlayerRow(namesPref.names[it], hands[it].cards)
+            }
+
+            playerRows += HandsTable.PlayerRow(layout.extraHandString, hands[3].cards)
+            layout.setHandsPageHands(playerRows)
+        }
+    }
+
+    /**
+     * If round is done, update the tricks page in scoreboard.
+     */
+    private fun updateTricksPage() {
+        val game = requireGame()
+        val layout = requireLayout()
+
+        val shown = game.round > 0 && game.phase == Game.Phase.GAME_STARTED
+        layout.setTricksPageShown(shown)
+
+        if (shown) {
+            val startEvent = game.events.last { it is RoundStartEvent } as RoundStartEvent
+            val endEvent = game.events.last { it is RoundEndEvent } as RoundEndEvent
+            layout.setTricksTableTricks(endEvent.tricks.map { trick ->
+                val rotated = trick.cards.toMutableList()
+                Collections.rotate(rotated, trick.startPos)
+                val winner = trick.findWinner(startEvent.trumpSuit)
+                List(3) { TricksTable.TrickCard(rotated[it], it == winner) }
+            })
+        }
+    }
+
+    /**
+     * Copy the current trick to the last trick container
+     * and update the page visibility in scoreboard.
+     */
+    private fun updateLastTrickPage() {
+        val game = requireGame()
+        val state = requireState()
+        val layout = requireLayout()
+
+        val shown = (state.tricksPlayed.size > 0 && game.phase == Game.Phase.ROUND_STARTED)
+        layout.setLastTrickPageShown(shown)
+
+        if (shown) {
+            val trick = state.tricksPlayed.last()
+            layout.setLastTrickCards(trick.cards)
+            layout.setLastTrickStartAngle(getTrickStartAngle(trick.startPos))
+        }
+    }
+
+    companion object {
+        /** The delay after the start of a human player turn before the idle popup is shown. */
+        private const val IDLE_POPUP_DELAY = 3f
+    }
+
+}

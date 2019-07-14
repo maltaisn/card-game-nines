@@ -23,7 +23,6 @@ import com.maltaisn.cardgame.CardGameScreen
 import com.maltaisn.cardgame.CoreRes
 import com.maltaisn.cardgame.markdown.Markdown
 import com.maltaisn.cardgame.prefs.GamePrefs
-import com.maltaisn.nines.core.game.GameSaveJson
 import ktx.assets.load
 
 class GameScreen : CardGameScreen() {
@@ -59,7 +58,7 @@ class GameScreen : CardGameScreen() {
 
     override fun pause() {
         super.pause()
-        gameLayout.game?.save(GameSaveJson)
+        gameLayout.save()
     }
 
     override fun resume() {
