@@ -578,12 +578,17 @@ class GamePresenter : GameContract.Presenter, PrefEntry.PrefListener {
         val state = requireState()
         val layout = requireLayout()
 
-        if (state.playerToMove is HumanPlayer) {
+        val player = state.playerToMove
+        var moveDone = false
+
+        if (player is HumanPlayer) {
             // Prepare the layout for a human player's turn, at the south position.
             val moves = state.getMoves()
-            if (moves.size == 1 && layout.settings.getBoolean(PrefKeys.AUTO_PLAY)) {
+            if (moves.size == 1 && (layout.settings.getBoolean(PrefKeys.AUTO_PLAY) ||
+                            player.hand.cards.size == 1)) {
                 // Only one card is playable, auto-play it.
                 game.doMove(moves.first())
+                moveDone = true
 
             } else {
                 if (state.phase == GameState.Phase.TRADE) {
@@ -611,7 +616,9 @@ class GamePresenter : GameContract.Presenter, PrefEntry.PrefListener {
             }
         }
 
-        game.playNext()
+        if (!moveDone) {
+            game.playNext()
+        }
     }
 
     /**
