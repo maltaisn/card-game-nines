@@ -292,7 +292,9 @@ class Game() : CardGame() {
 
     override fun write(json: Json) {
         json.writeValue("players", players)
-        json.writeValue("state", state)
+        if (state != null) {
+            json.writeValue("state", state)
+        }
         json.writeValue("events", events)
         json.writeValue("phase", phase)
         json.writeValue("round", round)

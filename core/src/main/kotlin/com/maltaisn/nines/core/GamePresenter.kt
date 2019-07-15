@@ -107,9 +107,8 @@ class GamePresenter : GameContract.Presenter {
                 initGame(it)
                 show()
             } else {
-                // Could not load save file, delete it and disable continue.
-                Game.GAME_SAVE_FILE.delete()
-                layout.setContinueItemEnabled(false)
+                // Could not load save file.
+                eraseGameSave()
             }
         }
     }
@@ -261,7 +260,11 @@ class GamePresenter : GameContract.Presenter {
 
         updateTricksPage()
 
-        if (game.phase == Game.Phase.ROUND_STARTED) {
+        if (game.phase == Game.Phase.GAME_STARTED) {
+            // Previous round has ended, start a new one.
+            game.startRound()
+
+        } else if (game.phase == Game.Phase.ROUND_STARTED) {
             // Round has started
             val state = requireState()
 
@@ -347,6 +350,7 @@ class GamePresenter : GameContract.Presenter {
 
     private fun endGame() {
         // TODO Show game over dialog
+        eraseGameSave()
     }
 
     /**
@@ -785,6 +789,12 @@ class GamePresenter : GameContract.Presenter {
             layout.setLastTrickCards(trick.cards)
             layout.setLastTrickStartAngle(getTrickStartAngle(trick.startPos))
         }
+    }
+
+    /** Erase the game save file and disable the continue item. */
+    private fun eraseGameSave() {
+        Game.GAME_SAVE_FILE.delete()
+        layout?.setContinueItemEnabled(false)
     }
 
     companion object {

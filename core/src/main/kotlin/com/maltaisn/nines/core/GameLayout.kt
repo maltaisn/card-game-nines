@@ -111,6 +111,7 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
 
         // Tricks page
         tricksTable = TricksTable(coreSkin, cardSkin, 3)
+        tricksTable.cardSize = CardActor.SIZE_NORMAL
         tricksPage = PagedSubMenu.Page(2, strings["scoreboard_tricks"],
                 coreSkin.getDrawable(MenuIcons.CARDS), SubMenu.ITEM_POS_TOP)
         tricksPage.content = Container(tricksTable).pad(30f, 15f, 30f, 15f).fill()
@@ -191,7 +192,7 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
                 add(playerLabels[0]).align(Align.bottomLeft).width(120f).expand().padLeft(100f)
             }
             val containerTable = Table().apply {
-                pad(20f, 40f, 0f, 40f)
+                pad(20f, 60f, 0f, 60f)
                 add(Stack(trick, extraHand)).grow().row()
                 add(playerHand).growX()
             }
