@@ -94,6 +94,12 @@ interface GameContract {
         fun showIdlePopupAfterDelay(delay: Float)
         fun cancelDelayedIdlePopup()
 
+        // Dealer chip
+        fun showDealerChip(pos: Int)
+
+        fun moveDealerChip(pos: Int)
+        fun hideDealerChip()
+
         // Scoreboard
         fun checkScoreboardScoresPage()
 

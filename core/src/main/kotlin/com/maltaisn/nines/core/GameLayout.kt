@@ -22,8 +22,8 @@ import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.Touchable
 import com.badlogic.gdx.scenes.scene2d.ui.Container
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
-import com.badlogic.gdx.scenes.scene2d.ui.Stack
 import com.badlogic.gdx.scenes.scene2d.ui.Table
+import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup
 import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.I18NBundle
 import com.maltaisn.cardgame.game.PCard
@@ -71,6 +71,8 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
     private val tradePopup: Popup
     private val collectPopup: Popup
     private val idlePopup: Popup
+
+    private val dealerChip: DealerChip
 
     private val scoresPage: PagedSubMenu.Page
     private val scoresTable: ScoresTable
@@ -179,6 +181,10 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
         // Player labels
         playerLabels = List(3) { PlayerLabel(coreSkin) }
 
+        // Dealer chip
+        dealerChip = DealerChip(coreSkin)
+        dealerChip.distance = 0f
+
         // Do the layout
         gameLayer.apply {
             bottomTable.add(hiddenStacks[0]).grow()
@@ -186,17 +192,17 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
             topTable.add(hiddenStacks[2]).grow()
 
             playerLabelTable = FadeTable().apply {
-                pad(30f, 30f, 150f, 30f)
+                pad(30f, 30f, 165f, 30f)
                 add(playerLabels[2]).align(Align.topRight).width(120f).expand().padRight(150f).row()
                 add(playerLabels[1]).align(Align.topLeft).width(120f).expand().row()
                 add(playerLabels[0]).align(Align.bottomLeft).width(120f).expand().padLeft(100f)
             }
             val containerTable = Table().apply {
                 pad(20f, 60f, 0f, 60f)
-                add(Stack(trick, extraHand)).grow().row()
+                stack(trick, extraHand).grow().row()
                 add(playerHand).growX()
             }
-            centerTable.add(Stack(playerLabelTable, containerTable)).grow()
+            centerTable.stack(playerLabelTable, WidgetGroup(dealerChip), containerTable).grow()
         }
 
         // Trade hand popup
@@ -439,6 +445,27 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
 
     override fun cancelDelayedIdlePopup() {
         idleAction = null
+    }
+
+    // Dealer chip
+    override fun showDealerChip(pos: Int) {
+        dealerChip.show(getDealerChipActor(pos), getDealerChipSide(pos))
+    }
+
+    override fun moveDealerChip(pos: Int) {
+        dealerChip.moveTo(getDealerChipActor(pos), getDealerChipSide(pos))
+    }
+
+    override fun hideDealerChip() = dealerChip.hide()
+
+    private fun getDealerChipActor(pos: Int) =
+            playerLabels.getOrNull(pos) ?: gameLayer.centerTable
+
+    private fun getDealerChipSide(pos: Int) = when (pos) {
+        0 -> Align.right
+        1 -> Align.right
+        2 -> Align.left
+        else -> Align.center
     }
 
     // Scores page

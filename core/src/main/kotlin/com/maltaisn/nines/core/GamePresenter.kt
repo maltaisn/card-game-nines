@@ -20,6 +20,8 @@ import com.maltaisn.cardgame.game.PCard
 import com.maltaisn.cardgame.game.sortWith
 import com.maltaisn.cardgame.prefs.PlayerNamesPref
 import com.maltaisn.cardgame.prefs.SliderPref
+import com.maltaisn.cardgame.widget.DealerChip
+import com.maltaisn.cardgame.widget.FadeTable
 import com.maltaisn.cardgame.widget.card.CardAnimationLayer
 import com.maltaisn.cardgame.widget.card.CardContainer
 import com.maltaisn.cardgame.widget.card.CardHand
@@ -30,6 +32,7 @@ import com.maltaisn.nines.core.game.event.*
 import com.maltaisn.nines.core.widget.HandsTable
 import java.util.*
 import kotlin.math.PI
+import kotlin.math.max
 
 
 class GamePresenter : GameContract.Presenter {
@@ -127,8 +130,8 @@ class GamePresenter : GameContract.Presenter {
         }
 
         // Create players
-        val south = HumanPlayer()
-        //val south = MctsPlayer(difficulty)
+        //val south = HumanPlayer()
+        val south = MctsPlayer(difficulty)
         val east = MctsPlayer(difficulty)
         val north = MctsPlayer(difficulty)
 
@@ -245,6 +248,8 @@ class GamePresenter : GameContract.Presenter {
 
         layout.completeAnimations()
 
+        layout.setPlayerHandEnabled(game.players[0] is HumanPlayer)
+
         // Update player names displayed everywhere
         // This also calls updateHandsPage()
         updatePlayerNames()
@@ -269,7 +274,7 @@ class GamePresenter : GameContract.Presenter {
             val state = requireState()
 
             layout.setPlayerLabelsShown(true)
-            layout.setPlayerHandEnabled(game.players[0] is HumanPlayer)
+            layout.showDealerChip(game.dealerPos)
 
             tradePhaseEnded = (state.phase == GameState.Phase.PLAY)
 
@@ -327,6 +332,7 @@ class GamePresenter : GameContract.Presenter {
             setTrickShown(false)
 
             setPlayerLabelsShown(false)
+            hideDealerChip()
 
             tradePopupShown = false
             collectPopupShown = false
@@ -345,6 +351,7 @@ class GamePresenter : GameContract.Presenter {
 
     private fun startGame() {
         updateTotalScoreFooters()
+
         game?.startRound()
     }
 
@@ -364,12 +371,26 @@ class GamePresenter : GameContract.Presenter {
 
         tradePhaseEnded = false
 
-        var moveDuration = 0.5f
-
         // Hide previous round scoreboard pages
         layout.setHandsPageShown(false)
         layout.setTricksPageShown(false)
         layout.setLastTrickPageShown(false)
+
+        updatePlayerScores()
+
+        // Show the player labels and the dealer chip
+        var moveDuration = 0.2f
+        layout.doDelayed(moveDuration) {
+            layout.setPlayerLabelsShown(true)
+            layout.showDealerChip(if (game.round == 1) -1 else (game.dealerPos + 2) % 3)
+        }
+        moveDuration += max(FadeTable.DEFAULT_FADE_DURATION, DealerChip.FADE_DURATION) + 0.1f
+
+        // Move the dealer chip to the dealer player
+        layout.doDelayed(moveDuration) {
+            layout.moveDealerChip(game.dealerPos)
+        }
+        moveDuration += DealerChip.MOVE_DURATION + 0.1f
 
         // Set player hand. They must be sorted first to be dealt in correct order.
         val playerCards = game.players[0].hand.cards.toMutableList()
@@ -388,21 +409,26 @@ class GamePresenter : GameContract.Presenter {
         } else {
             layout.setHiddenStackCards(0, emptyList())
             layout.setPlayerHandCards(playerCards)
-            layout.setPlayerHandShown(true)
+
+            layout.doDelayed(moveDuration) {
+                layout.setPlayerHandShown(true)
+            }
             moveDuration += CardContainer.TRANSITION_DURATION
         }
 
         // Set cards in containers
-        layout.setExtraHandCards(state.extraHand.cards)
-        layout.setExtraHandShown(true)
-
         for (i in 1..2) {
             layout.setHiddenStackCards(i, state.players[i].hand.cards)
         }
         layout.setTrickCards(List(3) { null })
 
-        layout.setPlayerLabelsShown(true)
-        updatePlayerScores()
+        // Show the extra hand
+        layout.setExtraHandCards(state.extraHand.cards)
+        moveDuration += 0.1f
+        layout.doDelayed(moveDuration) {
+            layout.setExtraHandShown(true)
+        }
+        moveDuration += CardContainer.TRANSITION_DURATION
 
         // Start playing
         moveDuration += 0.5f
