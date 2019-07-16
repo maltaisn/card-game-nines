@@ -130,8 +130,11 @@ class GamePresenter : GameContract.Presenter {
         }
 
         // Create players
-        //val south = HumanPlayer()
-        val south = MctsPlayer(difficulty)
+        val south = if (layout.newGameOptions.getBoolean(PrefKeys.HUMAN_PLAYER)) {
+            HumanPlayer()
+        } else {
+            MctsPlayer(difficulty)
+        }
         val east = MctsPlayer(difficulty)
         val north = MctsPlayer(difficulty)
 

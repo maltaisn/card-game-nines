@@ -20,6 +20,7 @@ object PrefKeys {
 
     // New game
     const val DIFFICULTY = "difficulty"
+    const val HUMAN_PLAYER = "human_player" // for debug
 
     // Interface
     const val PLAYER_NAMES = "player_names"

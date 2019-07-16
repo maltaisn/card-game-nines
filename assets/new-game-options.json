@@ -15,5 +15,10 @@
       maxValue: 3
       defaultValue: 1
     }
+    human_player: {
+      type: "switch"
+      title: "Human player at south position"
+      defaultValue: true
+    }
   }
 }
