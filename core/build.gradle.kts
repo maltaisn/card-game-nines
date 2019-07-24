@@ -19,7 +19,7 @@ dependencies {
 
     implementation(kotlin("stdlib"))
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.0-RC")
     implementation("io.github.libktx:ktx-async:$ktxVersion")
 
     implementation("com.badlogicgames.gdx:gdx:$gdxVersion")

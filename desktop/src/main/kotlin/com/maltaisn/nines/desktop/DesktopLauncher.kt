@@ -25,10 +25,10 @@ object DesktopLauncher {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        val config = Lwjgl3ApplicationConfiguration()
-        config.setTitle("Cards")
-        config.setWindowSizeLimits(960, 540, -1, -1)
-
-        Lwjgl3Application(GameApp(), config)
+        Lwjgl3Application(GameApp(), Lwjgl3ApplicationConfiguration().apply {
+            setTitle("Cards")
+            setWindowedMode(1440, 810)
+            setWindowSizeLimits(960, 540, -1, -1)
+        })
     }
 }

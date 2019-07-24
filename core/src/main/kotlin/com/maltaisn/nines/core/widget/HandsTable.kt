@@ -66,7 +66,7 @@ class HandsTable(coreSkin: Skin, cardSkin: Skin) : TableView(coreSkin, listOf(1f
         private val titleLabel = SdfLabel(skin, style.headerFontStyle)
 
         init {
-            table.add(titleLabel).growX().pad(10f)
+            table.add(titleLabel).growX().pad(20f)
             titleLabel.setWrap(true)
             titleLabel.setAlignment(Align.center)
         }
@@ -81,7 +81,7 @@ class HandsTable(coreSkin: Skin, cardSkin: Skin) : TableView(coreSkin, listOf(1f
         private val nameLabel = SdfLabel(skin, style.playerNameFontStyle)
 
         init {
-            table.add(nameLabel).grow().pad(10f)
+            table.add(nameLabel).grow().pad(20f)
             nameLabel.setWrap(true)
             nameLabel.setAlignment(Align.center)
         }

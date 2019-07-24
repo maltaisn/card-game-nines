@@ -7,12 +7,12 @@ val appVersionCode: Int by project
 val appVersion: String by project
 
 android {
-    buildToolsVersion("28.0.3")
-    compileSdkVersion(28)
+    buildToolsVersion("29.0.0")
+    compileSdkVersion(29)
     defaultConfig {
         applicationId = "com.maltaisn.nines.android"
         minSdkVersion(14)
-        targetSdkVersion(28)
+        targetSdkVersion(29)
         versionCode = appVersionCode
         versionName = appVersion
     }

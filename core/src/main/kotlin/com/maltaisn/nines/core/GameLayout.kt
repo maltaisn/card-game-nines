@@ -103,20 +103,20 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
         scoresTable = ScoresTable(coreSkin, 3)
         scoresPage = PagedSubMenu.Page(0, strings["scoreboard_scores"],
                 coreSkin.getDrawable(MenuIcons.LIST), SubMenu.ITEM_POS_TOP)
-        scoresPage.content = Container(scoresTable).pad(30f, 15f, 30f, 15f).fill()
+        scoresPage.content = Container(scoresTable).pad(60f, 30f, 60f, 30f).fill()
 
         // Hands page
         handsTable = HandsTable(coreSkin, cardSkin)
         handsPage = PagedSubMenu.Page(1, strings["scoreboard_hands"],
                 coreSkin.getDrawable(MenuIcons.CARDS), SubMenu.ITEM_POS_TOP)
-        handsPage.content = Container(handsTable).pad(30f, 15f, 30f, 15f).fill()
+        handsPage.content = Container(handsTable).pad(60f, 30f, 60f, 30f).fill()
 
         // Tricks page
         tricksTable = TricksTable(coreSkin, cardSkin, 3)
         tricksTable.cardSize = CardActor.SIZE_NORMAL
         tricksPage = PagedSubMenu.Page(2, strings["scoreboard_tricks"],
                 coreSkin.getDrawable(MenuIcons.CARDS), SubMenu.ITEM_POS_TOP)
-        tricksPage.content = Container(tricksTable).pad(30f, 15f, 30f, 15f).fill()
+        tricksPage.content = Container(tricksTable).pad(60f, 30f, 60f, 30f).fill()
 
         // Last trick page
         lastTrick = CardTrick(coreSkin, cardSkin, 3).apply {
@@ -127,7 +127,7 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
                 coreSkin.getDrawable(MenuIcons.CARDS), SubMenu.ITEM_POS_TOP)
         lastTrickPage.content = Container(TableViewContent(coreSkin).apply {
             add(lastTrick).grow()
-        }).pad(30f, 15f, 30f, 15f).fill()
+        }).pad(60f, 30f, 60f, 30f).fill()
 
         // MENU
         menu = DefaultGameMenu(coreSkin)
@@ -166,7 +166,7 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
             sorter = PCard.DEFAULT_SORTER
             visibility = CardContainer.Visibility.NONE
             cardSize = CardActor.SIZE_SMALL
-            maxCardSpacing = 30f
+            maxCardSpacing = 60f
             enabled = false
             shown = false
         }
@@ -192,13 +192,13 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
             topTable.add(hiddenStacks[2]).grow()
 
             playerLabelTable = FadeTable().apply {
-                pad(30f, 30f, 165f, 30f)
-                add(playerLabels[2]).align(Align.topRight).width(120f).expand().padRight(150f).row()
-                add(playerLabels[1]).align(Align.topLeft).width(120f).expand().row()
-                add(playerLabels[0]).align(Align.bottomLeft).width(120f).expand().padLeft(100f)
+                pad(60f, 60f, 330f, 60f)
+                add(playerLabels[2]).align(Align.topRight).width(240f).expand().padRight(300f).row()
+                add(playerLabels[1]).align(Align.topLeft).width(240f).expand().row()
+                add(playerLabels[0]).align(Align.bottomLeft).width(240f).expand().padLeft(200f)
             }
             val containerTable = Table().apply {
-                pad(20f, 60f, 0f, 60f)
+                pad(40f, 120f, 0f, 120f)
                 stack(trick, extraHand).grow().row()
                 add(playerHand).growX()
             }
@@ -216,8 +216,8 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
         noTradeBtn.onClick { presenter.onTradeBtnClicked(false) }
 
         tradePopup.apply {
-            add(tradeBtn).minWidth(150f)
-            add(noTradeBtn).minWidth(150f)
+            add(tradeBtn).minWidth(300f).padRight(10f)
+            add(noTradeBtn).minWidth(300f)
         }
 
         // Collect trick popup
@@ -226,14 +226,14 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
 
         val collectBtn = PopupButton(coreSkin, strings["popup_ok"])
         collectBtn.onClick { presenter.onCollectTrickBtnClicked() }
-        collectPopup.add(collectBtn).minWidth(150f)
+        collectPopup.add(collectBtn).minWidth(300f)
 
         // Idle popup
         idlePopup = Popup(coreSkin)
         popupGroup.addActor(idlePopup)
 
         val idleBtn = PopupButton(coreSkin, strings["popup_your_turn"])
-        idlePopup.add(idleBtn).minWidth(150f)
+        idlePopup.add(idleBtn).minWidth(300f)
         idlePopup.touchable = Touchable.disabled
 
         // Back key listener
