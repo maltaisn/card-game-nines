@@ -279,6 +279,18 @@ class Game() : CardGame() {
 
 
     override fun read(json: Json, jsonData: JsonValue) {
+        json as GameSaveJson
+        super.read(json, jsonData)
+
+        val version = jsonData.getInt("_ninesVersion")
+        json.ninesVersion = version
+        if (version != VERSION || json.version != CardGame.VERSION) {
+            // Version of saved game doesn't match game version.
+            // Current behavior is to throw an exception to abort.
+            throw SerializationException("Game version mismatch: " +
+                    "file is $version/${json.version} and current is $VERSION/${CardGame.VERSION}")
+        }
+
         players = json.readArrayValue("players", jsonData)
         state = json.readValue("state", jsonData)
         _events += json.readArrayValue<ArrayList<GameEvent>, GameEvent>("events", jsonData)
@@ -291,6 +303,8 @@ class Game() : CardGame() {
     }
 
     override fun write(json: Json) {
+        super.write(json)
+        json.writeValue("_ninesVersion", VERSION)
         json.writeValue("players", players)
         if (state != null) {
             json.writeValue("state", state)
@@ -308,7 +322,6 @@ class Game() : CardGame() {
         }
     }
 
-
     enum class Phase {
         /** Game has not started or is done. */
         ENDED,
@@ -319,8 +332,7 @@ class Game() : CardGame() {
     }
 
     companion object {
-        private val TRUMP_SUITS = intArrayOf(PCard.HEART, PCard.SPADE,
-                PCard.DIAMOND, PCard.SPADE, GameState.NO_TRUMP)
+        val VERSION = 1
 
         /** The game save file location. */
         val GAME_SAVE_FILE = Gdx.files.local("saved-game.json")
@@ -343,11 +355,15 @@ class Game() : CardGame() {
                         settings.addListener(game)
                         game
                     } catch (e: SerializationException) {
+                        // Corrupt game file or version mismatch
                         error(e) { "Could not deserialize saved game." }
                         null
                     })
                 }
             }
         }
+
+        private val TRUMP_SUITS = intArrayOf(PCard.HEART, PCard.SPADE,
+                PCard.DIAMOND, PCard.SPADE, GameState.NO_TRUMP)
     }
 }

@@ -16,23 +16,23 @@
 
 package com.maltaisn.nines.core.game
 
-import com.badlogic.gdx.utils.Json
-import com.badlogic.gdx.utils.JsonWriter
 import com.maltaisn.cardgame.addClassTag
+import com.maltaisn.cardgame.game.CardGameJson
 import com.maltaisn.cardgame.game.GameResult
 import com.maltaisn.cardgame.game.PCard
 import com.maltaisn.cardgame.setSerializer
 import com.maltaisn.nines.core.game.event.*
 
 
-object GameSaveJson : Json() {
+object GameSaveJson : CardGameJson() {
+
+    /**
+     * The version of the card game library that the [Game] being currently
+     * deserialized was written by.
+     */
+    var ninesVersion = -1
 
     init {
-        setOutputType(JsonWriter.OutputType.javascript)
-        setUsePrototypes(false)
-        setEnumNames(true)
-        setTypeName("type")
-
         // Add class tags
         addClassTag<GameState>("state")
         addClassTag<GameResult>("result")
