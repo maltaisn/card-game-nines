@@ -413,6 +413,13 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
         val src = if (pos == 0) playerHand else hiddenStacks[pos]
         cardAnimationLayer.moveCard(src, trick, src.cards.indexOf(card),
                 trick.actors.count { it != null }, replaceSrc = false, replaceDst = true)
+
+        if (pos == 0) {
+            // Sort the player hand when a card is played since the
+            // sorter is non-transitive i.e order depends on content.
+            playerHand.sort()
+        }
+
         cardAnimationLayer.update()
     }
 
