@@ -96,9 +96,11 @@ interface GameContract {
 
         // Dealer chip
         fun showDealerChip(pos: Int)
-
         fun moveDealerChip(pos: Int)
         fun hideDealerChip()
+
+        // Trump indicator
+        fun setTrumpIndicatorSuit(suit: Int)
 
         // Scoreboard
         fun checkScoreboardScoresPage()

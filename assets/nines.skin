@@ -1,22 +1,24 @@
 {
-  Color: {
-    textColorBlack: { hex: #1b1b1bff }
-    textColorGray: { hex: #797979ff }
-  }
-  com.maltaisn.cardgame.widget.FontStyle: {
-    normalBold: {
-      bold: true
-      fontSize: 22
-      fontColor: textColorBlack
-    }
-  }
   com.maltaisn.nines.core.widget.HandsTable$HandsTableStyle: {
     default: {
       headerFontStyle: normalBold
       playerNameFontStyle: {
-        fontSize: 22
+        fontSize: 44
         fontColor: textColorGray
       }
+    }
+  }
+  com.maltaisn.nines.core.widget.TrumpIndicator$TrumpIndicatorStyle: {
+    default: {
+      pcardStyle: default
+      fontStyle: {
+        bold: true
+        fontSize: 44
+        fontColor: textColorWhite
+        drawShadow: true
+        shadowColor: black
+      }
+      iconSize: 64
     }
   }
 }

@@ -27,6 +27,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup
 import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.I18NBundle
 import com.maltaisn.cardgame.pcard.PCard
+import com.maltaisn.cardgame.pcard.PCardStyle
 import com.maltaisn.cardgame.postDelayed
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.widget.*
@@ -40,6 +41,7 @@ import com.maltaisn.cardgame.widget.table.TableViewContent
 import com.maltaisn.cardgame.widget.table.TricksTable
 import com.maltaisn.nines.core.game.Player
 import com.maltaisn.nines.core.widget.HandsTable
+import com.maltaisn.nines.core.widget.TrumpIndicator
 import ktx.actors.onClick
 import ktx.actors.onKeyDown
 import ktx.style.get
@@ -72,6 +74,8 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
     private val collectPopup: Popup
     private val idlePopup: Popup
 
+    private val trumpIndicator: TrumpIndicator
+
     private val dealerChip: DealerChip
 
     private val scoresPage: PagedSubMenu.Page
@@ -98,7 +102,7 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
 
 
     init {
-        val cardStyle: CardActor.CardStyle = skin["pcard"]
+        val cardStyle: PCardStyle = skin.get()
 
         // SCOREBOARD
         // Scores page
@@ -183,6 +187,9 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
         // Player labels
         playerLabels = List(3) { PlayerLabel(skin) }
 
+        // Trump indicator
+        trumpIndicator = TrumpIndicator(skin)
+
         // Dealer chip
         dealerChip = DealerChip(skin)
         dealerChip.distance = 0f
@@ -194,8 +201,9 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
             topTable.add(hiddenStacks[2]).grow()
 
             playerLabelTable = FadeTable().apply {
-                pad(60f, 60f, 330f, 60f)
-                add(playerLabels[2]).align(Align.topRight).width(240f).expand().padRight(300f).row()
+                pad(0f, 60f, 330f, 60f)
+                add(trumpIndicator).align(Align.topLeft).minWidth(300f).padLeft(200f).expand()
+                add(playerLabels[2]).align(Align.topRight).width(240f).expand().pad(60f, 0f, 0f, 300f).row()
                 add(playerLabels[1]).align(Align.topLeft).width(240f).expand().row()
                 add(playerLabels[0]).align(Align.bottomLeft).width(240f).expand().padLeft(200f)
             }
@@ -468,6 +476,11 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
         1 -> Align.right
         2 -> Align.left
         else -> Align.center
+    }
+
+    // Trump indicator
+    override fun setTrumpIndicatorSuit(suit: Int) {
+        trumpIndicator.trumpSuit = suit
     }
 
     // Scores page

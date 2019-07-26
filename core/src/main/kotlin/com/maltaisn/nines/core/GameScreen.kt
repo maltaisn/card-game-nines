@@ -42,8 +42,8 @@ class GameScreen : CardGameScreen() {
     override fun start() {
         super.start()
 
-        addSkin(Res.SKIN)
         addSkin(CoreRes.PCARD_SKIN, CoreRes.PCARD_SKIN_ATLAS)
+        addSkin(Res.SKIN)
 
         skin.add("newGameOptions", assetManager.get<GamePrefs>(Res.PREFS_NEW_GAME))
         skin.add("settings", assetManager.get<GamePrefs>(Res.PREFS_SETTINGS))

@@ -381,6 +381,8 @@ class GamePresenter : GameContract.Presenter {
 
         updatePlayerScores()
 
+        layout.setTrumpIndicatorSuit(game.trumpSuit)
+
         // Show the player labels and the dealer chip
         var moveDuration = 0.2f
         layout.doDelayed(moveDuration) {
