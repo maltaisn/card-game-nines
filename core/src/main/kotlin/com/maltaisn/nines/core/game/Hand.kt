@@ -18,8 +18,8 @@ package com.maltaisn.nines.core.game
 
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
-import com.maltaisn.cardgame.game.PCard
 import com.maltaisn.cardgame.game.sortWith
+import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.readArrayValue
 
 

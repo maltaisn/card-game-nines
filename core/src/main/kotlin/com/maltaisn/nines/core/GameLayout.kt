@@ -26,7 +26,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup
 import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.I18NBundle
-import com.maltaisn.cardgame.game.PCard
+import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.postDelayed
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.widget.*
@@ -35,9 +35,9 @@ import com.maltaisn.cardgame.widget.menu.DefaultGameMenu
 import com.maltaisn.cardgame.widget.menu.MenuIcons
 import com.maltaisn.cardgame.widget.menu.PagedSubMenu
 import com.maltaisn.cardgame.widget.menu.SubMenu
-import com.maltaisn.cardgame.widget.menu.table.ScoresTable
-import com.maltaisn.cardgame.widget.menu.table.TableViewContent
-import com.maltaisn.cardgame.widget.menu.table.TricksTable
+import com.maltaisn.cardgame.widget.table.ScoresTable
+import com.maltaisn.cardgame.widget.table.TableViewContent
+import com.maltaisn.cardgame.widget.table.TricksTable
 import com.maltaisn.nines.core.game.Player
 import com.maltaisn.nines.core.widget.HandsTable
 import ktx.actors.onClick
@@ -48,15 +48,15 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 
-class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), GameContract.View {
+class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
 
     private val presenter: GameContract.Presenter = GamePresenter()
 
     //@GDXAssets(propertiesFiles = ["assets/strings.properties"])
-    private val strings: I18NBundle = coreSkin.get()
+    private val strings: I18NBundle = skin.get()
 
-    override val settings: GamePrefs = coreSkin["settings"]
-    override val newGameOptions: GamePrefs = coreSkin["newGameOptions"]
+    override val settings: GamePrefs = skin["settings"]
+    override val newGameOptions: GamePrefs = skin["newGameOptions"]
 
     private val menu: DefaultGameMenu
 
@@ -98,43 +98,45 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
 
 
     init {
+        val cardStyle: CardActor.CardStyle = skin["pcard"]
+
         // SCOREBOARD
         // Scores page
-        scoresTable = ScoresTable(coreSkin, 3)
+        scoresTable = ScoresTable(skin, 3)
         scoresPage = PagedSubMenu.Page(0, strings["scoreboard_scores"],
-                coreSkin.getDrawable(MenuIcons.LIST), SubMenu.ITEM_POS_TOP)
+                skin.getDrawable(MenuIcons.LIST), SubMenu.ITEM_POS_TOP)
         scoresPage.content = Container(scoresTable).pad(60f, 30f, 60f, 30f).fill()
 
         // Hands page
-        handsTable = HandsTable(coreSkin, cardSkin)
+        handsTable = HandsTable(skin, cardStyle)
         handsPage = PagedSubMenu.Page(1, strings["scoreboard_hands"],
-                coreSkin.getDrawable(MenuIcons.CARDS), SubMenu.ITEM_POS_TOP)
+                skin.getDrawable(MenuIcons.CARDS), SubMenu.ITEM_POS_TOP)
         handsPage.content = Container(handsTable).pad(60f, 30f, 60f, 30f).fill()
 
         // Tricks page
-        tricksTable = TricksTable(coreSkin, cardSkin, 3)
+        tricksTable = TricksTable(skin, cardStyle, 3)
         tricksTable.cardSize = CardActor.SIZE_NORMAL
         tricksPage = PagedSubMenu.Page(2, strings["scoreboard_tricks"],
-                coreSkin.getDrawable(MenuIcons.CARDS), SubMenu.ITEM_POS_TOP)
+                skin.getDrawable(MenuIcons.CARDS), SubMenu.ITEM_POS_TOP)
         tricksPage.content = Container(tricksTable).pad(60f, 30f, 60f, 30f).fill()
 
         // Last trick page
-        lastTrick = CardTrick(coreSkin, cardSkin, 3).apply {
+        lastTrick = CardTrick(cardStyle, 3).apply {
             cardSize = CardActor.SIZE_BIG
             enabled = false
         }
         lastTrickPage = PagedSubMenu.Page(3, strings["scoreboard_last_trick"],
-                coreSkin.getDrawable(MenuIcons.CARDS), SubMenu.ITEM_POS_TOP)
-        lastTrickPage.content = Container(TableViewContent(coreSkin).apply {
+                skin.getDrawable(MenuIcons.CARDS), SubMenu.ITEM_POS_TOP)
+        lastTrickPage.content = Container(TableViewContent(skin).apply {
             add(lastTrick).grow()
         }).pad(60f, 30f, 60f, 30f).fill()
 
         // MENU
-        menu = DefaultGameMenu(coreSkin)
+        menu = DefaultGameMenu(skin)
         menu.callback = presenter
         menu.newGameOptions = newGameOptions
         menu.settings = settings
-        menu.rules = coreSkin[Res.MD_RULES]
+        menu.rules = skin[Res.MD_RULES]
 
         menu.scoreboardMenu.apply {
             addItem(scoresPage)
@@ -146,7 +148,7 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
         addActor(menu)
 
         // Card containers
-        playerHand = CardHand(coreSkin, cardSkin).apply {
+        playerHand = CardHand(cardStyle).apply {
             sorter = PCard.DEFAULT_SORTER
             clipPercent = 0.3f
             align = Align.bottom
@@ -156,13 +158,13 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
         }
 
         hiddenStacks = List(3) {
-            CardStack(coreSkin, cardSkin).apply {
+            CardStack(cardStyle).apply {
                 cardSize = CardActor.SIZE_NORMAL
                 visibility = CardContainer.Visibility.NONE
             }
         }
 
-        extraHand = CardHand(coreSkin, cardSkin).apply {
+        extraHand = CardHand(cardStyle).apply {
             sorter = PCard.DEFAULT_SORTER
             visibility = CardContainer.Visibility.NONE
             cardSize = CardActor.SIZE_SMALL
@@ -171,7 +173,7 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
             shown = false
         }
 
-        trick = CardTrick(coreSkin, cardSkin, 3).apply {
+        trick = CardTrick(cardStyle, 3).apply {
             cardSize = CardActor.SIZE_NORMAL
             shown = false
         }
@@ -179,10 +181,10 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
         cardAnimationLayer.register(trick, extraHand, playerHand, *hiddenStacks.toTypedArray())
 
         // Player labels
-        playerLabels = List(3) { PlayerLabel(coreSkin) }
+        playerLabels = List(3) { PlayerLabel(skin) }
 
         // Dealer chip
-        dealerChip = DealerChip(coreSkin)
+        dealerChip = DealerChip(skin)
         dealerChip.distance = 0f
 
         // Do the layout
@@ -206,13 +208,13 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
         }
 
         // Trade hand popup
-        tradePopup = Popup(coreSkin)
+        tradePopup = Popup(skin)
         popupGroup.addActor(tradePopup)
 
-        val tradeBtn = PopupButton(coreSkin, strings["popup_trade"])
+        val tradeBtn = PopupButton(skin, strings["popup_trade"])
         tradeBtn.onClick { presenter.onTradeBtnClicked(true) }
 
-        val noTradeBtn = PopupButton(coreSkin, strings["popup_no_trade"])
+        val noTradeBtn = PopupButton(skin, strings["popup_no_trade"])
         noTradeBtn.onClick { presenter.onTradeBtnClicked(false) }
 
         tradePopup.apply {
@@ -221,18 +223,18 @@ class GameLayout(coreSkin: Skin, cardSkin: Skin) : CardGameLayout(coreSkin), Gam
         }
 
         // Collect trick popup
-        collectPopup = Popup(coreSkin)
+        collectPopup = Popup(skin)
         popupGroup.addActor(collectPopup)
 
-        val collectBtn = PopupButton(coreSkin, strings["popup_ok"])
+        val collectBtn = PopupButton(skin, strings["popup_ok"])
         collectBtn.onClick { presenter.onCollectTrickBtnClicked() }
         collectPopup.add(collectBtn).minWidth(300f)
 
         // Idle popup
-        idlePopup = Popup(coreSkin)
+        idlePopup = Popup(skin)
         popupGroup.addActor(idlePopup)
 
-        val idleBtn = PopupButton(coreSkin, strings["popup_your_turn"])
+        val idleBtn = PopupButton(skin, strings["popup_your_turn"])
         idlePopup.add(idleBtn).minWidth(300f)
         idlePopup.touchable = Touchable.disabled
 

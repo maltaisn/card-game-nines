@@ -16,8 +16,8 @@
 
 package com.maltaisn.nines.core
 
-import com.maltaisn.cardgame.game.PCard
 import com.maltaisn.cardgame.game.sortWith
+import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.prefs.PlayerNamesPref
 import com.maltaisn.cardgame.prefs.SliderPref
 import com.maltaisn.cardgame.widget.DealerChip
@@ -25,8 +25,8 @@ import com.maltaisn.cardgame.widget.FadeTable
 import com.maltaisn.cardgame.widget.card.CardAnimationLayer
 import com.maltaisn.cardgame.widget.card.CardContainer
 import com.maltaisn.cardgame.widget.card.CardHand
-import com.maltaisn.cardgame.widget.menu.table.ScoresTable
-import com.maltaisn.cardgame.widget.menu.table.TricksTable
+import com.maltaisn.cardgame.widget.table.ScoresTable
+import com.maltaisn.cardgame.widget.table.TricksTable
 import com.maltaisn.nines.core.game.*
 import com.maltaisn.nines.core.game.event.*
 import com.maltaisn.nines.core.widget.HandsTable

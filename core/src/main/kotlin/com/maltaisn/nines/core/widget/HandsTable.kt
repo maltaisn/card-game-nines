@@ -3,19 +3,19 @@ package com.maltaisn.nines.core.widget
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.I18NBundle
-import com.maltaisn.cardgame.game.Card
-import com.maltaisn.cardgame.game.PCard
+import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.widget.FontStyle
 import com.maltaisn.cardgame.widget.SdfLabel
 import com.maltaisn.cardgame.widget.card.CardActor
 import com.maltaisn.cardgame.widget.card.CardHand
-import com.maltaisn.cardgame.widget.menu.table.TableView
+import com.maltaisn.cardgame.widget.table.TableView
 import ktx.style.get
 
 
-class HandsTable(coreSkin: Skin, cardSkin: Skin) : TableView(coreSkin, listOf(1f, 4f)) {
+class HandsTable(skin: Skin, private val cardStyle: CardActor.CardStyle) :
+        TableView(skin, listOf(1f, 4f)) {
 
-    private val style: HandsTableStyle = coreSkin.get()
+    private val style: HandsTableStyle = skin.get()
 
     /**
      * The players with a hand shown in this table.
@@ -35,9 +35,9 @@ class HandsTable(coreSkin: Skin, cardSkin: Skin) : TableView(coreSkin, listOf(1f
                 get() = players.size
 
             override fun createViewHolder(column: Int) = if (column == 0) {
-                NameViewHolder(coreSkin)
+                NameViewHolder()
             } else {
-                HandViewHolder(coreSkin, cardSkin)
+                HandViewHolder()
             }
 
             override fun bindViewHolder(viewHolder: ViewHolder, row: Int, column: Int) {
@@ -49,10 +49,10 @@ class HandsTable(coreSkin: Skin, cardSkin: Skin) : TableView(coreSkin, listOf(1f
             }
         }
 
-        val strings: I18NBundle = coreSkin.get()
+        val strings: I18NBundle = skin.get()
         val headers = listOf(strings["scoreboard_hands_player"], strings["scoreboard_hands_hand"])
         headerAdapter = object : HeaderAdapter() {
-            override fun createViewHolder(column: Int) = HeaderViewHolder(coreSkin)
+            override fun createViewHolder(column: Int) = HeaderViewHolder()
 
             override fun bindViewHolder(viewHolder: ViewHolder, column: Int) {
                 (viewHolder as HeaderViewHolder).bind(headers[column])
@@ -61,7 +61,7 @@ class HandsTable(coreSkin: Skin, cardSkin: Skin) : TableView(coreSkin, listOf(1f
     }
 
 
-    private inner class HeaderViewHolder(skin: Skin) : ViewHolder() {
+    private inner class HeaderViewHolder : ViewHolder() {
 
         private val titleLabel = SdfLabel(skin, style.headerFontStyle)
 
@@ -76,7 +76,7 @@ class HandsTable(coreSkin: Skin, cardSkin: Skin) : TableView(coreSkin, listOf(1f
         }
     }
 
-    private inner class NameViewHolder(skin: Skin) : ViewHolder() {
+    private inner class NameViewHolder : ViewHolder() {
 
         private val nameLabel = SdfLabel(skin, style.playerNameFontStyle)
 
@@ -91,9 +91,9 @@ class HandsTable(coreSkin: Skin, cardSkin: Skin) : TableView(coreSkin, listOf(1f
         }
     }
 
-    private inner class HandViewHolder(coreSkin: Skin, cardSkin: Skin) : ViewHolder() {
+    private inner class HandViewHolder : ViewHolder() {
 
-        private val hand = CardHand(coreSkin, cardSkin).apply {
+        private val hand = CardHand(cardStyle).apply {
             cardSize = CardActor.SIZE_SMALL
             align = Align.bottom
             clipPercent = 0.3f
@@ -107,7 +107,7 @@ class HandsTable(coreSkin: Skin, cardSkin: Skin) : TableView(coreSkin, listOf(1f
             table.clip = true
         }
 
-        fun bind(cards: List<Card>) {
+        fun bind(cards: List<PCard>) {
             hand.cards = cards
         }
     }

@@ -24,7 +24,7 @@ import com.maltaisn.cardgame.fromJson
 import com.maltaisn.cardgame.game.CardGame
 import com.maltaisn.cardgame.game.CardGameEvent
 import com.maltaisn.cardgame.game.CardPlayer
-import com.maltaisn.cardgame.game.PCard
+import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.readArrayValue
 import com.maltaisn.cardgame.readValue

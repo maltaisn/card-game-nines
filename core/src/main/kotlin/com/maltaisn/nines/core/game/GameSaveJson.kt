@@ -19,7 +19,7 @@ package com.maltaisn.nines.core.game
 import com.maltaisn.cardgame.addClassTag
 import com.maltaisn.cardgame.game.CardGameJson
 import com.maltaisn.cardgame.game.GameResult
-import com.maltaisn.cardgame.game.PCard
+import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.setSerializer
 import com.maltaisn.nines.core.game.event.*
 

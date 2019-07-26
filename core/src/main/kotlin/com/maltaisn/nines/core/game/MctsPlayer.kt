@@ -20,9 +20,9 @@ import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
 import com.maltaisn.cardgame.game.CardGameEvent
 import com.maltaisn.cardgame.game.CardGameState
-import com.maltaisn.cardgame.game.PCard
 import com.maltaisn.cardgame.game.ai.Mcts
 import com.maltaisn.cardgame.game.drawTop
+import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.readValue
 import com.maltaisn.nines.core.game.event.TradeHandMove
 

@@ -15,6 +15,7 @@ build/
 
 ## Copied assets
 /assets/core/
+/assets/pcard/
 /android/assets/
 
 ## OS Specific
