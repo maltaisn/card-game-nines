@@ -12,7 +12,7 @@
           maxLength: 15
           defaultNames: [
             "@string/pref_player_names_south",
-            "@string/pref_player_names_east",
+            "@string/pref_player_names_west",
             "@string/pref_player_names_north"
           ]
         }

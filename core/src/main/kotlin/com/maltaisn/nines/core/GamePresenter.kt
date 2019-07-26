@@ -135,11 +135,11 @@ class GamePresenter : GameContract.Presenter {
         } else {
             MctsPlayer(difficulty)
         }
-        val east = MctsPlayer(difficulty)
+        val west = MctsPlayer(difficulty)
         val north = MctsPlayer(difficulty)
 
         // Create and start the game
-        val game = Game(layout.settings, south, east, north)
+        val game = Game(layout.settings, south, west, north)
         initGame(game)
         show()
         game.start()

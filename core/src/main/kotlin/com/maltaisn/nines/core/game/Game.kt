@@ -16,7 +16,7 @@
 
 package com.maltaisn.nines.core.game
 
-import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.Files
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
 import com.badlogic.gdx.utils.SerializationException
@@ -31,6 +31,7 @@ import com.maltaisn.cardgame.readValue
 import com.maltaisn.nines.core.PrefKeys
 import com.maltaisn.nines.core.game.event.*
 import kotlinx.coroutines.*
+import ktx.assets.file
 import ktx.async.KtxAsync
 import ktx.async.newSingleThreadAsyncContext
 import ktx.async.onRenderingThread
@@ -125,10 +126,10 @@ class Game() : CardGame() {
     private var aiPlayerJob: Job? = null
 
 
-    constructor(settings: GamePrefs, south: Player, east: Player, north: Player) : this() {
+    constructor(settings: GamePrefs, south: Player, west: Player, north: Player) : this() {
         this.settings = settings
         settings.addListener(this)
-        players = listOf(south, east, north)
+        players = listOf(south, west, north)
     }
 
     /**
@@ -332,10 +333,10 @@ class Game() : CardGame() {
     }
 
     companion object {
-        val VERSION = 1
+        const val VERSION = 1
 
         /** The game save file location. */
-        val GAME_SAVE_FILE = Gdx.files.local("saved-game.json")
+        val GAME_SAVE_FILE = file("saved-game.json", Files.FileType.Local)
 
         /** Returns whether or not there's a game saved on the disk. */
         val hasSavedGame: Boolean
@@ -364,6 +365,6 @@ class Game() : CardGame() {
         }
 
         private val TRUMP_SUITS = intArrayOf(PCard.HEART, PCard.SPADE,
-                PCard.DIAMOND, PCard.SPADE, GameState.NO_TRUMP)
+                PCard.DIAMOND, PCard.CLUB, GameState.NO_TRUMP)
     }
 }

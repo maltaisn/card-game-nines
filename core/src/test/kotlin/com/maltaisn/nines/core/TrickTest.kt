@@ -16,7 +16,7 @@
 
 package com.maltaisn.nines.core
 
-import com.maltaisn.cardgame.game.PCard
+import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.nines.core.game.Trick
 import org.junit.Assert.assertEquals
 import org.junit.Test

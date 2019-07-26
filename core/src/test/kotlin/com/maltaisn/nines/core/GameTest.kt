@@ -16,7 +16,7 @@
 
 package com.maltaisn.nines.core
 
-import com.maltaisn.cardgame.game.PCard
+import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.prefs.buildGamePrefsFromMap
 import com.maltaisn.nines.core.game.*
@@ -27,20 +27,20 @@ import com.maltaisn.nines.core.game.event.*
 fun main() {
     // Create players
     val south = HumanPlayer()
-    val east = MctsPlayer(Difficulty.INTERMEDIATE)
+    val west = MctsPlayer(Difficulty.INTERMEDIATE)
     val north = MctsPlayer(Difficulty.ADVANCED)
 
-    playGame(settings, south, east, north, VERBOSE_MOVES)
-    //playGames(settings, south, east, north, 30, VERBOSE_ROUNDS)
+    playGame(settings, south, west, north, VERBOSE_MOVES)
+    //playGames(settings, south, west, north, 30, VERBOSE_ROUNDS)
 }
 
 /**
  * Play a single game.
  */
 private fun playGame(settings: GamePrefs,
-                     south: Player, east: Player, north: Player,
+                     south: Player, west: Player, north: Player,
                      verbosity: Int): Game {
-    val game = Game(settings, south, east, north)
+    val game = Game(settings, south, west, north)
     val players = game.players
 
     var lastScores = IntArray(3) { settings.getInt(PrefKeys.START_SCORE) }
@@ -82,7 +82,7 @@ private fun playGame(settings: GamePrefs,
                     // South did: Trade hand, trick: []
                     print("${NAMES[event.playerPos]} did: $event, trick: ${state.currentTrick}")
                     if (verbosity == VERBOSE_ALL) {
-                        // East did: Play 5♥, trick: [A♥, 5♥], hand: [...]
+                        // West did: Play 5♥, trick: [A♥, 5♥], hand: [...]
                         print(", hand: ${player.hand}")
                     }
                     println()
@@ -132,12 +132,12 @@ private fun playGame(settings: GamePrefs,
  * Play a number of games.
  */
 private fun playGames(settings: GamePrefs,
-                      south: Player, east: Player, north: Player,
+                      south: Player, west: Player, north: Player,
                       count: Int, verbosity: Int) {
     val gamesWon = intArrayOf(0, 0, 0)
     repeat(count) {
         println("=== GAME ${it + 1} / $count ===")
-        val game = playGame(settings, south, east, north, verbosity)
+        val game = playGame(settings, south, west, north, verbosity)
         gamesWon[game.winnerPos]++
     }
     println("Games won: ${gamesWon.contentToString()}")
@@ -146,11 +146,11 @@ private fun playGames(settings: GamePrefs,
 private val settings = buildGamePrefsFromMap(mapOf(
         PrefKeys.START_SCORE to 9,
         PrefKeys.GAME_SPEED to "none",
-        PrefKeys.PLAYER_NAMES to arrayOf("South", "East", "North")
+        PrefKeys.PLAYER_NAMES to arrayOf("South", "West", "North")
 ))
 
 private const val VERBOSE_ROUNDS = 0
 private const val VERBOSE_MOVES = 1
 private const val VERBOSE_ALL = 2
 
-private val NAMES = listOf("South", "East", "North")
+private val NAMES = listOf("South", "West", "North")
