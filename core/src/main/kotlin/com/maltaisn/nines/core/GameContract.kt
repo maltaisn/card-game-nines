@@ -17,6 +17,7 @@
 package com.maltaisn.nines.core
 
 import com.maltaisn.cardgame.pcard.PCard
+import com.maltaisn.cardgame.prefs.GamePref
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.widget.menu.DefaultGameMenu
 import com.maltaisn.cardgame.widget.table.ScoresTable
@@ -48,6 +49,8 @@ interface GameContract {
         fun showInGameMenu(saveLast: Boolean)
         fun showScoreboard()
         fun setContinueItemEnabled(enabled: Boolean)
+
+        fun showResetGameDialog(pref: GamePref<*>, callback: (Boolean) -> Unit)
 
         // Player labels
         fun setPlayerLabelsShown(shown: Boolean)
@@ -128,6 +131,9 @@ interface GameContract {
         fun detach()
 
         fun onSave()
+
+        fun onPrefNeedsConfirm(pref: GamePref<*>, callback: (Boolean) -> Unit)
+        fun onPrefConfirmed()
 
         fun onBackPress()
 

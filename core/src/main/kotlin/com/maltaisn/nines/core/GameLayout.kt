@@ -29,6 +29,7 @@ import com.badlogic.gdx.utils.I18NBundle
 import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.pcard.PCardStyle
 import com.maltaisn.cardgame.postDelayed
+import com.maltaisn.cardgame.prefs.GamePref
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.widget.*
 import com.maltaisn.cardgame.widget.card.*
@@ -36,6 +37,7 @@ import com.maltaisn.cardgame.widget.menu.DefaultGameMenu
 import com.maltaisn.cardgame.widget.menu.MenuIcons
 import com.maltaisn.cardgame.widget.menu.PagedSubMenu
 import com.maltaisn.cardgame.widget.menu.SubMenu
+import com.maltaisn.cardgame.widget.prefs.ResetGameDialog
 import com.maltaisn.cardgame.widget.table.ScoresTable
 import com.maltaisn.cardgame.widget.table.TableViewContent
 import com.maltaisn.cardgame.widget.table.TricksTable
@@ -61,6 +63,7 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
     override val newGameOptions: GamePrefs = skin["newGameOptions"]
 
     private val menu: DefaultGameMenu
+    private val resetGameDialog: ResetGameDialog
 
     private val hiddenStacks: List<CardStack>
     private val playerHand: CardHand
@@ -149,6 +152,10 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
             addItem(lastTrickPage)
         }
 
+        // Confirm dialog, for settings that resets the saved game
+        resetGameDialog = ResetGameDialog(skin)
+        menu.confirmCallback = presenter::onPrefNeedsConfirm
+
         addActor(menu)
 
         // Card containers
@@ -182,7 +189,7 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
             shown = false
         }
 
-        cardAnimationLayer.register(trick, extraHand, playerHand, *hiddenStacks.toTypedArray())
+        cardAnimationGroup.register(trick, extraHand, playerHand, *hiddenStacks.toTypedArray())
 
         // Player labels
         playerLabels = List(3) { PlayerLabel(skin) }
@@ -195,34 +202,32 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
         dealerChip.distance = 0f
 
         // Do the layout
-        gameLayer.apply {
-            bottomTable.add(hiddenStacks[0]).grow()
-            leftTable.add(hiddenStacks[1]).grow()
-            topTable.add(hiddenStacks[2]).grow()
+        bottomTable.add(hiddenStacks[0]).grow()
+        leftTable.add(hiddenStacks[1]).grow()
+        topTable.add(hiddenStacks[2]).grow()
 
-            playerLabelTable = FadeTable().apply {
-                pad(0f, 60f, 330f, 60f)
-                add(trumpIndicator).align(Align.topLeft).minWidth(300f).padLeft(200f).expand()
-                add(playerLabels[2]).align(Align.topRight).width(240f).expand().pad(60f, 0f, 0f, 300f).row()
-                add(playerLabels[1]).align(Align.topLeft).width(240f).expand().row()
-                add(playerLabels[0]).align(Align.bottomLeft).width(240f).expand().padLeft(200f)
-            }
-            val containerTable = Table().apply {
-                pad(40f, 120f, 0f, 120f)
-                stack(trick, extraHand).grow().row()
-                add(playerHand).growX()
-            }
-            centerTable.stack(playerLabelTable, WidgetGroup(dealerChip), containerTable).grow()
+        playerLabelTable = FadeTable().apply {
+            pad(0f, 60f, 330f, 60f)
+            add(trumpIndicator).align(Align.topLeft).minWidth(300f).padLeft(200f).expand()
+            add(playerLabels[2]).align(Align.topRight).width(240f).expand().pad(60f, 0f, 0f, 300f).row()
+            add(playerLabels[1]).align(Align.topLeft).width(240f).expand().row()
+            add(playerLabels[0]).align(Align.bottomLeft).width(240f).expand().padLeft(200f)
         }
+        val containerTable = Table().apply {
+            pad(40f, 120f, 0f, 120f)
+            stack(trick, extraHand).grow().row()
+            add(playerHand).growX()
+        }
+        centerTable.stack(playerLabelTable, WidgetGroup(dealerChip), containerTable).grow()
 
         // Trade hand popup
         tradePopup = Popup(skin)
         popupGroup.addActor(tradePopup)
 
-        val tradeBtn = PopupButton(skin, strings["popup_trade"])
+        val tradeBtn = Button(skin, strings["popup_trade"])
         tradeBtn.onClick { presenter.onTradeBtnClicked(true) }
 
-        val noTradeBtn = PopupButton(skin, strings["popup_no_trade"])
+        val noTradeBtn = Button(skin, strings["popup_no_trade"])
         noTradeBtn.onClick { presenter.onTradeBtnClicked(false) }
 
         tradePopup.apply {
@@ -234,7 +239,7 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
         collectPopup = Popup(skin)
         popupGroup.addActor(collectPopup)
 
-        val collectBtn = PopupButton(skin, strings["popup_ok"])
+        val collectBtn = Button(skin, strings["popup_ok"])
         collectBtn.onClick { presenter.onCollectTrickBtnClicked() }
         collectPopup.add(collectBtn).minWidth(300f)
 
@@ -242,7 +247,7 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
         idlePopup = Popup(skin)
         popupGroup.addActor(idlePopup)
 
-        val idleBtn = PopupButton(skin, strings["popup_your_turn"])
+        val idleBtn = Button(skin, strings["popup_your_turn"])
         idlePopup.add(idleBtn).minWidth(300f)
         idlePopup.touchable = Touchable.disabled
 
@@ -273,8 +278,8 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
     }
 
     override fun completeAnimations() {
-        cardAnimationLayer.clearDelayedMoves()
-        cardAnimationLayer.completeAnimation()
+        cardAnimationGroup.clearDelayedMoves()
+        cardAnimationGroup.completeAnimation()
         clearActions()
     }
 
@@ -287,6 +292,20 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
 
     override fun setContinueItemEnabled(enabled: Boolean) {
         menu.continueItem.enabled = enabled
+    }
+
+    override fun showResetGameDialog(pref: GamePref<*>, callback: (Boolean) -> Unit) {
+        resetGameDialog.let {
+            it.pref = pref
+            it.callback = { keep ->
+                if (keep) {
+                    // User decided to change the setting, so reset the saved game
+                    presenter.onPrefConfirmed()
+                }
+                callback(keep)
+            }
+            it.show(stage)
+        }
     }
 
     // Player labels
@@ -332,7 +351,7 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
     }
 
     override fun dealPlayerCards() {
-        cardAnimationLayer.deal(hiddenStacks[0], playerHand,
+        cardAnimationGroup.deal(hiddenStacks[0], playerHand,
                 hiddenStacks[0].size, fromLast = false)
     }
 
@@ -354,12 +373,12 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
      */
     private fun moveAllContainerCards(src: CardContainer, dst: CardContainer, count: Int) {
         for (i in 0 until count) {
-            cardAnimationLayer.moveCard(src, dst, 0, dst.size)
+            cardAnimationGroup.moveCard(src, dst, 0, dst.size)
         }
         if (dst is CardHand) {
             dst.sort()
         }
-        cardAnimationLayer.update()
+        cardAnimationGroup.update()
     }
 
     override fun highlightPlayerCards(cards: List<PCard>) = playerHand.highlightCards(cards)
@@ -411,7 +430,7 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
 
     override fun movePlayerCardToTrick(pos: Int, card: PCard) {
         val src = if (pos == 0) playerHand else hiddenStacks[pos]
-        cardAnimationLayer.moveCard(src, trick, src.cards.indexOf(card),
+        cardAnimationGroup.moveCard(src, trick, src.cards.indexOf(card),
                 trick.actors.count { it != null }, replaceSrc = false, replaceDst = true)
 
         if (pos == 0) {
@@ -420,18 +439,18 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
             playerHand.sort()
         }
 
-        cardAnimationLayer.update()
+        cardAnimationGroup.update()
     }
 
     override fun collectTrick(playerPos: Int) {
         setHiddenStackCardsShown(playerPos, true)
 
         for (i in 0 until trick.capacity) {
-            cardAnimationLayer.moveCard(trick, hiddenStacks[playerPos], i, 0, replaceSrc = true)
+            cardAnimationGroup.moveCard(trick, hiddenStacks[playerPos], i, 0, replaceSrc = true)
         }
-        cardAnimationLayer.update()
+        cardAnimationGroup.update()
 
-        postDelayed(CardAnimationLayer.UPDATE_DURATION) {
+        postDelayed(CardAnimationGroup.UPDATE_DURATION) {
             setHiddenStackCardsShown(playerPos, false)
         }
     }
@@ -475,8 +494,7 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
 
     override fun hideDealerChip() = dealerChip.hide()
 
-    private fun getDealerChipActor(pos: Int) =
-            playerLabels.getOrNull(pos) ?: gameLayer.centerTable
+    private fun getDealerChipActor(pos: Int) = playerLabels.getOrNull(pos) ?: centerTable
 
     private fun getDealerChipSide(pos: Int) = when (pos) {
         0 -> Align.right

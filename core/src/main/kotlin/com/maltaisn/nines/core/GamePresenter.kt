@@ -18,11 +18,12 @@ package com.maltaisn.nines.core
 
 import com.maltaisn.cardgame.game.sortWith
 import com.maltaisn.cardgame.pcard.PCard
+import com.maltaisn.cardgame.prefs.GamePref
 import com.maltaisn.cardgame.prefs.PlayerNamesPref
 import com.maltaisn.cardgame.prefs.SliderPref
 import com.maltaisn.cardgame.widget.DealerChip
 import com.maltaisn.cardgame.widget.FadeTable
-import com.maltaisn.cardgame.widget.card.CardAnimationLayer
+import com.maltaisn.cardgame.widget.card.CardAnimationGroup
 import com.maltaisn.cardgame.widget.card.CardContainer
 import com.maltaisn.cardgame.widget.card.CardHand
 import com.maltaisn.cardgame.widget.table.ScoresTable
@@ -84,6 +85,16 @@ class GamePresenter : GameContract.Presenter {
         game?.save(GameSaveJson)
     }
 
+    override fun onPrefNeedsConfirm(pref: GamePref<*>, callback: (Boolean) -> Unit) {
+        if (Game.hasSavedGame) {
+            requireLayout().showResetGameDialog(pref, callback)
+        }
+    }
+
+    override fun onPrefConfirmed() {
+        // User has changed a preference that requires erasing the game save.
+        eraseGameSave()
+    }
 
     override fun onBackPress() {
         if ((System.currentTimeMillis() - lastBackPressTime) / 1000f < BACK_PRESS_COOLDOWN) {
@@ -190,7 +201,7 @@ class GamePresenter : GameContract.Presenter {
 
         val layout = requireLayout()
         layout.collectPopupShown = false
-        layout.doDelayed(CardAnimationLayer.UPDATE_DURATION) {
+        layout.doDelayed(CardAnimationGroup.UPDATE_DURATION) {
             playNext()
         }
     }
@@ -409,7 +420,7 @@ class GamePresenter : GameContract.Presenter {
             layout.doDelayed(moveDuration) {
                 layout.dealPlayerCards()
             }
-            moveDuration += CardAnimationLayer.DEAL_DELAY * playerCards.size
+            moveDuration += CardAnimationGroup.DEAL_DELAY * playerCards.size
 
         } else {
             layout.setHiddenStackCards(0, emptyList())
@@ -505,11 +516,11 @@ class GamePresenter : GameContract.Presenter {
                     }
 
                     // Move cards from hidden stack to extra hand
-                    moveDuration += CardAnimationLayer.UPDATE_DURATION + 0.1f
+                    moveDuration += CardAnimationGroup.UPDATE_DURATION + 0.1f
                     layout.doDelayed(moveDuration) {
                         layout.moveCardsFromHiddenStackToExtraHand(pos, GameState.CARDS_COUNT)
                     }
-                    moveDuration += CardAnimationLayer.UPDATE_DURATION
+                    moveDuration += CardAnimationGroup.UPDATE_DURATION
 
                 } else {
                     moveDuration = 0f
@@ -536,7 +547,7 @@ class GamePresenter : GameContract.Presenter {
             is PlayMove -> {
                 // Move card from player hand to the trick
                 layout.movePlayerCardToTrick(pos, move.card)
-                moveDuration = CardAnimationLayer.UPDATE_DURATION
+                moveDuration = CardAnimationGroup.UPDATE_DURATION
 
                 if (isSouth && layout.settings.getBoolean(PrefKeys.SELECT_PLAYABLE)) {
                     // Unhighlight cards in case they were highlighted before move
@@ -556,7 +567,7 @@ class GamePresenter : GameContract.Presenter {
                             layout.doDelayed(moveDuration) {
                                 collectTrick()
                             }
-                            moveDuration += CardAnimationLayer.UPDATE_DURATION
+                            moveDuration += CardAnimationGroup.UPDATE_DURATION
 
                         } else {
                             // Show the collect popup for confirmation
@@ -681,7 +692,7 @@ class GamePresenter : GameContract.Presenter {
         val layout = requireLayout()
 
         // Player labels
-        val names = namesPref.names.toList()
+        val names = namesPref.value.toList()
         layout.setPlayerNames(names)
 
         // Scores table headers
@@ -773,7 +784,7 @@ class GamePresenter : GameContract.Presenter {
             }
 
             val playerRows = MutableList(3) {
-                HandsTable.PlayerRow(namesPref.names[it], hands[it].cards)
+                HandsTable.PlayerRow(namesPref.value[it], hands[it].cards)
             }
 
             playerRows += HandsTable.PlayerRow(layout.extraHandString, hands[3].cards)

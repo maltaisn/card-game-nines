@@ -19,8 +19,8 @@ package com.maltaisn.nines.core.widget
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.utils.I18NBundle
 import com.maltaisn.cardgame.pcard.PCardStyle
-import com.maltaisn.cardgame.widget.FontStyle
 import com.maltaisn.cardgame.widget.menu.MenuButton
+import com.maltaisn.cardgame.widget.text.FontStyle
 import com.maltaisn.nines.core.game.GameState
 import ktx.style.get
 

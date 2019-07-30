@@ -10,7 +10,7 @@
           type: "player-names"
           title: "@string/pref_player_names"
           maxLength: 15
-          defaultNames: [
+          defaultValue: [
             "@string/pref_player_names_south",
             "@string/pref_player_names_west",
             "@string/pref_player_names_north"
@@ -65,6 +65,7 @@
           minValue: 4
           maxValue: 30
           defaultValue: 9
+          confirmChanges: true
         }
       }
     }

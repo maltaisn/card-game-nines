@@ -128,7 +128,6 @@ class Game() : CardGame() {
 
     constructor(settings: GamePrefs, south: Player, west: Player, north: Player) : this() {
         this.settings = settings
-        settings.addListener(this)
         players = listOf(south, west, north)
     }
 
@@ -265,10 +264,6 @@ class Game() : CardGame() {
     }
 
     override fun dispose() {
-        if (::settings.isInitialized) {
-            settings.removeListener(this)
-        }
-
         eventListener = null
 
         cancelAiTurn()
@@ -353,7 +348,6 @@ class Game() : CardGame() {
                         val game: Game = json.fromJson(GAME_SAVE_FILE)
                         game.settings = settings
                         game.state?.settings = settings
-                        settings.addListener(game)
                         game
                     } catch (e: SerializationException) {
                         // Corrupt game file or version mismatch
