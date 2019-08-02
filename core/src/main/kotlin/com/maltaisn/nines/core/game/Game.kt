@@ -360,5 +360,8 @@ class Game() : CardGame() {
 
         private val TRUMP_SUITS = intArrayOf(PCard.HEART, PCard.SPADE,
                 PCard.DIAMOND, PCard.CLUB, GameState.NO_TRUMP)
+
+        /** The minimum number of tricks to decrease the score. */
+        const val MINIMUM_TRICKS = (GameState.CARDS_COUNT - 1) / 3
     }
 }

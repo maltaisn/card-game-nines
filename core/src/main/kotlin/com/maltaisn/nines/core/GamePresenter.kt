@@ -16,6 +16,7 @@
 
 package com.maltaisn.nines.core
 
+import com.maltaisn.cardgame.game.CardPlayer
 import com.maltaisn.cardgame.game.sortWith
 import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.prefs.GamePref
@@ -29,6 +30,7 @@ import com.maltaisn.cardgame.widget.card.CardHand
 import com.maltaisn.cardgame.widget.table.ScoresTable
 import com.maltaisn.cardgame.widget.table.TricksTable
 import com.maltaisn.nines.core.game.*
+import com.maltaisn.nines.core.game.Game.Phase
 import com.maltaisn.nines.core.game.event.*
 import com.maltaisn.nines.core.widget.HandsTable
 import java.util.*
@@ -54,7 +56,7 @@ class GamePresenter : GameContract.Presenter {
     /**
      * Whether the trade phase has ended in the layout. This is used by [updatePlayerScores]
      * to make sure that the last player choice to trade is displayed for some time, because
-     * [GameState.phase] is already changed at the time [doMove] is called.
+     * [GameState.phase] is already changed at the time [onMove] is called.
      */
     private var tradePhaseEnded = false
 
@@ -120,6 +122,10 @@ class GamePresenter : GameContract.Presenter {
                 layout.showInGameMenu(true)
                 initGame(it)
                 show()
+                if (it.phase == Phase.ROUND_ENDED) {
+                    // Game was saved after round end, start a new round.
+                    it.startRound()
+                }
             } else {
                 // Could not load save file.
                 eraseGameSave()
@@ -178,7 +184,7 @@ class GamePresenter : GameContract.Presenter {
         layout.goToPreviousMenu()
         show()
 
-        if (game.phase == Game.Phase.GAME_STARTED) {
+        if (game.phase == Phase.ROUND_ENDED) {
             // Last round has ended, start a new one.
             game.startRound()
         }
@@ -226,6 +232,22 @@ class GamePresenter : GameContract.Presenter {
         }
     }
 
+    override fun onGameOverDialogScoresBtnClicked() {
+        showScoreboard()
+    }
+
+    override fun onGameOverDialogNewGameBtnClicked() {
+        val layout = requireLayout()
+
+        layout.setGameOverDialogShown(false)
+        layout.hideDealerChip()
+
+        layout.doDelayed(DealerChip.FADE_DURATION) {
+            disposeGame()
+            onStartGameClicked()
+        }
+    }
+
     /**
      * Initialize a new [game], if no game is currently set.
      */
@@ -234,11 +256,11 @@ class GamePresenter : GameContract.Presenter {
         this.game = game
         game.eventListener = {
             when (it) {
-                is StartEvent -> startGame()
-                is EndEvent -> endGame()
-                is RoundStartEvent -> startRound()
-                is RoundEndEvent -> endRound(it)
-                is MoveEvent -> doMove(it)
+                is StartEvent -> onGameStarted()
+                is EndEvent -> onGameEnded()
+                is RoundStartEvent -> onRoundStarted()
+                is RoundEndEvent -> onRoundEnded(it)
+                is MoveEvent -> onMove(it)
             }
         }
     }
@@ -262,6 +284,7 @@ class GamePresenter : GameContract.Presenter {
 
         layout.completeAnimations()
 
+        layout.setTrumpIndicatorShown(game.phase != Phase.ENDED)
         layout.setPlayerHandEnabled(game.players[0] is HumanPlayer)
 
         // Update player names displayed everywhere
@@ -278,17 +301,15 @@ class GamePresenter : GameContract.Presenter {
         updateTotalScoreFooters()
 
         updateTricksPage()
+        updateLastTrickPage()
 
-        if (game.phase == Game.Phase.GAME_STARTED) {
-            // Previous round has ended, start a new one.
-            game.startRound()
-
-        } else if (game.phase == Game.Phase.ROUND_STARTED) {
+        if (game.phase == Phase.ROUND_STARTED) {
             // Round has started
             val state = requireState()
 
             layout.setPlayerLabelsShown(true)
             layout.showDealerChip(game.dealerPos)
+            layout.setTrumpIndicatorSuit(game.trumpSuit)
 
             tradePhaseEnded = (state.phase == GameState.Phase.PLAY)
 
@@ -325,6 +346,17 @@ class GamePresenter : GameContract.Presenter {
             updatePlayerScores()
 
             playNext()
+
+        } else if (game.phase == Phase.ENDED) {
+            tradePhaseEnded = true
+
+            // Game has ended.
+            showGameOverDialog()
+
+            // Only show player labels with scores
+            layout.showDealerChip(game.dealerPos)
+            layout.setPlayerLabelsShown(true)
+            updatePlayerScores()
         }
 
         gameShown = true
@@ -353,6 +385,8 @@ class GamePresenter : GameContract.Presenter {
             idlePopupShown = false
             cancelDelayedIdlePopup()
 
+            setGameOverDialogShown(false)
+
             // Hide all hidden stacks cards. If hide() is called during trick collection, hidden stack is
             // visible and failing to hide it back will result in hands being shown during animations.
             repeat(3) { setHiddenStackCardsShown(it, false) }
@@ -363,22 +397,26 @@ class GamePresenter : GameContract.Presenter {
         gameShown = false
     }
 
-    private fun startGame() {
+    private fun onGameStarted() {
         updateTotalScoreFooters()
 
         game?.startRound()
     }
 
-    private fun endGame() {
-        // TODO Show game over dialog
-        eraseGameSave()
+    private fun onGameEnded() {
+        // Show the game over dialog
+        val layout = requireLayout()
+        layout.doDelayed(1f) {
+            layout.setTrumpIndicatorShown(false)
+            showGameOverDialog()
+        }
     }
 
     /**
      * Change the layout for the start of a round, showing the extra hand and setting initial hands
      * for all players. The player turns are then initiated.
      */
-    private fun startRound() {
+    private fun onRoundStarted() {
         val game = requireGame()
         val state = requireState()
         val layout = requireLayout()
@@ -456,7 +494,10 @@ class GamePresenter : GameContract.Presenter {
     /**
      * End the round by updating and then showing the scoreboard.
      */
-    private fun endRound(event: RoundEndEvent) {
+    private fun onRoundEnded(event: RoundEndEvent) {
+        val game = requireGame()
+        val layout = requireLayout()
+
         // Update scoreboard
         addScoresTableRow(event)
         updateTotalScoreFooters()
@@ -464,10 +505,11 @@ class GamePresenter : GameContract.Presenter {
         updateTricksPage()
         updateLastTrickPage()
 
-        // Show scoreboard after a small delay
-        val layout = requireLayout()
-        layout.doDelayed(1f) {
-            showScoreboard()
+        // Show scoreboard after a small delay if nobody has won yet.
+        if (game.winnerPos == CardPlayer.NO_POSITION) {
+            layout.doDelayed(1f) {
+                showScoreboard()
+            }
         }
     }
 
@@ -477,7 +519,7 @@ class GamePresenter : GameContract.Presenter {
      * If the move is a play move, the played card will be moved to the trick. When the
      * trick is done, it is collected by the player. The next player turn is then initiated.
      */
-    private fun doMove(move: MoveEvent) {
+    private fun onMove(move: MoveEvent) {
         val game = requireGame()
         val state = requireState()
         val layout = requireLayout()
@@ -523,7 +565,7 @@ class GamePresenter : GameContract.Presenter {
                     moveDuration += CardAnimationGroup.UPDATE_DURATION
 
                 } else {
-                    moveDuration = 0f
+                    moveDuration = 1f
                 }
 
                 // If this player had the last choice
@@ -748,7 +790,7 @@ class GamePresenter : GameContract.Presenter {
     private fun addScoresTableRow(event: RoundEndEvent) {
         val layout = requireLayout()
         layout.addScoresTableRow(List(3) {
-            val diff = 4 - event.result.playerResults[it]
+            val diff = Game.MINIMUM_TRICKS - event.result.playerResults[it]
             ScoresTable.Score(layout.numberFormat.format(diff))
         })
 
@@ -768,7 +810,8 @@ class GamePresenter : GameContract.Presenter {
         val game = requireGame()
         val layout = requireLayout()
 
-        val shown = game.round > 0 && game.phase == Game.Phase.GAME_STARTED
+        val shown = game.round > 0 && (game.phase == Phase.ENDED ||
+                game.phase == Phase.ROUND_ENDED)
         layout.setHandsPageShown(shown)
 
         if (shown) {
@@ -799,7 +842,8 @@ class GamePresenter : GameContract.Presenter {
         val game = requireGame()
         val layout = requireLayout()
 
-        val shown = game.round > 0 && game.phase == Game.Phase.GAME_STARTED
+        val shown = game.round > 0 && (game.phase == Phase.ENDED ||
+                game.phase == Phase.ROUND_ENDED)
         layout.setTricksPageShown(shown)
 
         if (shown) {
@@ -820,17 +864,32 @@ class GamePresenter : GameContract.Presenter {
      */
     private fun updateLastTrickPage() {
         val game = requireGame()
-        val state = requireState()
         val layout = requireLayout()
 
-        val shown = (state.tricksPlayed.size > 0 && game.phase == Game.Phase.ROUND_STARTED)
-        layout.setLastTrickPageShown(shown)
-
+        var shown = (game.phase == Phase.ROUND_STARTED)
         if (shown) {
-            val trick = state.tricksPlayed.last()
-            layout.setLastTrickCards(trick.cards)
-            layout.setLastTrickStartAngle(getTrickStartAngle(trick.startPos))
+            val state = requireState()
+            shown = (state.tricksPlayed.size > 0)
+            if (shown) {
+                val trick = state.tricksPlayed.last()
+                layout.setLastTrickCards(trick.cards)
+                layout.setLastTrickStartAngle(getTrickStartAngle(trick.startPos))
+            }
         }
+
+        layout.setLastTrickPageShown(shown)
+    }
+
+    /**
+     * Show the game over dialog and set the message accordingly.
+     */
+    private fun showGameOverDialog() {
+        val game = requireGame()
+        val layout = requireLayout()
+
+        val winner = game.players[game.winnerPos]
+        layout.setGameOverDialogMessage(namesPref.value[winner.position], winner is HumanPlayer)
+        layout.setGameOverDialogShown(true)
     }
 
     /** Erase the game save file and disable the continue item. */

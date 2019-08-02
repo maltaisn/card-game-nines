@@ -62,7 +62,7 @@
         start_score: {
           type: "slider"
           title: "@string/pref_start_score"
-          minValue: 4
+          minValue: 1
           maxValue: 30
           defaultValue: 9
           confirmChanges: true

@@ -15,7 +15,8 @@ dependencies {
     val ktxVersion: String by project
     val junitVersion: String by project
 
-    api("com.maltaisn:cardgame:0.0.1")
+    api("com.maltaisn.cardgame:core:0.0.1")
+    api("com.maltaisn.cardgame:pcard:0.0.1")
 
     implementation(kotlin("stdlib"))
 
@@ -32,7 +33,7 @@ dependencies {
     implementation("io.github.libktx:ktx-style:$ktxVersion")
 
     compileOnly("com.gmail.blueboxware:libgdxpluginannotations:1.16")
-    
+
     testImplementation("junit:junit:$junitVersion")
 }
 
@@ -52,19 +53,22 @@ tasks.register<JavaExec>("runTest") {
 tasks.register("copyCardGameAssets") {
     file("../assets").mkdirs()
     copy {
-        from("../../cardgame/assets")
+        from("../../cardgame/assets/")
+        include("core/**")
+        include("pcard/**")
         into("../assets")
     }
 }
 
 tasks.register<Delete>("cleanCardGameAssets") {
-    delete("assets")
+    delete("../assets/core")
+    delete("../assets/pcard")
 }
 
-tasks.named("clean") {
+tasks.clean {
     finalizedBy("cleanCardGameAssets")
 }
 
-tasks.named("build") {
+tasks.build {
     finalizedBy("copyCardGameAssets")
 }

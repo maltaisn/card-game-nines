@@ -93,6 +93,9 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
     private val lastTrickPage: PagedSubMenu.Page
     private val lastTrick: CardTrick
 
+    private val gameOverDialog: AlertDialog
+
+
     private var idleAction: Action? = null
         set(value) {
             if (value == null) removeAction(field)
@@ -250,6 +253,19 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
         val idleBtn = Button(skin, strings["popup_your_turn"])
         idlePopup.add(idleBtn).minWidth(300f)
         idlePopup.touchable = Touchable.disabled
+
+        // Game over dialog
+        gameOverDialog = AlertDialog(skin).apply {
+            dialogWidth = 800f
+            shadowType = Dialog.ShadowType.NONE
+            title = strings["game_over"]
+            addButton(strings["game_over_scores"]).onClick {
+                presenter.onGameOverDialogScoresBtnClicked()
+            }
+            addButton(strings["game_over_new_game"]).onClick {
+                presenter.onGameOverDialogNewGameBtnClicked()
+            }
+        }
 
         // Back key listener
         onKeyDown(true) {
@@ -504,6 +520,10 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
     }
 
     // Trump indicator
+    override fun setTrumpIndicatorShown(shown: Boolean) {
+        trumpIndicator.isVisible = shown
+    }
+
     override fun setTrumpIndicatorSuit(suit: Int) {
         trumpIndicator.trumpSuit = suit
     }
@@ -564,6 +584,23 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
 
     override fun setLastTrickStartAngle(angle: Float) {
         lastTrick.startAngle = angle
+    }
+
+    // Game over dialog
+    override fun setGameOverDialogShown(shown: Boolean) {
+        if (shown) {
+            gameOverDialog.show(stage)
+        } else {
+            gameOverDialog.hide()
+        }
+    }
+
+    override fun setGameOverDialogMessage(name: String, isHuman: Boolean) {
+        gameOverDialog.message = if (isHuman) {
+            strings["game_over_message_human"]
+        } else {
+            strings.format("game_over_message_ai", name)
+        }
     }
 
 }

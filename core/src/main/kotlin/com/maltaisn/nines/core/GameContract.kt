@@ -103,6 +103,7 @@ interface GameContract {
         fun hideDealerChip()
 
         // Trump indicator
+        fun setTrumpIndicatorShown(shown: Boolean)
         fun setTrumpIndicatorSuit(suit: Int)
 
         // Scoreboard
@@ -123,6 +124,11 @@ interface GameContract {
         fun setLastTrickPageShown(shown: Boolean)
         fun setLastTrickCards(cards: List<PCard>)
         fun setLastTrickStartAngle(angle: Float)
+
+        // Game over dialog
+        fun setGameOverDialogShown(shown: Boolean)
+
+        fun setGameOverDialogMessage(name: String, isHuman: Boolean)
     }
 
     interface Presenter : DefaultGameMenu.Callback {
@@ -141,6 +147,9 @@ interface GameContract {
         fun onCollectTrickBtnClicked()
 
         fun onPlayerCardClicked(card: PCard)
+
+        fun onGameOverDialogScoresBtnClicked()
+        fun onGameOverDialogNewGameBtnClicked()
     }
 
 }
