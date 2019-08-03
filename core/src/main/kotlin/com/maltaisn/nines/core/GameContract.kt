@@ -125,6 +125,8 @@ interface GameContract {
         fun setLastTrickCards(cards: List<PCard>)
         fun setLastTrickStartAngle(angle: Float)
 
+        fun setScoreboardContinueItemShown(shown: Boolean)
+
         // Game over dialog
         fun setGameOverDialogShown(shown: Boolean)
 
@@ -147,6 +149,8 @@ interface GameContract {
         fun onCollectTrickBtnClicked()
 
         fun onPlayerCardClicked(card: PCard)
+
+        fun onScoreboardContinueItemClicked()
 
         fun onGameOverDialogScoresBtnClicked()
         fun onGameOverDialogNewGameBtnClicked()

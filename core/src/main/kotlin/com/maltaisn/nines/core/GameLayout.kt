@@ -33,10 +33,7 @@ import com.maltaisn.cardgame.prefs.GamePref
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.widget.*
 import com.maltaisn.cardgame.widget.card.*
-import com.maltaisn.cardgame.widget.menu.DefaultGameMenu
-import com.maltaisn.cardgame.widget.menu.MenuIcons
-import com.maltaisn.cardgame.widget.menu.PagedSubMenu
-import com.maltaisn.cardgame.widget.menu.SubMenu
+import com.maltaisn.cardgame.widget.menu.*
 import com.maltaisn.cardgame.widget.prefs.ResetGameDialog
 import com.maltaisn.cardgame.widget.table.ScoresTable
 import com.maltaisn.cardgame.widget.table.TableViewContent
@@ -93,6 +90,8 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
     private val lastTrickPage: PagedSubMenu.Page
     private val lastTrick: CardTrick
 
+    private val continueItem: MenuItem
+
     private val gameOverDialog: AlertDialog
 
 
@@ -141,6 +140,11 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
             add(lastTrick).grow()
         }).pad(60f, 30f, 60f, 30f).fill()
 
+        // Continue item
+        continueItem = MenuItem(4, strings["scoreboard_continue"],
+                skin.getDrawable(MenuIcons.ARROW_RIGHT), SubMenu.ITEM_POS_BOTTOM)
+        continueItem.checkable = false
+
         // MENU
         menu = DefaultGameMenu(skin)
         menu.callback = presenter
@@ -148,11 +152,12 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
         menu.settings = settings
         menu.rules = skin[Res.MD_RULES]
 
-        menu.scoreboardMenu.apply {
-            addItem(scoresPage)
-            addItem(handsPage)
-            addItem(tricksPage)
-            addItem(lastTrickPage)
+        menu.scoreboardMenu.addItems(scoresPage, handsPage,
+                tricksPage, lastTrickPage, continueItem)
+        menu.scoreboardMenu.itemClickListener = { item ->
+            if (item === continueItem) {
+                presenter.onScoreboardContinueItemClicked()
+            }
         }
 
         // Confirm dialog, for settings that resets the saved game
@@ -530,7 +535,7 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
 
     // Scores page
     override fun checkScoreboardScoresPage() {
-        scoresPage.checked = true
+        menu.scoreboardMenu.checkItem(scoresPage)
     }
 
     override fun setScoresTableHeaders(headers: List<ScoresTable.Header>) {
@@ -584,6 +589,10 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
 
     override fun setLastTrickStartAngle(angle: Float) {
         lastTrick.startAngle = angle
+    }
+
+    override fun setScoreboardContinueItemShown(shown: Boolean) {
+        continueItem.shown = shown
     }
 
     // Game over dialog

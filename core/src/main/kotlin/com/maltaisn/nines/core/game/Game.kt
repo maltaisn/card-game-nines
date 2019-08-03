@@ -56,7 +56,7 @@ class Game() : CardGame() {
     private val _events = mutableListOf<GameEvent>()
 
     /** The current phase of the game. */
-    var phase = Phase.ENDED
+    var phase = Phase.NOT_STARTED
         private set
 
     /** The current round. */
@@ -76,6 +76,7 @@ class Game() : CardGame() {
      * If no player has won yet, value is [CardPlayer.NO_POSITION].
      */
     var winnerPos = CardPlayer.NO_POSITION
+        private set
 
     /** Whether the game is done or not. */
     val isDone: Boolean
@@ -169,8 +170,8 @@ class Game() : CardGame() {
      * Start or restart the game.
      */
     fun start() {
-        check(phase == Phase.ENDED) { "Game has already started." }
-        phase = Phase.GAME_STARTED
+        check(phase == Phase.NOT_STARTED)
+        phase = Phase.ROUND_ENDED
 
         round = 0
         state = null
@@ -188,24 +189,13 @@ class Game() : CardGame() {
         doEvent(StartEvent())
     }
 
-    /** End the game. */
-    fun end() {
-        if (phase == Phase.ROUND_STARTED) {
-            // End round if necessary
-            endRound()
-        }
-        check(phase == Phase.GAME_STARTED) { "Game has already ended." }
-        phase = Phase.ENDED
-
-        doEvent(EndEvent())
-    }
-
     /** Start a new round. */
     fun startRound() {
-        check(phase == Phase.GAME_STARTED) { "Round has already started or game has not started." }
+        check(phase == Phase.ROUND_ENDED)
         phase = Phase.ROUND_STARTED
 
         round++
+        dealerPos = (dealerPos + 1) % 3
 
         val state = GameState(settings, players, dealerPos, trumpSuit)
         this.state = state
@@ -216,38 +206,46 @@ class Game() : CardGame() {
 
     /** End the current round. */
     fun endRound() {
-        check(phase == Phase.ROUND_STARTED) { "Round has already ended or game has not started." }
-        phase = Phase.GAME_STARTED
+        check(phase == Phase.ROUND_STARTED)
+        phase = Phase.ROUND_ENDED
 
         val state = state!!
 
         // Update the scores
         val result = state.result!!
         for ((i, player) in players.withIndex()) {
-            player.score += 4 - result.playerResults[i].toInt()
+            player.score += MINIMUM_TRICKS - result.playerResults[i].toInt()
+        }
+
+        // Check if any player has won
+        val leader = players.getOrNull(leaderPos)
+        if (leader != null && leader.score <= 0) {
+            winnerPos = leader.position
         }
 
         doEvent(RoundEndEvent(result, state.tricksPlayed))
 
         this.state = null
 
-        // Check if any player has won
-        val leader = players.getOrNull(leaderPos)
-        if (leader != null && leader.score <= 0) {
-            winnerPos = leader.position
+        if (winnerPos != CardPlayer.NO_POSITION) {
             end()
         }
+    }
 
-        dealerPos = (dealerPos + 1) % 3
+    /** End the game. */
+    fun end() {
+        check(phase == Phase.ROUND_ENDED)
+        phase = Phase.ENDED
+
+        doEvent(EndEvent())
     }
 
     /** Do a [move] on the game state. */
     fun doMove(move: CardGameEvent.Move) {
-        move as MoveEvent
-        check(phase != Phase.ENDED) { "Game has not started." }
+        check(phase == Phase.ROUND_STARTED)
 
         state?.doMove(move)
-        doEvent(move)
+        doEvent(move as MoveEvent)
     }
 
     /**
@@ -319,12 +317,14 @@ class Game() : CardGame() {
     }
 
     enum class Phase {
-        /** Game has not started or is done. */
-        ENDED,
-        /** Game is started but round is done. */
-        GAME_STARTED,
+        /** Gmae has not yet started. */
+        NOT_STARTED,
+        /** Game has started but no round is being played. */
+        ROUND_ENDED,
         /** Round has started and is being played. */
-        ROUND_STARTED
+        ROUND_STARTED,
+        /** Game is done, a player has won. */
+        ENDED
     }
 
     companion object {

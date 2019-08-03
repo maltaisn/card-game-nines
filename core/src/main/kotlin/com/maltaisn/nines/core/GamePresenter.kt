@@ -192,6 +192,10 @@ class GamePresenter : GameContract.Presenter {
         scoreboardShown = false
     }
 
+    override fun onScoreboardContinueItemClicked() {
+        onScoreboardCloseClicked()
+    }
+
     override fun onTradeBtnClicked(trade: Boolean) {
         val game = requireGame()
         val state = requireState()
@@ -303,6 +307,8 @@ class GamePresenter : GameContract.Presenter {
         updateTricksPage()
         updateLastTrickPage()
 
+        layout.setScoreboardContinueItemShown(false)
+
         if (game.phase == Phase.ROUND_STARTED) {
             // Round has started
             val state = requireState()
@@ -408,6 +414,7 @@ class GamePresenter : GameContract.Presenter {
         val layout = requireLayout()
         layout.doDelayed(1f) {
             layout.setTrumpIndicatorShown(false)
+            layout.setScoreboardContinueItemShown(false)
             showGameOverDialog()
         }
     }
@@ -427,6 +434,7 @@ class GamePresenter : GameContract.Presenter {
         layout.setHandsPageShown(false)
         layout.setTricksPageShown(false)
         layout.setLastTrickPageShown(false)
+        layout.setScoreboardContinueItemShown(false)
 
         updatePlayerScores()
 
@@ -504,6 +512,7 @@ class GamePresenter : GameContract.Presenter {
         updateHandsPage()
         updateTricksPage()
         updateLastTrickPage()
+        layout.setScoreboardContinueItemShown(true)
 
         // Show scoreboard after a small delay if nobody has won yet.
         if (game.winnerPos == CardPlayer.NO_POSITION) {
