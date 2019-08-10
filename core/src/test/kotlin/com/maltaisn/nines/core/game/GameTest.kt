@@ -14,24 +14,28 @@
  * limitations under the License.
  */
 
-package com.maltaisn.nines.core
+package com.maltaisn.nines.core.game
 
 import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.prefs.GamePrefs
+import com.maltaisn.cardgame.prefs.PlayerNamesPref
 import com.maltaisn.cardgame.prefs.buildGamePrefsFromMap
-import com.maltaisn.nines.core.game.*
-import com.maltaisn.nines.core.game.MctsPlayer.Difficulty
+import com.maltaisn.nines.core.PrefKeys
 import com.maltaisn.nines.core.game.event.*
+import com.maltaisn.nines.core.game.player.AiPlayer
+import com.maltaisn.nines.core.game.player.CheatingPlayer
+import com.maltaisn.nines.core.game.player.MctsPlayer
+import com.maltaisn.nines.core.game.player.Player
 
 
 fun main() {
     // Create players
-    val south = HumanPlayer()
-    val west = MctsPlayer(Difficulty.INTERMEDIATE)
-    val north = MctsPlayer(Difficulty.ADVANCED)
+    val south = CheatingPlayer()
+    val west = MctsPlayer(MctsPlayer.DIFF_INTERMEDIATE)
+    val north = MctsPlayer(MctsPlayer.DIFF_ADVANCED)
 
-    playGame(settings, south, west, north, VERBOSE_MOVES)
-    //playGames(settings, south, west, north, 30, VERBOSE_ROUNDS)
+    //playGame(settings, south, west, north, VERBOSE_MOVES)
+    playGames(settings, south, west, north, 30, VERBOSE_ROUNDS)
 }
 
 /**
@@ -42,6 +46,7 @@ private fun playGame(settings: GamePrefs,
                      verbosity: Int): Game {
     val game = Game(settings, south, west, north)
     val players = game.players
+    val names = (settings[PrefKeys.PLAYER_NAMES] as PlayerNamesPref).value
 
     var lastScores = IntArray(3) { settings.getInt(PrefKeys.START_SCORE) }
 
@@ -73,14 +78,14 @@ private fun playGame(settings: GamePrefs,
                 val scores = IntArray(3) { players[it].score }
                 println("=== GAME ENDED after ${game.round} rounds, " +
                         "scores: ${scores.contentToString()}, " +
-                        "winner: ${NAMES[game.winnerPos]} ===\n")
+                        "winner: ${names[game.winnerPos]} ===\n")
             }
             is MoveEvent -> {
                 if (verbosity > VERBOSE_ROUNDS) {
                     val state = game.state!!
                     val player = players[event.playerPos]
                     // South did: Trade hand, trick: []
-                    print("${NAMES[event.playerPos]} did: $event, trick: ${state.currentTrick}")
+                    print("${names[event.playerPos]} did: $event, trick: ${state.currentTrick}")
                     if (verbosity == VERBOSE_ALL) {
                         // West did: Play 5♥, trick: [A♥, 5♥], hand: [...]
                         print(", hand: ${player.hand}")
@@ -88,7 +93,7 @@ private fun playGame(settings: GamePrefs,
                     println()
                     if (state.tricksPlayed.size > 0 && state.currentTrick.cards.isEmpty()) {
                         // > Trick #5 taken by North
-                        println("> Trick #${state.tricksPlayed} taken by ${NAMES[state.posToMove]}\n")
+                        println("> Trick #${state.tricksPlayed} taken by ${names[state.posToMove]}\n")
                     }
                 }
             }
@@ -103,11 +108,11 @@ private fun playGame(settings: GamePrefs,
         var moves = state.getMoves()
         while (moves.isNotEmpty()) {
             val next = state.playerToMove
-            if (next is MctsPlayer) {
+            if (next is AiPlayer) {
                 val move = next.findMove(state)
                 game.doMove(move)
             } else {
-                println("\n${NAMES[next.position]}'s turn ${next.hand}, choose a move:")
+                println("\n${names[next.position]}'s turn ${next.hand}, choose a move:")
                 for ((i, move) in moves.withIndex()) {
                     println("${i + 1}. $move")
                 }
@@ -152,5 +157,3 @@ private val settings = buildGamePrefsFromMap(mapOf(
 private const val VERBOSE_ROUNDS = 0
 private const val VERBOSE_MOVES = 1
 private const val VERBOSE_ALL = 2
-
-private val NAMES = listOf("South", "West", "North")

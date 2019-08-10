@@ -26,6 +26,7 @@ import com.maltaisn.cardgame.readValue
 import com.maltaisn.nines.core.game.event.MoveEvent
 import com.maltaisn.nines.core.game.event.PlayMove
 import com.maltaisn.nines.core.game.event.TradeHandMove
+import com.maltaisn.nines.core.game.player.Player
 import kotlin.random.Random
 
 /**
@@ -206,13 +207,6 @@ class GameState() : CardGameState<Player>() {
         it.phase = phase
         it.tricksPlayed += tricksPlayed
         it.currentTrick = currentTrick.clone()
-    }
-
-    override fun randomizedClone(observer: Int): GameState {
-        val state = clone()
-        val player = state.players[observer]
-        (player as MctsPlayer).randomizeState(state)
-        return state
     }
 
     override fun toString() = "[posToMove: $posToMove, " +

@@ -38,7 +38,7 @@ import com.maltaisn.cardgame.widget.prefs.ResetGameDialog
 import com.maltaisn.cardgame.widget.table.ScoresTable
 import com.maltaisn.cardgame.widget.table.TableViewContent
 import com.maltaisn.cardgame.widget.table.TricksTable
-import com.maltaisn.nines.core.game.Player
+import com.maltaisn.nines.core.game.player.Player
 import com.maltaisn.nines.core.widget.HandsTable
 import com.maltaisn.nines.core.widget.TrumpIndicator
 import ktx.actors.onClick

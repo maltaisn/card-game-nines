@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-package com.maltaisn.nines.core.game
+package com.maltaisn.nines.core.game.player
 
+import com.maltaisn.nines.core.game.GameState
 
 /**
- * Defines a human player
+ * A player played by the computer that makes random moves.
  */
-class HumanPlayer : Player() {
+class RandomPlayer : AiPlayer() {
 
-    override fun clone() = cloneTo(HumanPlayer())
+    override fun findMove(state: GameState) = state.getRandomMove()!!
+
+    override fun clone() = cloneTo(RandomPlayer())
 
 }

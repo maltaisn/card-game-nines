@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package com.maltaisn.nines.core
+package com.maltaisn.nines.core.game
 
 import com.maltaisn.cardgame.pcard.PCard
-import com.maltaisn.nines.core.game.Trick
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

@@ -22,6 +22,10 @@ import com.maltaisn.cardgame.game.GameResult
 import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.setSerializer
 import com.maltaisn.nines.core.game.event.*
+import com.maltaisn.nines.core.game.player.CheatingPlayer
+import com.maltaisn.nines.core.game.player.HumanPlayer
+import com.maltaisn.nines.core.game.player.MctsPlayer
+import com.maltaisn.nines.core.game.player.RandomPlayer
 
 
 object GameSaveJson : CardGameJson() {
@@ -45,6 +49,8 @@ object GameSaveJson : CardGameJson() {
         addClassTag<TradeHandMove>("tradeHandMove")
         addClassTag<PlayMove>("playMove")
         addClassTag<HumanPlayer>("humanPlayer")
+        addClassTag<CheatingPlayer>("cheatingPlayer")
+        addClassTag<RandomPlayer>("randomPlayer")
         addClassTag<MctsPlayer>("mctsPlayer")
 
         // Register custom serializers

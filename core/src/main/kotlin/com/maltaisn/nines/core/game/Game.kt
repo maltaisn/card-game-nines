@@ -16,7 +16,7 @@
 
 package com.maltaisn.nines.core.game
 
-import com.badlogic.gdx.Files
+import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
 import com.badlogic.gdx.utils.SerializationException
@@ -30,8 +30,9 @@ import com.maltaisn.cardgame.readArrayValue
 import com.maltaisn.cardgame.readValue
 import com.maltaisn.nines.core.PrefKeys
 import com.maltaisn.nines.core.game.event.*
+import com.maltaisn.nines.core.game.player.AiPlayer
+import com.maltaisn.nines.core.game.player.Player
 import kotlinx.coroutines.*
-import ktx.assets.file
 import ktx.async.KtxAsync
 import ktx.async.newSingleThreadAsyncContext
 import ktx.async.onRenderingThread
@@ -144,7 +145,7 @@ class Game() : CardGame() {
             endRound()
         } else {
             val next = state.playerToMove
-            if (next is MctsPlayer) {
+            if (next is AiPlayer) {
                 // Find next AI move asynchronously
                 aiPlayerJob = KtxAsync.launch(dispatcher) {
                     // Wait between AI players moves to adjust game speed
@@ -310,9 +311,9 @@ class Game() : CardGame() {
         json.writeValue("winnerPos", winnerPos)
     }
 
-    fun save(json: Json) {
+    fun save(file: FileHandle, json: Json) {
         KtxAsync.launch(Dispatchers.IO) {
-            json.toJson(this@Game, GAME_SAVE_FILE)
+            json.toJson(this@Game, file)
         }
     }
 
@@ -330,31 +331,22 @@ class Game() : CardGame() {
     companion object {
         const val VERSION = 1
 
-        /** The game save file location. */
-        val GAME_SAVE_FILE = file("saved-game.json", Files.FileType.Local)
-
-        /** Returns whether or not there's a game saved on the disk. */
-        val hasSavedGame: Boolean
-            get() = GAME_SAVE_FILE.exists()
-
         /**
          * Load a game instance with [settings] using [json].
          * Calls [onDone] when done loading, and with `null` if loading failed.
          */
-        fun load(settings: GamePrefs, json: Json, onDone: (Game?) -> Unit) {
-            if (hasSavedGame) {
-                KtxAsync.launch(Dispatchers.IO) {
-                    onDone(try {
-                        val game: Game = json.fromJson(GAME_SAVE_FILE)
-                        game.settings = settings
-                        game.state?.settings = settings
-                        game
-                    } catch (e: SerializationException) {
-                        // Corrupt game file or version mismatch
-                        error(e) { "Could not deserialize saved game." }
-                        null
-                    })
-                }
+        fun load(file: FileHandle, settings: GamePrefs, json: Json, onDone: (Game?) -> Unit) {
+            KtxAsync.launch(Dispatchers.IO) {
+                onDone(try {
+                    val game: Game = json.fromJson(file)
+                    game.settings = settings
+                    game.state?.settings = settings
+                    game
+                } catch (e: SerializationException) {
+                    // Corrupt game file or version mismatch
+                    error(e) { "Could not deserialize saved game." }
+                    null
+                })
             }
         }
 

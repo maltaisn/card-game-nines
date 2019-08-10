@@ -16,6 +16,7 @@
 
 package com.maltaisn.nines.core
 
+import com.badlogic.gdx.Files
 import com.maltaisn.cardgame.game.CardPlayer
 import com.maltaisn.cardgame.game.sortWith
 import com.maltaisn.cardgame.pcard.PCard
@@ -29,10 +30,14 @@ import com.maltaisn.cardgame.widget.card.CardContainer
 import com.maltaisn.cardgame.widget.card.CardHand
 import com.maltaisn.cardgame.widget.table.ScoresTable
 import com.maltaisn.cardgame.widget.table.TricksTable
-import com.maltaisn.nines.core.game.*
+import com.maltaisn.nines.core.game.Game
 import com.maltaisn.nines.core.game.Game.Phase
+import com.maltaisn.nines.core.game.GameSaveJson
+import com.maltaisn.nines.core.game.GameState
 import com.maltaisn.nines.core.game.event.*
+import com.maltaisn.nines.core.game.player.*
 import com.maltaisn.nines.core.widget.HandsTable
+import ktx.assets.file
 import java.util.*
 import kotlin.math.PI
 import kotlin.math.max
@@ -66,7 +71,7 @@ class GamePresenter : GameContract.Presenter {
     override fun attach(layout: GameContract.View) {
         this.layout = layout
 
-        layout.setContinueItemEnabled(Game.hasSavedGame)
+        layout.setContinueItemEnabled(GAME_SAVE_FILE.exists())
     }
 
     override fun detach() {
@@ -84,11 +89,11 @@ class GamePresenter : GameContract.Presenter {
 
 
     override fun onSave() {
-        game?.save(GameSaveJson)
+        game?.save(GAME_SAVE_FILE, GameSaveJson)
     }
 
     override fun onPrefNeedsConfirm(pref: GamePref<*>, callback: (Boolean) -> Unit) {
-        if (Game.hasSavedGame) {
+        if (GAME_SAVE_FILE.exists()) {
             requireLayout().showResetGameDialog(pref, callback)
         }
     }
@@ -116,7 +121,7 @@ class GamePresenter : GameContract.Presenter {
 
     override fun onContinueClicked() {
         val layout = requireLayout()
-        Game.load(layout.settings, GameSaveJson) {
+        Game.load(GAME_SAVE_FILE, layout.settings, GameSaveJson) {
             if (it != null) {
                 // Game loaded successfully, show the game.
                 layout.showInGameMenu(true)
@@ -138,22 +143,12 @@ class GamePresenter : GameContract.Presenter {
 
         layout.showInGameMenu(false)
 
-        val difficulty = when (layout.newGameOptions.getInt(PrefKeys.DIFFICULTY)) {
-            0 -> MctsPlayer.Difficulty.BEGINNER
-            1 -> MctsPlayer.Difficulty.INTERMEDIATE
-            2 -> MctsPlayer.Difficulty.ADVANCED
-            3 -> MctsPlayer.Difficulty.EXPERT
-            else -> error("Unknown difficulty level.")
-        }
+        val difficulty = layout.newGameOptions.getInt(PrefKeys.DIFFICULTY)
 
         // Create players
-        val south = if (layout.newGameOptions.getBoolean(PrefKeys.HUMAN_PLAYER)) {
-            HumanPlayer()
-        } else {
-            MctsPlayer(difficulty)
-        }
-        val west = MctsPlayer(difficulty)
-        val north = MctsPlayer(difficulty)
+        val south = debugGetPlayer(PrefKeys.SOUTH_PLAYER_TYPE)
+        val west = debugGetPlayer(PrefKeys.WEST_PLAYER_TYPE)
+        val north = debugGetPlayer(PrefKeys.NORTH_PLAYER_TYPE)
 
         // Create and start the game
         val game = Game(layout.settings, south, west, north)
@@ -162,13 +157,24 @@ class GamePresenter : GameContract.Presenter {
         game.start()
     }
 
+    private fun debugGetPlayer(typeKey: String): Player {
+        val type = requireLayout().newGameOptions.getChoice(typeKey)
+        return when {
+            type == "human" -> HumanPlayer()
+            type.startsWith("mcts") -> MctsPlayer(type.substringAfter('_').toInt())
+            type == "cheat" -> CheatingPlayer()
+            type == "random" -> RandomPlayer()
+            else -> error("Unknown player type")
+        }
+    }
+
     override fun onExitGameClicked() {
         val layout = requireLayout()
 
         hide()
         layout.goToPreviousMenu()
 
-        game?.save(GameSaveJson)
+        game?.save(GAME_SAVE_FILE, GameSaveJson)
         layout.setContinueItemEnabled(true)
         disposeGame()
     }
@@ -750,10 +756,11 @@ class GamePresenter : GameContract.Presenter {
         val diffPref = layout.newGameOptions[PrefKeys.DIFFICULTY] as SliderPref
         layout.setScoresTableHeaders(List(3) {
             val player = game.players[it]
-            ScoresTable.Header(names[it], if (player is MctsPlayer) {
-                diffPref.enumValues?.get(player.difficulty.ordinal)
-            } else {
-                null
+            ScoresTable.Header(names[it], when (player) {
+                is MctsPlayer -> diffPref.enumValues?.get(player.difficulty)
+                is CheatingPlayer -> "Cheater"
+                is RandomPlayer -> "Random"
+                else -> null
             })
         })
 
@@ -903,7 +910,7 @@ class GamePresenter : GameContract.Presenter {
 
     /** Erase the game save file and disable the continue item. */
     private fun eraseGameSave() {
-        Game.GAME_SAVE_FILE.delete()
+        GAME_SAVE_FILE.delete()
         layout?.setContinueItemEnabled(false)
     }
 
@@ -913,6 +920,9 @@ class GamePresenter : GameContract.Presenter {
 
         /** The minimum time between each back press needed to actually trigger it. */
         private const val BACK_PRESS_COOLDOWN = 1f
+
+        /** The game save file location. */
+        val GAME_SAVE_FILE = file("saved-game.json", Files.FileType.Local)
     }
 
 }

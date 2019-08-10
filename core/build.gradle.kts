@@ -42,8 +42,8 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_6
 }
 
-tasks.register<JavaExec>("runTest") {
-    main = "com.maltaisn.nines.core.GameTestKt"
+tasks.register<JavaExec>("runGameTest") {
+    main = "com.maltaisn.nines.core.game.GameTestKt"
     classpath = sourceSets.test.get().runtimeClasspath
     standardInput = System.`in`
     isIgnoreExitValue = true

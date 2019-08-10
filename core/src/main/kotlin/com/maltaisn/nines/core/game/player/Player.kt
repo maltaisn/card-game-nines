@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-package com.maltaisn.nines.core.game
+package com.maltaisn.nines.core.game.player
 
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
+import com.maltaisn.cardgame.game.CardGameEvent
 import com.maltaisn.cardgame.game.CardPlayer
 import com.maltaisn.cardgame.readValue
+import com.maltaisn.nines.core.game.GameState
+import com.maltaisn.nines.core.game.Hand
 
 
 abstract class Player : CardPlayer(), Json.Serializable {
@@ -46,6 +49,12 @@ abstract class Player : CardPlayer(), Json.Serializable {
         trade = Trade.UNKNOWN
         tricksTaken = 0
     }
+
+    /**
+     * Called when [state] performs a [move] for any player.
+     */
+    open fun onMove(state: GameState, move: CardGameEvent.Move) = Unit
+
 
     protected fun <T : Player> cloneTo(player: T) = super.cloneTo(player).also {
         it.score = score

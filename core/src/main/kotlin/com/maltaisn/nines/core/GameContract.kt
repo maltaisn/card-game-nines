@@ -22,7 +22,7 @@ import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.widget.menu.DefaultGameMenu
 import com.maltaisn.cardgame.widget.table.ScoresTable
 import com.maltaisn.cardgame.widget.table.TricksTable
-import com.maltaisn.nines.core.game.Player
+import com.maltaisn.nines.core.game.player.Player
 import com.maltaisn.nines.core.widget.HandsTable
 import java.text.NumberFormat
 
