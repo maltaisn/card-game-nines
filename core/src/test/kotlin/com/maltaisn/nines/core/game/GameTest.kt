@@ -23,19 +23,18 @@ import com.maltaisn.cardgame.prefs.buildGamePrefsFromMap
 import com.maltaisn.nines.core.PrefKeys
 import com.maltaisn.nines.core.game.event.*
 import com.maltaisn.nines.core.game.player.AiPlayer
-import com.maltaisn.nines.core.game.player.CheatingPlayer
 import com.maltaisn.nines.core.game.player.MctsPlayer
 import com.maltaisn.nines.core.game.player.Player
 
 
 fun main() {
     // Create players
-    val south = CheatingPlayer()
-    val west = MctsPlayer(MctsPlayer.DIFF_INTERMEDIATE)
-    val north = MctsPlayer(MctsPlayer.DIFF_ADVANCED)
+    val south = MctsPlayer(MctsPlayer.DIFF_EXPERT)
+    val west = MctsPlayer(MctsPlayer.DIFF_ADVANCED)
+    val north = MctsPlayer(MctsPlayer.DIFF_INTERMEDIATE)
 
     //playGame(settings, south, west, north, VERBOSE_MOVES)
-    playGames(settings, south, west, north, 30, VERBOSE_ROUNDS)
+    playGames(settings, south, west, north, 1000, VERBOSE_GAMES)
 }
 
 /**
@@ -53,25 +52,31 @@ private fun playGame(settings: GamePrefs,
     game.eventListener = { event ->
         when (event) {
             is StartEvent -> {
-                println("=== GAME STARTED ===")
+                if (verbosity >= VERBOSE_ROUNDS) {
+                    println("=== GAME STARTED ===")
+                }
             }
             is RoundStartEvent -> {
                 // >>> Round 1 started, trump: ♥
-                val trumpStr = if (game.trumpSuit == GameState.NO_TRUMP) {
-                    "none"
-                } else {
-                    PCard.SUIT_STR[game.trumpSuit].toString()
+                if (verbosity >= VERBOSE_ROUNDS) {
+                    val trumpStr = if (game.trumpSuit == GameState.NO_TRUMP) {
+                        "none"
+                    } else {
+                        PCard.SUIT_STR[game.trumpSuit].toString()
+                    }
+                    println(">>> Round ${game.round} started, trump: $trumpStr")
                 }
-                println(">>> Round ${game.round} started, trump: $trumpStr")
             }
             is RoundEndEvent -> {
                 // >>> Round 1 ended, diff: [-2, 1, 0], scores: [7, 10, 9]
-                val scores = IntArray(3) { players[it].score }
-                val diff = IntArray(3) { scores[it] - lastScores[it] }
-                lastScores = scores
-                println(">>> Round ${game.round} ended, " +
-                        "diff: ${diff.contentToString()}, " +
-                        "scores: ${scores.contentToString()}\n")
+                if (verbosity >= VERBOSE_ROUNDS) {
+                    val scores = IntArray(3) { players[it].score }
+                    val diff = IntArray(3) { scores[it] - lastScores[it] }
+                    lastScores = scores
+                    println(">>> Round ${game.round} ended, " +
+                            "diff: ${diff.contentToString()}, " +
+                            "scores: ${scores.contentToString()}\n")
+                }
             }
             is EndEvent -> {
                 // === GAME ENDED after 13 rounds, scores: [-1, 6, 9], winner: South ===
@@ -81,7 +86,7 @@ private fun playGame(settings: GamePrefs,
                         "winner: ${names[game.winnerPos]} ===\n")
             }
             is MoveEvent -> {
-                if (verbosity > VERBOSE_ROUNDS) {
+                if (verbosity >= VERBOSE_MOVES) {
                     val state = game.state!!
                     val player = players[event.playerPos]
                     // South did: Trade hand, trick: []
@@ -144,8 +149,8 @@ private fun playGames(settings: GamePrefs,
         println("=== GAME ${it + 1} / $count ===")
         val game = playGame(settings, south, west, north, verbosity)
         gamesWon[game.winnerPos]++
+        println("Current scores: ${gamesWon.contentToString()}")
     }
-    println("Games won: ${gamesWon.contentToString()}")
 }
 
 private val settings = buildGamePrefsFromMap(mapOf(
@@ -154,6 +159,7 @@ private val settings = buildGamePrefsFromMap(mapOf(
         PrefKeys.PLAYER_NAMES to arrayOf("South", "West", "North")
 ))
 
-private const val VERBOSE_ROUNDS = 0
-private const val VERBOSE_MOVES = 1
-private const val VERBOSE_ALL = 2
+private const val VERBOSE_GAMES = 0
+private const val VERBOSE_ROUNDS = 1
+private const val VERBOSE_MOVES = 2
+private const val VERBOSE_ALL = 3

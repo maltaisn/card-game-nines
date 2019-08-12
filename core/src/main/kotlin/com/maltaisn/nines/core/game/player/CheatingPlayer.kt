@@ -30,9 +30,9 @@ class CheatingPlayer : AiPlayer() {
     override fun findMove(state: GameState) =
             if (state.phase == GameState.Phase.TRADE) {
                 // See MctsPlayer#findMove.
-                state.getMoves().maxBy { Mcts.simulate(state, it, 1000) }!!
+                state.getMoves().maxBy { Mcts.simulate(state, it, 500) }!!
             } else {
-                Mcts.run(state, 1000)
+                Mcts.run(state, 500)
             }
 
     override fun clone() = cloneTo(CheatingPlayer())
