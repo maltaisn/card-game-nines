@@ -20,9 +20,9 @@ import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
 import com.maltaisn.cardgame.game.CardGameEvent
 import com.maltaisn.cardgame.game.CardPlayer
-import com.maltaisn.cardgame.readValue
 import com.maltaisn.nines.core.game.GameState
 import com.maltaisn.nines.core.game.Hand
+import ktx.json.readValue
 
 
 abstract class Player : CardPlayer(), Json.Serializable {
@@ -63,6 +63,7 @@ abstract class Player : CardPlayer(), Json.Serializable {
         it.tricksTaken = tricksTaken
     }
 
+    abstract override fun clone(): Player
 
     override fun toString() = super.toString().dropLast(1) +
             ", score: $score, tricksTaken: $tricksTaken, hand: $hand]"
@@ -71,8 +72,8 @@ abstract class Player : CardPlayer(), Json.Serializable {
     override fun read(json: Json, jsonData: JsonValue) {
         super.read(json, jsonData)
         score = jsonData.getInt("score")
-        hand = json.readValue("hand", jsonData)
-        trade = json.readValue("trade", jsonData)
+        hand = json.readValue(jsonData, "hand")
+        trade = json.readValue(jsonData, "trade")
         tricksTaken = jsonData.getInt("tricksTaken")
     }
 

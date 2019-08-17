@@ -18,9 +18,9 @@ package com.maltaisn.nines.core.game.event
 
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
-import com.maltaisn.cardgame.readArrayValue
 import com.maltaisn.nines.core.game.GameState
 import com.maltaisn.nines.core.game.Hand
+import ktx.json.readArrayValue
 
 /**
  * An event for the start of a round.
@@ -41,7 +41,7 @@ class RoundStartEvent() : GameEvent() {
 
     override fun read(json: Json, jsonData: JsonValue) {
         trumpSuit = jsonData.getInt("trumpSuit")
-        hands = json.readArrayValue("hands", jsonData)
+        hands = json.readArrayValue(jsonData, "hands")
     }
 
     override fun write(json: Json) {

@@ -16,16 +16,16 @@
 
 package com.maltaisn.nines.core.game
 
-import com.maltaisn.cardgame.addClassTag
 import com.maltaisn.cardgame.game.CardGameJson
 import com.maltaisn.cardgame.game.GameResult
 import com.maltaisn.cardgame.pcard.PCard
-import com.maltaisn.cardgame.setSerializer
 import com.maltaisn.nines.core.game.event.*
 import com.maltaisn.nines.core.game.player.CheatingPlayer
 import com.maltaisn.nines.core.game.player.HumanPlayer
 import com.maltaisn.nines.core.game.player.MctsPlayer
 import com.maltaisn.nines.core.game.player.RandomPlayer
+import ktx.json.addClassTag
+import ktx.json.setSerializer
 
 
 object GameSaveJson : CardGameJson() {

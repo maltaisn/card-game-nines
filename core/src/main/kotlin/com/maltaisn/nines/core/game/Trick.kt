@@ -20,7 +20,7 @@ import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
 import com.maltaisn.cardgame.game.CardPlayer
 import com.maltaisn.cardgame.pcard.PCard
-import com.maltaisn.cardgame.readArrayValue
+import ktx.json.readArrayValue
 
 
 /**
@@ -89,7 +89,7 @@ class Trick() : Cloneable, Json.Serializable {
 
     override fun read(json: Json, jsonData: JsonValue) {
         startPos = jsonData.getInt("startPos")
-        cards += json.readArrayValue<ArrayList<PCard>, PCard>("cards", jsonData)
+        cards += json.readArrayValue<ArrayList<PCard>, PCard>(jsonData, "cards")
     }
 
     override fun write(json: Json) {

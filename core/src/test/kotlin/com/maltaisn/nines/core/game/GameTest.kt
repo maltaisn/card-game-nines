@@ -23,18 +23,25 @@ import com.maltaisn.cardgame.prefs.buildGamePrefsFromMap
 import com.maltaisn.nines.core.PrefKeys
 import com.maltaisn.nines.core.game.event.*
 import com.maltaisn.nines.core.game.player.AiPlayer
+import com.maltaisn.nines.core.game.player.CheatingPlayer
 import com.maltaisn.nines.core.game.player.MctsPlayer
 import com.maltaisn.nines.core.game.player.Player
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicIntegerArray
 
 
 fun main() {
     // Create players
-    val south = MctsPlayer(MctsPlayer.DIFF_EXPERT)
-    val west = MctsPlayer(MctsPlayer.DIFF_ADVANCED)
-    val north = MctsPlayer(MctsPlayer.DIFF_INTERMEDIATE)
+    val south = CheatingPlayer()
+    val west = MctsPlayer(MctsPlayer.Difficulty.PERFECT)
+    val north = MctsPlayer(MctsPlayer.Difficulty.PERFECT)
 
     //playGame(settings, south, west, north, VERBOSE_MOVES)
-    playGames(settings, south, west, north, 1000, VERBOSE_GAMES)
+    playGames(settings, south, west, north, 1000)
 }
 
 /**
@@ -80,10 +87,12 @@ private fun playGame(settings: GamePrefs,
             }
             is EndEvent -> {
                 // === GAME ENDED after 13 rounds, scores: [-1, 6, 9], winner: South ===
-                val scores = IntArray(3) { players[it].score }
-                println("=== GAME ENDED after ${game.round} rounds, " +
-                        "scores: ${scores.contentToString()}, " +
-                        "winner: ${names[game.winnerPos]} ===\n")
+                if (verbosity >= VERBOSE_ROUNDS) {
+                    val scores = IntArray(3) { players[it].score }
+                    println("=== GAME ENDED after ${game.round} rounds, " +
+                            "scores: ${scores.contentToString()}, " +
+                            "winner: ${names[game.winnerPos]} ===\n")
+                }
             }
             is MoveEvent -> {
                 if (verbosity >= VERBOSE_MOVES) {
@@ -139,17 +148,23 @@ private fun playGame(settings: GamePrefs,
 }
 
 /**
- * Play a number of games.
+ * Play a number of games in parallel.
  */
 private fun playGames(settings: GamePrefs,
                       south: Player, west: Player, north: Player,
-                      count: Int, verbosity: Int) {
-    val gamesWon = intArrayOf(0, 0, 0)
-    repeat(count) {
-        println("=== GAME ${it + 1} / $count ===")
-        val game = playGame(settings, south, west, north, verbosity)
-        gamesWon[game.winnerPos]++
-        println("Current scores: ${gamesWon.contentToString()}")
+                      count: Int) {
+    val gamesPlayed = AtomicInteger()
+    val gamesWon = AtomicIntegerArray(3)
+
+    runBlocking {
+        (0 until count).map {
+            GlobalScope.async {
+                val game = playGame(settings, south.clone(), west.clone(), north.clone(), VERBOSE_NONE)
+                gamesWon.addAndGet(game.winnerPos, 1)
+                val played = gamesPlayed.addAndGet(1)
+                println("$played / $count, scores: $gamesWon")
+            }
+        }.awaitAll()
     }
 }
 
@@ -159,7 +174,7 @@ private val settings = buildGamePrefsFromMap(mapOf(
         PrefKeys.PLAYER_NAMES to arrayOf("South", "West", "North")
 ))
 
-private const val VERBOSE_GAMES = 0
+private const val VERBOSE_NONE = 0
 private const val VERBOSE_ROUNDS = 1
 private const val VERBOSE_MOVES = 2
 private const val VERBOSE_ALL = 3

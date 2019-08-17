@@ -25,12 +25,13 @@
           title: "South player type"
           entries: {
             human: "Human"
+            random: "Random"
             mcts_0: "MCTS - Beginner"
             mcts_1: "MCTS - Intermediate"
             mcts_2: "MCTS - Advanced"
             mcts_3: "MCTS - Expert"
+            mcts_4: "MCTS - Perfect"
             cheat: "Cheating"
-            random: "Random"
           }
           defaultValue: "human"
         }
@@ -38,12 +39,13 @@
           type: "list"
           title: "West player type"
           entries: {
+            random: "Random"
             mcts_0: "MCTS - Beginner"
             mcts_1: "MCTS - Intermediate"
             mcts_2: "MCTS - Advanced"
             mcts_3: "MCTS - Expert"
+            mcts_4: "MCTS - Perfect"
             cheat: "Cheating"
-            random: "Random"
           }
           defaultValue: "mcts_2"
         }
@@ -51,12 +53,13 @@
           type: "list"
           title: "North player type"
           entries: {
+            random: "Random"
             mcts_0: "MCTS - Beginner"
             mcts_1: "MCTS - Intermediate"
             mcts_2: "MCTS - Advanced"
             mcts_3: "MCTS - Expert"
+            mcts_4: "MCTS - Perfect"
             cheat: "Cheating"
-            random: "Random"
           }
           defaultValue: "mcts_2"
         }

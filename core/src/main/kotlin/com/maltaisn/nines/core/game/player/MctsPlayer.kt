@@ -23,13 +23,15 @@ import com.maltaisn.cardgame.game.CardGameState
 import com.maltaisn.cardgame.game.ai.Mcts
 import com.maltaisn.cardgame.game.drawTop
 import com.maltaisn.cardgame.pcard.PCard
-import com.maltaisn.cardgame.readValue
 import com.maltaisn.cardgame.utils.BitField
 import com.maltaisn.cardgame.utils.Hungarian
 import com.maltaisn.nines.core.game.GameState
 import com.maltaisn.nines.core.game.Hand
 import com.maltaisn.nines.core.game.event.PlayMove
 import com.maltaisn.nines.core.game.event.TradeHandMove
+import ktx.json.readValue
+import kotlin.math.max
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 /**
@@ -41,22 +43,24 @@ import kotlin.random.Random
  *
  * Higher difficulties do more simulations to find better moves.
  * Games won when playing 1000 games against 2 players of the difficulty below:
- * - Beginner: 962, Random: 14, Random: 24
- * - Intermediate: 582, Beginner: 211, Beginner: 207
- * - Advanced: 607, Intermediate: 185, Intermediate: 208
- * - Expert: 500, Advanced: 238, Advanced: 262
+ * - Beginner: 680, Random: 114, Random: 206
+ * - Intermediate: 635, Beginner: 178, Beginner: 187
+ * - Advanced: 560, Intermediate: 202, Intermediate: 238
+ * - Expert: 602, Advanced: 185, Advanced: 213
+ * - Perfect: 585, Expert: 204, Expert: 211
+ * - Cheating: 509, Perfect: 239, Perfect: 252
  *
- * So each difficulty is about 2-3x harder than the previous one.
- *
- * The intermediate difficulty can remember its previous hand after trading,
- * but it will forget it if any other player trades afterwards.
- *
- * The advanced difficulty will remember its previous hand no matter what.
- *
- * The expert difficulty will notice when a player cannot follow the trick suit
- * to know what suits players are out of.
+ * Beginner should be much better than random but still very easily beatable.
+ * Expert should be worse than perfect, which is an approximation of the best possible player,
+ * so it's possible for good players to beat it. Difficulties between beginner and expert
+ * should be evenly distributed, in this case, each difficulty is ~3x better than the last.
+ * The fact that the cheating player doesn't always win against the perfect player
+ * shows that luck plays a big part in a game of Nines.
  */
-class MctsPlayer(var difficulty: Int = -1) : AiPlayer() {
+class MctsPlayer() : AiPlayer() {
+
+    lateinit var difficulty: Difficulty
+        private set
 
     /**
      * Bit field of known hand IDs. These won't be randomized by [randomizeGameState].
@@ -70,6 +74,11 @@ class MctsPlayer(var difficulty: Int = -1) : AiPlayer() {
     private var knownSuits: Array<BitField> = emptyArray()
 
 
+    constructor(difficulty: Difficulty) : this() {
+        this.difficulty = difficulty
+    }
+
+
     override fun initialize(position: Int, hand: Hand) {
         super.initialize(position, hand)
 
@@ -78,24 +87,16 @@ class MctsPlayer(var difficulty: Int = -1) : AiPlayer() {
     }
 
     override fun findMove(state: GameState): CardGameEvent.Move {
-        val iter = when (difficulty) {
-            DIFF_BEGINNER -> 10
-            DIFF_INTERMEDIATE -> 25
-            DIFF_ADVANCED -> 100
-            DIFF_EXPERT -> 500
-            else -> 0
-        }
-
+        val moves = state.getMoves()
         return if (state.phase == GameState.Phase.TRADE) {
             // Do random simulations of trading and not trading.
             // Choose the option that maximizes the average result.
             // This is better than MCTS itself because we don't want exploitation, both
             // options must be tested the same. With full MCTS, an option could be only tested
             // once in 10000 simulations if the initial result is bad enough.
-            val moves = state.getMoves()
-            moves.maxBy { Mcts.simulate(state, it, iter / moves.size) }!!
+            moves.maxBy { Mcts.simulate(state, it, difficulty.tradeIter) }!!
         } else {
-            Mcts.run(state, iter)
+            Mcts.run(state, max(moves.size, difficulty.playIter))
         }
     }
 
@@ -103,21 +104,16 @@ class MctsPlayer(var difficulty: Int = -1) : AiPlayer() {
         if (move is TradeHandMove) {
             if (move.playerPos == position && move.trade) {
                 // This player traded.
-                if (difficulty == DIFF_BEGINNER) {
+                if (!difficulty.remembersHandAfterTrade) {
                     // Forget previous hand.
                     knownHandIds = BitField()
                 }
 
                 // Add new hand to known hands.
                 knownHandIds += hand.id
-
-            } else if (difficulty == DIFF_INTERMEDIATE) {
-                // Another player traded. Forget previous hand.
-                knownHandIds = BitField()
-                knownHandIds += hand.id
             }
 
-        } else if (move is PlayMove && difficulty >= DIFF_EXPERT) {
+        } else if (move is PlayMove && difficulty.rememberOpponentSuits) {
             val trick = if (state.currentTrick.cards.isEmpty()) {
                 state.tricksPlayed.last()
             } else {
@@ -137,36 +133,34 @@ class MctsPlayer(var difficulty: Int = -1) : AiPlayer() {
     override fun randomizeGameState(state: CardGameState<*>) {
         state as GameState
 
-        // Create a list of all hands unknown to the observer.
+        // Separate cards that the player knows and those it doesn't.
+        val knownCards = state.tricksPlayed.flatMapTo(mutableListOf()) { it.cards }
+        val unknownCards = mutableListOf<PCard>()
         val unknownHands = mutableListOf<Hand>()
         for (player in state.players) {
             if (player.hand.id !in knownHandIds) {
-                // The player hasn't seen this hand
                 unknownHands += player.hand
+                unknownCards += player.hand.cards
+            } else if (player.position != position) {
+                // Don't include the player's own cards in known cards.
+                knownCards += player.hand.cards
             }
         }
-        if (state.extraHand.id !in knownHandIds) {
-            // The player hasn't seen the extra hand
+        if (state.extraHand.id in knownHandIds) {
+            knownCards += state.extraHand.cards
+        } else {
             unknownHands += state.extraHand
+            unknownCards += state.extraHand.cards
         }
 
-        // Take all cards from the unknown hands
-        val unknownCards = mutableListOf<PCard>()
-        for (hand in unknownHands) {
-            unknownCards += hand.cards
-        }
+        // Move a few random cards from known cards to unknown cards so the player forgets about them.
+        unknownCards += knownCards.subList(0, (difficulty.forgetRatio * knownCards.size).roundToInt())
 
+        // Redistribute the unknown cards in the unknown hands.
         if (unknownCards.isNotEmpty()) {
-            if (difficulty < DIFF_EXPERT) {
-                // Naively redistribute the cards in the unseen hands, without taking known suits into account.
-                unknownCards.shuffle()
-                for (hand in unknownHands) {
-                    val size = hand.cards.size
-                    hand.cards.clear()
-                    hand.cards += unknownCards.drawTop(size)
-                }
+            if (difficulty.rememberOpponentSuits) {
+                assert(difficulty.forgetRatio == 0f)
 
-            } else {
                 // Redistribute the cards to the unseen hands, giving only cards of known suits in each hand.
                 // This is solved using the Hungarian algorithm, where unknown cards are "workers" that are
                 // assigned to a position in an unknown hand, the "task".
@@ -199,6 +193,16 @@ class MctsPlayer(var difficulty: Int = -1) : AiPlayer() {
                         i++
                     }
                 }
+
+            } else {
+                // Naively redistribute the cards in the unseen hands, without taking known suits into account.
+                unknownCards.shuffle()
+                for (hand in unknownHands) {
+                    val size = hand.cards.size
+                    hand.cards.clear()
+                    hand.cards += unknownCards.drawTop(size)
+                }
+
             }
         }
     }
@@ -214,7 +218,7 @@ class MctsPlayer(var difficulty: Int = -1) : AiPlayer() {
 
     override fun read(json: Json, jsonData: JsonValue) {
         super.read(json, jsonData)
-        difficulty = json.readValue("difficulty", jsonData)
+        difficulty = json.readValue(jsonData, "difficulty")
         knownHandIds = BitField(jsonData.getInt("knownHands"))
 
         val suits = jsonData["knownSuits"].asIntArray()
@@ -228,12 +232,25 @@ class MctsPlayer(var difficulty: Int = -1) : AiPlayer() {
         json.writeValue("knownSuits", IntArray(4) { knownSuits[it].value })
     }
 
+    /**
+     * A player difficulty.
+     * @property tradeIter Number of trades simulated during trade phase.
+     * @property playIter Number of moves simulated each turn of the play phase.
+     * @property forgetRatio The percentage of played cards that the player forgets.
+     * @property remembersHandAfterTrade Whether the player remembers its previous hand after trading.
+     * @property rememberOpponentSuits Whether the player remembers when a player is out of a suit.
+     */
+    enum class Difficulty(val tradeIter: Int,
+                          val playIter: Int,
+                          val forgetRatio: Float,
+                          val remembersHandAfterTrade: Boolean,
+                          val rememberOpponentSuits: Boolean) {
 
-    companion object {
-        const val DIFF_BEGINNER = 0
-        const val DIFF_INTERMEDIATE = 1
-        const val DIFF_ADVANCED = 2
-        const val DIFF_EXPERT = 3
+        BEGINNER(2, 0, 1f, false, false),
+        INTERMEDIATE(3, 5, 0.8f, true, false),
+        ADVANCED(6, 10, 0.4f, true, false),
+        EXPERT(50, 50, 0f, true, true),
+        PERFECT(250, 500, 0f, true, true)
     }
 
 }

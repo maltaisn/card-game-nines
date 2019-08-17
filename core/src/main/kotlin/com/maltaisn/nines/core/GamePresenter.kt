@@ -159,11 +159,15 @@ class GamePresenter : GameContract.Presenter {
 
     private fun debugGetPlayer(typeKey: String): Player {
         val type = requireLayout().newGameOptions.getChoice(typeKey)
-        return when {
-            type == "human" -> HumanPlayer()
-            type.startsWith("mcts") -> MctsPlayer(type.substringAfter('_').toInt())
-            type == "cheat" -> CheatingPlayer()
-            type == "random" -> RandomPlayer()
+        return when (type) {
+            "human" -> HumanPlayer()
+            "mcts_0" -> MctsPlayer(MctsPlayer.Difficulty.BEGINNER)
+            "mcts_1" -> MctsPlayer(MctsPlayer.Difficulty.INTERMEDIATE)
+            "mcts_2" -> MctsPlayer(MctsPlayer.Difficulty.ADVANCED)
+            "mcts_3" -> MctsPlayer(MctsPlayer.Difficulty.EXPERT)
+            "mcts_4" -> MctsPlayer(MctsPlayer.Difficulty.PERFECT)
+            "cheat" -> CheatingPlayer()
+            "random" -> RandomPlayer()
             else -> error("Unknown player type")
         }
     }
@@ -757,7 +761,11 @@ class GamePresenter : GameContract.Presenter {
         layout.setScoresTableHeaders(List(3) {
             val player = game.players[it]
             ScoresTable.Header(names[it], when (player) {
-                is MctsPlayer -> diffPref.enumValues?.get(player.difficulty)
+                is MctsPlayer -> if (player.difficulty == MctsPlayer.Difficulty.PERFECT) {
+                    "Perfect"
+                } else {
+                    diffPref.enumValues?.get(player.difficulty.ordinal)
+                }
                 is CheatingPlayer -> "Cheater"
                 is RandomPlayer -> "Random"
                 else -> null

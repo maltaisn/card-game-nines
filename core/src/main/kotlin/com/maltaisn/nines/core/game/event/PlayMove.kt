@@ -19,7 +19,7 @@ package com.maltaisn.nines.core.game.event
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
 import com.maltaisn.cardgame.pcard.PCard
-import com.maltaisn.cardgame.readValue
+import ktx.json.readValue
 
 
 /**
@@ -52,7 +52,7 @@ class PlayMove() : MoveEvent() {
 
     override fun read(json: Json, jsonData: JsonValue) {
         super.read(json, jsonData)
-        card = json.readValue("card", jsonData)
+        card = json.readValue(jsonData, "card")
     }
 
     override fun write(json: Json) {

@@ -20,7 +20,7 @@ import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
 import com.maltaisn.cardgame.game.sortWith
 import com.maltaisn.cardgame.pcard.PCard
-import com.maltaisn.cardgame.readArrayValue
+import ktx.json.readArrayValue
 
 
 /**
@@ -46,7 +46,7 @@ class Hand() : Cloneable, Json.Serializable {
 
     override fun read(json: Json, jsonData: JsonValue) {
         id = jsonData.getInt("id")
-        cards += json.readArrayValue<ArrayList<PCard>, PCard>("cards", jsonData)
+        cards += json.readArrayValue<ArrayList<PCard>, PCard>(jsonData, "cards")
     }
 
     override fun write(json: Json) {

@@ -19,9 +19,9 @@ package com.maltaisn.nines.core.game.event
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
 import com.maltaisn.cardgame.game.GameResult
-import com.maltaisn.cardgame.readArrayValue
-import com.maltaisn.cardgame.readValue
 import com.maltaisn.nines.core.game.Trick
+import ktx.json.readArrayValue
+import ktx.json.readValue
 
 /**
  * An event for the end of a round.
@@ -41,8 +41,8 @@ class RoundEndEvent() : GameEvent() {
     }
 
     override fun read(json: Json, jsonData: JsonValue) {
-        result = json.readValue("result", jsonData)
-        tricks = json.readArrayValue("tricks", jsonData)
+        result = json.readValue(jsonData, "result")
+        tricks = json.readArrayValue(jsonData, "tricks")
     }
 
     override fun write(json: Json) {

@@ -21,12 +21,12 @@ import com.badlogic.gdx.utils.JsonValue
 import com.maltaisn.cardgame.game.*
 import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.prefs.GamePrefs
-import com.maltaisn.cardgame.readArrayValue
-import com.maltaisn.cardgame.readValue
 import com.maltaisn.nines.core.game.event.MoveEvent
 import com.maltaisn.nines.core.game.event.PlayMove
 import com.maltaisn.nines.core.game.event.TradeHandMove
 import com.maltaisn.nines.core.game.player.Player
+import ktx.json.readArrayValue
+import ktx.json.readValue
 import kotlin.random.Random
 
 /**
@@ -56,10 +56,6 @@ class GameState() : CardGameState<Player>() {
     /** The current trick being played. */
     var currentTrick = Trick(CardPlayer.NO_POSITION)
         private set
-
-    /** How many trades took place during the trade phase. */
-    val tradesCount: Int
-        get() = players.count { it.trade == Player.Trade.TRADE }
 
 
     constructor(settings: GamePrefs, players: List<Player>,
@@ -217,11 +213,11 @@ class GameState() : CardGameState<Player>() {
     override fun read(json: Json, jsonData: JsonValue) {
         super.read(json, jsonData)
         dealerPos = jsonData.getInt("dealerPos")
-        extraHand = json.readValue("extraHand", jsonData)
+        extraHand = json.readValue(jsonData, "extraHand")
         trumpSuit = jsonData.getInt("trumpSuit")
-        phase = json.readValue("phase", jsonData)
-        tricksPlayed += json.readArrayValue<ArrayList<Trick>, Trick>("tricksPlayed", jsonData)
-        currentTrick = json.readValue("currentTrick", jsonData)
+        phase = json.readValue(jsonData, "phase")
+        tricksPlayed += json.readArrayValue<ArrayList<Trick>, Trick>(jsonData, "tricksPlayed")
+        currentTrick = json.readValue(jsonData, "currentTrick")
     }
 
     override fun write(json: Json) {
@@ -230,7 +226,6 @@ class GameState() : CardGameState<Player>() {
         json.writeValue("extraHand", extraHand)
         json.writeValue("trumpSuit", trumpSuit)
         json.writeValue("phase", phase)
-        json.writeValue("tradesCount", tradesCount)
         json.writeValue("tricksPlayed", tricksPlayed)
         json.writeValue("currentTrick", currentTrick)
     }

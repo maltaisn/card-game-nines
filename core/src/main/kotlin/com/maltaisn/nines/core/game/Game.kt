@@ -20,14 +20,11 @@ import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
 import com.badlogic.gdx.utils.SerializationException
-import com.maltaisn.cardgame.fromJson
 import com.maltaisn.cardgame.game.CardGame
 import com.maltaisn.cardgame.game.CardGameEvent
 import com.maltaisn.cardgame.game.CardPlayer
 import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.prefs.GamePrefs
-import com.maltaisn.cardgame.readArrayValue
-import com.maltaisn.cardgame.readValue
 import com.maltaisn.nines.core.PrefKeys
 import com.maltaisn.nines.core.game.event.*
 import com.maltaisn.nines.core.game.player.AiPlayer
@@ -36,6 +33,9 @@ import kotlinx.coroutines.*
 import ktx.async.KtxAsync
 import ktx.async.newSingleThreadAsyncContext
 import ktx.async.onRenderingThread
+import ktx.json.fromJson
+import ktx.json.readArrayValue
+import ktx.json.readValue
 import ktx.log.error
 import kotlin.math.max
 import kotlin.random.Random
@@ -286,10 +286,10 @@ class Game() : CardGame() {
                     "file is $version/${json.version} and current is $VERSION/${CardGame.VERSION}")
         }
 
-        players = json.readArrayValue("players", jsonData)
-        state = json.readValue("state", jsonData)
-        _events += json.readArrayValue<ArrayList<GameEvent>, GameEvent>("events", jsonData)
-        phase = json.readValue("phase", jsonData)
+        players = json.readArrayValue(jsonData, "players")
+        state = json.readValue(jsonData, "state")
+        _events += json.readArrayValue<ArrayList<GameEvent>, GameEvent>(jsonData, "events")
+        phase = json.readValue(jsonData, "phase")
         round = jsonData.getInt("round")
         dealerPos = jsonData.getInt("dealerPos")
         winnerPos = jsonData.getInt("winnerPos")

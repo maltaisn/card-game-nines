@@ -19,8 +19,8 @@ package com.maltaisn.nines.core
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.utils.I18NBundle
 import com.maltaisn.cardgame.CardGameScreen
-import com.maltaisn.cardgame.CoreRes
 import com.maltaisn.cardgame.markdown.Markdown
+import com.maltaisn.cardgame.pcard.PCardRes
 import com.maltaisn.cardgame.prefs.GamePrefs
 import ktx.assets.load
 
@@ -31,7 +31,7 @@ class GameScreen : CardGameScreen() {
     override fun load() {
         super.load()
 
-        assetManager.load<TextureAtlas>(CoreRes.PCARD_SKIN_ATLAS)
+        assetManager.load<TextureAtlas>(PCardRes.SKIN_ATLAS)
 
         assetManager.load<GamePrefs>(Res.PREFS_NEW_GAME)
         assetManager.load<GamePrefs>(Res.PREFS_SETTINGS)
@@ -42,7 +42,7 @@ class GameScreen : CardGameScreen() {
     override fun start() {
         super.start()
 
-        addSkin(CoreRes.PCARD_SKIN, CoreRes.PCARD_SKIN_ATLAS)
+        addSkin(PCardRes.SKIN, PCardRes.SKIN_ATLAS)
         addSkin(Res.SKIN)
 
         skin.add("newGameOptions", assetManager.get<GamePrefs>(Res.PREFS_NEW_GAME))
