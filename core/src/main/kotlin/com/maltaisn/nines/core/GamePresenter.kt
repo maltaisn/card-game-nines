@@ -814,17 +814,9 @@ class GamePresenter : GameContract.Presenter {
     private fun addScoresTableRow(event: RoundEndEvent) {
         val layout = requireLayout()
         layout.addScoresTableRow(List(3) {
-            val diff = Game.MINIMUM_TRICKS - event.result.playerResults[it]
+            val diff = Game.MINIMUM_TRICKS - event.result[it]
             ScoresTable.Score(layout.numberFormat.format(diff))
         })
-
-        /*
-        when {
-            diff > 0 -> ScoresTable.Score.Highlight.NEGATIVE
-            diff < 0 -> ScoresTable.Score.Highlight.POSITIVE
-            else -> ScoresTable.Score.Highlight.NONE
-        }
-         */
     }
 
     /**

@@ -17,7 +17,6 @@
 package com.maltaisn.nines.core.game
 
 import com.maltaisn.cardgame.game.CardGameJson
-import com.maltaisn.cardgame.game.GameResult
 import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.nines.core.game.event.*
 import com.maltaisn.nines.core.game.player.CheatingPlayer
@@ -39,7 +38,6 @@ object GameSaveJson : CardGameJson() {
     init {
         // Add class tags
         addClassTag<GameState>("state")
-        addClassTag<GameResult>("result")
         addClassTag<Trick>("trick")
         addClassTag<Hand>("hand")
         addClassTag<StartEvent>("startEvent")
