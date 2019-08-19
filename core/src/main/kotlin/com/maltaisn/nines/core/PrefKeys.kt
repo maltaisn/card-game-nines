@@ -18,6 +18,8 @@ package com.maltaisn.nines.core
 
 object PrefKeys {
 
+    const val LANGUAGE = "language"
+
     // New game
     const val DIFFICULTY = "difficulty"
 
@@ -25,7 +27,6 @@ object PrefKeys {
     const val SOUTH_PLAYER_TYPE = "south_player_type"
     const val WEST_PLAYER_TYPE = "west_player_type"
     const val NORTH_PLAYER_TYPE = "north_player_type"
-
 
     // Interface
     const val PLAYER_NAMES = "player_names"

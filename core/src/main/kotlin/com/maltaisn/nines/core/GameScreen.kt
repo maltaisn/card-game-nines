@@ -16,27 +16,46 @@
 
 package com.maltaisn.nines.core
 
+import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.assets.loaders.I18NBundleLoader
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.utils.I18NBundle
 import com.maltaisn.cardgame.CardGameScreen
 import com.maltaisn.cardgame.markdown.Markdown
+import com.maltaisn.cardgame.markdown.MdLoader
 import com.maltaisn.cardgame.pcard.PCardRes
+import com.maltaisn.cardgame.prefs.GamePref
 import com.maltaisn.cardgame.prefs.GamePrefs
+import com.maltaisn.cardgame.prefs.GamePrefsLoader
+import com.maltaisn.cardgame.prefs.ListPref
+import com.maltaisn.cardgame.stats.Statistics
+import com.maltaisn.cardgame.stats.StatsLoader
 import ktx.assets.load
+import java.util.*
 
-class GameScreen : CardGameScreen() {
+class GameScreen(locale: Locale) : CardGameScreen(locale) {
 
     private lateinit var gameLayout: GameLayout
+
+    private val languagePrefs = Gdx.app.getPreferences("com.maltaisn.nines")
+    private lateinit var languagePref: ListPref
+
 
     override fun load() {
         super.load()
 
+        // Load PCard skin
         assetManager.load<TextureAtlas>(PCardRes.SKIN_ATLAS)
 
-        assetManager.load<GamePrefs>(Res.PREFS_NEW_GAME)
-        assetManager.load<GamePrefs>(Res.PREFS_SETTINGS)
-        assetManager.load<Markdown>(Res.MD_RULES)
-        assetManager.load<I18NBundle>(Res.STRINGS_BUNDLE)
+        // Load localized data
+        assetManager.load(Res.STRINGS_BUNDLE, I18NBundleLoader.I18NBundleParameter(locale))
+        assetManager.load(Res.PREFS_NEW_GAME, GamePrefsLoader.Parameter(
+                locale = locale, bundlePath = Res.STRINGS_BUNDLE))
+        assetManager.load(Res.PREFS_SETTINGS, GamePrefsLoader.Parameter(
+                locale = locale, bundlePath = Res.STRINGS_BUNDLE))
+        assetManager.load(Res.MD_RULES, MdLoader.Parameter(locale = locale))
+        assetManager.load(Res.STATS, StatsLoader.Parameter(
+                locale = locale, bundlePath = Res.STRINGS_BUNDLE))
     }
 
     override fun start() {
@@ -45,14 +64,22 @@ class GameScreen : CardGameScreen() {
         addSkin(PCardRes.SKIN, PCardRes.SKIN_ATLAS)
         addSkin(Res.SKIN)
 
+        val settings = assetManager.get<GamePrefs>(Res.PREFS_SETTINGS)
+        skin.add("settings", settings)
         skin.add("newGameOptions", assetManager.get<GamePrefs>(Res.PREFS_NEW_GAME))
-        skin.add("settings", assetManager.get<GamePrefs>(Res.PREFS_SETTINGS))
         skin.add("rules", assetManager.get<Markdown>(Res.MD_RULES))
         skin.add("default", assetManager.get<Statistics>(Res.STATS))
         skin.add("default", assetManager.get<I18NBundle>(Res.STRINGS_BUNDLE))
 
         gameLayout = GameLayout(skin)
         addActor(gameLayout)
+
+        languagePref = settings[PrefKeys.LANGUAGE] as ListPref
+        languagePref.valueListeners += ::onLanguageChanged
+    }
+
+    private fun onLanguageChanged(pref: GamePref<String?>, value: String?) {
+        languagePrefs.putString(PrefKeys.LANGUAGE, value).flush()
     }
 
     override fun pause() {
@@ -63,9 +90,9 @@ class GameScreen : CardGameScreen() {
         }
     }
 
-    override fun resume() {
-        // TODO resume game correctly
-        //loadGame()
+    override fun dispose() {
+        super.dispose()
+        languagePref.valueListeners -= ::onLanguageChanged
     }
 
 }
