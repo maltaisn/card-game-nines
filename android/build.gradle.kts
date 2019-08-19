@@ -26,6 +26,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_6
         targetCompatibility = JavaVersion.VERSION_1_6
     }
+    packagingOptions {
+        exclude("META-INF/core.kotlin_module")
+    }
 }
 
 val natives: Configuration by configurations.creating
