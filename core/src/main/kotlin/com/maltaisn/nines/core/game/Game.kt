@@ -88,21 +88,7 @@ class Game() : CardGame() {
      * If there's a tie in scores, this returns [CardPlayer.NO_POSITION].
      */
     val leaderPos: Int
-        get() {
-            var minIndex = 0
-            var tie = false
-            for (i in 1..2) {
-                val score = players[i].score
-                val min = players[minIndex].score
-                if (score < min) {
-                    minIndex = i
-                    tie = false
-                } else if (score == min) {
-                    tie = true
-                }
-            }
-            return if (tie) CardPlayer.NO_POSITION else minIndex
-        }
+        get() = findLowestScorePosition(players.map { it.score })
 
     val gameSpeedDelay: Float
         get() = when (settings.getChoice(PrefKeys.GAME_SPEED)) {
@@ -113,13 +99,13 @@ class Game() : CardGame() {
         }
 
     /**
-     * Listener called when a game event happens, or `null` for none.
-     * Note that the listener is called at a point where the event has already happened
+     * Listeners called when a game event happens.
+     * Note that the listeners are called at a point where the events have already happened
      * so the game and the state are already changed. Everything must take this into account.
      * When a move is made by player at pos 0, `state.posToMove` will be 1 not 0 when the
-     * event listener is called, since the state was changed already.
+     * event listeners are called, since the state was changed already.
      */
-    var eventListener: ((GameEvent) -> Unit)? = null
+    val eventListeners = mutableListOf<(GameEvent) -> Unit>()
 
     /** System time when the last move was made. */
     private var lastMoveTime = 0L
@@ -215,7 +201,7 @@ class Game() : CardGame() {
         // Update the scores
         val result = state.result!!
         for ((i, player) in players.withIndex()) {
-            player.score += MINIMUM_TRICKS - result.playerResults[i].toInt()
+            player.score += MINIMUM_TRICKS - result[i].toInt()
         }
 
         // Check if any player has won
@@ -259,11 +245,13 @@ class Game() : CardGame() {
 
     private fun doEvent(event: GameEvent) {
         _events += event
-        eventListener?.invoke(event)
+        for (listener in eventListeners) {
+            listener.invoke(event)
+        }
     }
 
     override fun dispose() {
-        eventListener = null
+        eventListeners.clear()
 
         cancelAiTurn()
         dispatcher.dispose()
@@ -348,6 +336,26 @@ class Game() : CardGame() {
                     null
                 })
             }
+        }
+
+        /**
+         * Find the position with the lowest score in a [scores] list.
+         * Returns [CardPlayer.NO_POSITION] if there's a tie.
+         */
+        fun findLowestScorePosition(scores: List<Int>): Int {
+            var minIndex = 0
+            var tie = false
+            for (i in 1 until scores.size) {
+                val score = scores[i]
+                val min = scores[minIndex]
+                if (score < min) {
+                    minIndex = i
+                    tie = false
+                } else if (score == min) {
+                    tie = true
+                }
+            }
+            return if (tie) CardPlayer.NO_POSITION else minIndex
         }
 
         private val TRUMP_SUITS = intArrayOf(PCard.HEART, PCard.SPADE,

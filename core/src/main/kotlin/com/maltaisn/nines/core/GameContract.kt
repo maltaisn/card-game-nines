@@ -19,6 +19,7 @@ package com.maltaisn.nines.core
 import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.prefs.GamePref
 import com.maltaisn.cardgame.prefs.GamePrefs
+import com.maltaisn.cardgame.stats.Statistics
 import com.maltaisn.cardgame.widget.menu.DefaultGameMenu
 import com.maltaisn.cardgame.widget.table.ScoresTable
 import com.maltaisn.cardgame.widget.table.TricksTable
@@ -33,6 +34,8 @@ interface GameContract {
 
         val settings: GamePrefs
         val newGameOptions: GamePrefs
+
+        val stats: Statistics
 
         val numberFormat: NumberFormat
         val extraHandString: String

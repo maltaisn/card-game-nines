@@ -28,9 +28,10 @@ import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.I18NBundle
 import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.pcard.PCardStyle
-import com.maltaisn.cardgame.postDelayed
 import com.maltaisn.cardgame.prefs.GamePref
 import com.maltaisn.cardgame.prefs.GamePrefs
+import com.maltaisn.cardgame.stats.Statistics
+import com.maltaisn.cardgame.utils.postDelayed
 import com.maltaisn.cardgame.widget.*
 import com.maltaisn.cardgame.widget.card.*
 import com.maltaisn.cardgame.widget.menu.*
@@ -58,6 +59,8 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
 
     override val settings: GamePrefs = skin["settings"]
     override val newGameOptions: GamePrefs = skin["newGameOptions"]
+
+    override val stats: Statistics = skin.get()
 
     private val menu: DefaultGameMenu
     private val resetGameDialog: ResetGameDialog
@@ -151,6 +154,7 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
         menu.newGameOptions = newGameOptions
         menu.settings = settings
         menu.rules = skin[Res.MD_RULES]
+        menu.stats = stats
 
         menu.scoreboardMenu.addItems(scoresPage, handsPage,
                 tricksPage, lastTrickPage, continueItem)

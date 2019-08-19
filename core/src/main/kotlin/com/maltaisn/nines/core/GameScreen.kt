@@ -48,6 +48,7 @@ class GameScreen : CardGameScreen() {
         skin.add("newGameOptions", assetManager.get<GamePrefs>(Res.PREFS_NEW_GAME))
         skin.add("settings", assetManager.get<GamePrefs>(Res.PREFS_SETTINGS))
         skin.add("rules", assetManager.get<Markdown>(Res.MD_RULES))
+        skin.add("default", assetManager.get<Statistics>(Res.STATS))
         skin.add("default", assetManager.get<I18NBundle>(Res.STRINGS_BUNDLE))
 
         gameLayout = GameLayout(skin)
@@ -56,7 +57,10 @@ class GameScreen : CardGameScreen() {
 
     override fun pause() {
         super.pause()
-        gameLayout.save()
+
+        if (started) {
+            gameLayout.save()
+        }
     }
 
     override fun resume() {

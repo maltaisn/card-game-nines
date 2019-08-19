@@ -1,0 +1,94 @@
+{
+  name: "com.maltaisn.nines.stats"
+  variants: [
+    "@string/difficulty_0",
+    "@string/difficulty_1"
+    "@string/difficulty_2"
+    "@string/difficulty_3"
+  ]
+  stats: {
+    gamesPlayed: {
+      type: "number"
+      title: "@string/stat_games_played"
+    }
+    gamesWon: {
+      type: "number"
+      title: "@string/stat_games_won"
+    }
+    gamesWonPercent: {
+      type: "percent"
+      title: "@string/stat_games_won_percent"
+      fracStatKey: "gamesWon"
+      totalStatKey: "gamesPlayed"
+    }
+    roundsPlayed: {
+      type: "number"
+      title: "@string/stat_rounds_played"
+    }
+    roundsPlayedComplete: {
+      type: "number"
+      internal: true
+    }
+    roundsWon: {
+      type: "number"
+      title: "@string/stat_rounds_won"
+    }
+    roundsWonPercent: {
+      type: "percent"
+      title: "@string/stat_rounds_won_percent"
+      fracStatKey: "roundsWon"
+      totalStatKey: "roundsPlayed"
+    }
+    averageRoundsPerGame: {
+      type: "average"
+      title: "@string/stat_average_rounds_per_game"
+      totalStatKey: "roundsPlayedComplete"
+      countStatKey: "gamesPlayed"
+    }
+    minRoundsInGame: {
+      type: "number"
+      defaultValue: NaN
+      title: "@string/stat_min_rounds_in_game"
+    }
+    maxRoundsInGame: {
+      type: "number"
+      defaultValue: NaN
+      title: "@string/stat_max_rounds_in_game"
+    }
+    roundScoreTotal: {
+      type: "number"
+      internal: true
+    }
+    averageScorePerRound: {
+      type: "average"
+      title: "@string/stat_average_score_per_round"
+      totalStatKey: "roundScoreTotal"
+      countStatKey: "roundsPlayed"
+      precision: 1
+    }
+    tricksPlayed: {
+      type: "number"
+      title: "@string/stat_tricks_played"
+    }
+    tricksWon: {
+      type: "number"
+      title: "@string/stat_tricks_won"
+    }
+    tricksWonPercent: {
+      type: "percent"
+      title: "@string/stat_tricks_won_percent"
+      fracStatKey: "tricksWon"
+      totalStatKey: "tricksPlayed"
+    }
+    tradesDone: {
+      type: "number"
+      internal: true
+    }
+    tradesDonePercent: {
+      type: "percent"
+      title: "@string/stat_trades_done_percent"
+      fracStatKey: "tradesDone"
+      totalStatKey: "roundsPlayed"
+    }
+  }
+}

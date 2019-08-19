@@ -90,6 +90,12 @@ class GamePresenter : GameContract.Presenter {
 
     override fun onSave() {
         game?.save(GAME_SAVE_FILE, GameSaveJson)
+
+        requireLayout().apply {
+            settings.save()
+            newGameOptions.save()
+            stats.save()
+        }
     }
 
     override fun onPrefNeedsConfirm(pref: GamePref<*>, callback: (Boolean) -> Unit) {
@@ -266,17 +272,23 @@ class GamePresenter : GameContract.Presenter {
      * Initialize a new [game], if no game is currently set.
      */
     private fun initGame(game: Game) {
+        val layout = requireLayout()
+
         check(this.game == null) { "A game is already shown in the layout." }
         this.game = game
-        game.eventListener = {
-            when (it) {
+
+        StatsHandler(game, layout.stats)
+
+        game.eventListeners += { event ->
+            when (event) {
                 is StartEvent -> onGameStarted()
                 is EndEvent -> onGameEnded()
                 is RoundStartEvent -> onRoundStarted()
-                is RoundEndEvent -> onRoundEnded(it)
-                is MoveEvent -> onMove(it)
+                is RoundEndEvent -> onRoundEnded(event)
+                is MoveEvent -> onMove(event)
             }
         }
+
     }
 
     /**
