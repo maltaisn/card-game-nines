@@ -9,7 +9,6 @@
         language: {
           type: "list"
           title: "@string/pref_language"
-          help: "@string/pref_language_help"
           entries: {
             auto: "@string/pref_language_auto"
             en: "English"
@@ -61,6 +60,18 @@
           title: "@string/pref_select_playable"
           shortTitle: "@string/pref_select_playable_short"
           help: "@string/pref_select_playable_help"
+          defaultValue: true
+        }
+        display_score: {
+          type: "switch"
+          title: "@string/pref_display_score"
+          defaultValue: true
+        }
+        reorder_hand: {
+          type: "switch"
+          title: "@string/pref_reorder_hand"
+          shortTitle: "@string/pref_reorder_hand_short"
+          help: "@string/pref_reorder_hand_help"
           defaultValue: true
         }
       }

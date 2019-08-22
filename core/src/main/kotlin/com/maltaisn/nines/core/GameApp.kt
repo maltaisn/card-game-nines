@@ -17,6 +17,7 @@
 package com.maltaisn.nines.core
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.Preferences
 import com.maltaisn.cardgame.CardGameApp
 import ktx.async.KtxAsync
 import java.util.*
@@ -28,7 +29,6 @@ class GameApp : CardGameApp() {
      */
     private val locale: Locale
         get() {
-            val languagePrefs = Gdx.app.getPreferences("com.maltaisn.nines")
             val localeStr = languagePrefs.getString(PrefKeys.LANGUAGE, "auto")
             return if (localeStr == "auto") {
                 Locale.getDefault()
@@ -39,13 +39,31 @@ class GameApp : CardGameApp() {
             }
         }
 
+    val languagePrefs: Preferences by lazy {
+        Gdx.app.getPreferences("com.maltaisn.nines")
+    }
+
     override fun create() {
         super.create()
 
         KtxAsync.initiate()
 
+        restart()
+    }
+
+    /**
+     * Start or restart the game.
+     */
+    fun restart() {
+        // Kill previous screen
+        screen?.apply {
+            hide()
+            pause()
+            dispose()
+        }
+
         // Start game
-        setScreen(GameScreen(locale))
+        setScreen(GameScreen(this, locale))
     }
 
 }

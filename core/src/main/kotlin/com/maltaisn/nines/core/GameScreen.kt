@@ -16,7 +16,6 @@
 
 package com.maltaisn.nines.core
 
-import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.assets.loaders.I18NBundleLoader
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.utils.I18NBundle
@@ -30,14 +29,14 @@ import com.maltaisn.cardgame.prefs.GamePrefsLoader
 import com.maltaisn.cardgame.prefs.ListPref
 import com.maltaisn.cardgame.stats.Statistics
 import com.maltaisn.cardgame.stats.StatsLoader
+import com.maltaisn.cardgame.utils.post
 import ktx.assets.load
 import java.util.*
 
-class GameScreen(locale: Locale) : CardGameScreen(locale) {
+class GameScreen(private val app: GameApp, locale: Locale) : CardGameScreen(locale) {
 
     private lateinit var gameLayout: GameLayout
 
-    private val languagePrefs = Gdx.app.getPreferences("com.maltaisn.nines")
     private lateinit var languagePref: ListPref
 
 
@@ -79,7 +78,9 @@ class GameScreen(locale: Locale) : CardGameScreen(locale) {
     }
 
     private fun onLanguageChanged(pref: GamePref<String?>, value: String?) {
-        languagePrefs.putString(PrefKeys.LANGUAGE, value).flush()
+        // Persist language value and restart app.
+        app.languagePrefs.putString(PrefKeys.LANGUAGE, value).flush()
+        root.post { app.restart() }
     }
 
     override fun pause() {
