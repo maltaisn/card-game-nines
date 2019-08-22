@@ -35,6 +35,8 @@ object PrefKeys {
     const val AUTO_PLAY = "auto_play"
     const val AUTO_COLLECT = "auto_collect"
     const val SELECT_PLAYABLE = "select_playable"
+    const val DISPLAY_SCORE = "display_score"
+    const val REORDER_HAND = "reorder_hand"
 
     // Game
     const val START_SCORE = "start_score"

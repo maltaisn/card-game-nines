@@ -620,6 +620,10 @@ class GamePresenter : GameContract.Presenter {
             is PlayMove -> {
                 // Move card from player hand to the trick
                 layout.movePlayerCardToTrick(pos, move.card)
+                if (layout.settings.getBoolean(PrefKeys.REORDER_HAND)) {
+                    layout.sortPlayerHand()
+                }
+
                 moveDuration = CardAnimationGroup.UPDATE_DURATION
 
                 if (isSouth && layout.settings.getBoolean(PrefKeys.SELECT_PLAYABLE)) {
@@ -747,8 +751,14 @@ class GamePresenter : GameContract.Presenter {
         val layout = requireLayout()
 
         if (tradePhaseEnded) {
-            layout.setPlayerScores(List(3) { game.players[it].score },
-                    List(3) { game.players[it].tricksTaken })
+            val scores = List(3) { game.players[it].score }
+            val tricksTaken = if (layout.settings.getBoolean(PrefKeys.DISPLAY_SCORE)) {
+                List(3) { game.players[it].tricksTaken }
+            } else {
+                null
+            }
+            layout.setPlayerScores(scores, tricksTaken)
+
         } else {
             layout.setPlayerTradeStatus(List(3) { game.players[it].trade })
         }

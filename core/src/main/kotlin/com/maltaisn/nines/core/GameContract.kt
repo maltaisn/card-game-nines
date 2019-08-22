@@ -59,7 +59,7 @@ interface GameContract {
         fun setPlayerLabelsShown(shown: Boolean)
 
         fun setPlayerNames(names: List<String>)
-        fun setPlayerScores(scores: List<Int>, tricksTaken: List<Int>)
+        fun setPlayerScores(scores: List<Int>, tricksTaken: List<Int>?)
         fun setPlayerTradeStatus(trade: List<Player.Trade>)
 
         // Player hand
@@ -90,6 +90,7 @@ interface GameContract {
 
         fun setHiddenStackCardsShown(pos: Int, shown: Boolean)
         fun movePlayerCardToTrick(pos: Int, card: PCard)
+        fun sortPlayerHand()
         fun collectTrick(playerPos: Int)
 
         // Popups
@@ -132,7 +133,6 @@ interface GameContract {
 
         // Game over dialog
         fun setGameOverDialogShown(shown: Boolean)
-
         fun setGameOverDialogMessage(name: String, isHuman: Boolean)
     }
 

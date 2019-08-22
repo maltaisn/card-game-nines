@@ -342,9 +342,13 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
         }
     }
 
-    override fun setPlayerScores(scores: List<Int>, tricksTaken: List<Int>) {
+    override fun setPlayerScores(scores: List<Int>, tricksTaken: List<Int>?) {
         repeat(3) {
-            playerLabels[it].score = strings.format("player_score", scores[it], tricksTaken[it])
+            var scoreStr = scores[it].toString()
+            if (tricksTaken != null) {
+                scoreStr += " (${tricksTaken[it]})"
+            }
+            playerLabels[it].score = scoreStr
         }
     }
 
@@ -457,14 +461,11 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
         val src = if (pos == 0) playerHand else hiddenStacks[pos]
         cardAnimationGroup.moveCard(src, trick, src.cards.indexOf(card),
                 trick.actors.count { it != null }, replaceSrc = false, replaceDst = true)
-
-        if (pos == 0) {
-            // Sort the player hand when a card is played since the
-            // sorter is non-transitive i.e order depends on content.
-            playerHand.sort()
-        }
-
         cardAnimationGroup.update()
+    }
+
+    override fun sortPlayerHand() {
+        playerHand.sort()
     }
 
     override fun collectTrick(playerPos: Int) {
