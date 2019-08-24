@@ -775,7 +775,7 @@ class GamePresenter : GameContract.Presenter {
         val layout = requireLayout()
 
         // Player labels
-        val names = namesPref.value.toList()
+        val names = List(3) { namesPref.getPlayerName(it) }
         layout.setPlayerNames(names)
 
         // Scores table headers
@@ -865,7 +865,7 @@ class GamePresenter : GameContract.Presenter {
             }
 
             val playerRows = MutableList(3) {
-                HandsTable.PlayerRow(namesPref.value[it], hands[it].cards)
+                HandsTable.PlayerRow(namesPref.getPlayerName(it), hands[it].cards)
             }
 
             playerRows += HandsTable.PlayerRow(layout.extraHandString, hands[3].cards)
@@ -926,7 +926,7 @@ class GamePresenter : GameContract.Presenter {
         val layout = requireLayout()
 
         val winner = game.players[game.winnerPos]
-        layout.setGameOverDialogMessage(namesPref.value[winner.position], winner is HumanPlayer)
+        layout.setGameOverDialogMessage(namesPref.getPlayerName(winner.position), winner is HumanPlayer)
         layout.setGameOverDialogShown(true)
     }
 
