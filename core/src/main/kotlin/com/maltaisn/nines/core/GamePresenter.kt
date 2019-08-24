@@ -71,6 +71,11 @@ class GamePresenter : GameContract.Presenter {
     override fun attach(layout: GameContract.View) {
         this.layout = layout
 
+        // Check the scores page, thus adding the scores table to the layout.
+        // It must be pre-added so that when it's time to show it, it will have been laid out
+        // and scroll to bottom will work...
+        layout.checkScoreboardScoresPage()
+
         layout.setContinueItemEnabled(GAME_SAVE_FILE.exists())
     }
 
@@ -804,9 +809,11 @@ class GamePresenter : GameContract.Presenter {
     private fun showScoreboard() {
         hide()
 
-        val layout = requireLayout()
-        layout.checkScoreboardScoresPage()
-        layout.showScoreboard()
+        requireLayout().apply {
+            showScoreboard()
+            checkScoreboardScoresPage()
+            scrollScoresPageToBottom()
+        }
 
         scoreboardShown = true
     }

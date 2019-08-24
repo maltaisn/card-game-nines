@@ -39,7 +39,7 @@ n'auront plus de cartes dans leur main.
 Après les quatres manches d'atout, il y a une manche qui est jouée
 sans atout. Dans cette manche, les plis vont toujours au joueur qui
 a joué la carte la plus forte dans la couleur demandée, puisqu'il
-n'a pas d'atout.
+n'y a pas d'atout.
 
 
 # ![](icon-book) Points

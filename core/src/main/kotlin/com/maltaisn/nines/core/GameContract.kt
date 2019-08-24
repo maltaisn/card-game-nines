@@ -113,6 +113,7 @@ interface GameContract {
         // Scoreboard
         fun checkScoreboardScoresPage()
 
+        fun scrollScoresPageToBottom()
         fun setScoresTableHeaders(headers: List<ScoresTable.Header>)
         fun setScoresTableFooters(footers: List<ScoresTable.Score>)
         fun addScoresTableRow(row: List<ScoresTable.Score>)

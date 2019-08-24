@@ -543,6 +543,10 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
         menu.scoreboardMenu.checkItem(scoresPage)
     }
 
+    override fun scrollScoresPageToBottom() {
+        scoresTable.itemScrollView.scrollToBottom()
+    }
+
     override fun setScoresTableHeaders(headers: List<ScoresTable.Header>) {
         scoresTable.headers = headers
     }
