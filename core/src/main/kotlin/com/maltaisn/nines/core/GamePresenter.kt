@@ -257,6 +257,14 @@ class GamePresenter : GameContract.Presenter {
         }
     }
 
+    override fun onAboutRateClicked() {
+        // TODO
+    }
+
+    override fun onAboutReportBugClicked() {
+        // TODO
+    }
+
     override fun onGameOverDialogScoresBtnClicked() {
         showScoreboard()
     }

@@ -156,6 +156,9 @@ interface GameContract {
 
         fun onScoreboardContinueItemClicked()
 
+        fun onAboutRateClicked()
+        fun onAboutReportBugClicked()
+
         fun onGameOverDialogScoresBtnClicked()
         fun onGameOverDialogNewGameBtnClicked()
     }

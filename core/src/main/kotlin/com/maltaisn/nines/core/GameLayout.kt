@@ -34,7 +34,10 @@ import com.maltaisn.cardgame.stats.Statistics
 import com.maltaisn.cardgame.utils.postDelayed
 import com.maltaisn.cardgame.widget.*
 import com.maltaisn.cardgame.widget.card.*
-import com.maltaisn.cardgame.widget.menu.*
+import com.maltaisn.cardgame.widget.menu.DefaultGameMenu
+import com.maltaisn.cardgame.widget.menu.MenuItem
+import com.maltaisn.cardgame.widget.menu.PagedSubMenu
+import com.maltaisn.cardgame.widget.menu.SubMenu
 import com.maltaisn.cardgame.widget.prefs.ResetGameDialog
 import com.maltaisn.cardgame.widget.table.ScoresTable
 import com.maltaisn.cardgame.widget.table.TableViewContent
@@ -116,20 +119,20 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
         // Scores page
         scoresTable = ScoresTable(skin, 3)
         scoresPage = PagedSubMenu.Page(0, strings["scoreboard_scores"],
-                skin.getDrawable(MenuIcons.LIST), SubMenu.ITEM_POS_TOP)
+                skin.getDrawable(CoreIcons.LIST), SubMenu.ITEM_POS_TOP)
         scoresPage.content = Container(scoresTable).pad(60f, 30f, 60f, 30f).fill()
 
         // Hands page
         handsTable = HandsTable(skin, cardStyle)
         handsPage = PagedSubMenu.Page(1, strings["scoreboard_hands"],
-                skin.getDrawable(MenuIcons.CARDS), SubMenu.ITEM_POS_TOP)
+                skin.getDrawable(CoreIcons.CARDS), SubMenu.ITEM_POS_TOP)
         handsPage.content = Container(handsTable).pad(60f, 30f, 60f, 30f).fill()
 
         // Tricks page
         tricksTable = TricksTable(skin, cardStyle, 3)
         tricksTable.cardSize = CardActor.SIZE_NORMAL
         tricksPage = PagedSubMenu.Page(2, strings["scoreboard_tricks"],
-                skin.getDrawable(MenuIcons.CARDS), SubMenu.ITEM_POS_TOP)
+                skin.getDrawable(CoreIcons.CARDS), SubMenu.ITEM_POS_TOP)
         tricksPage.content = Container(tricksTable).pad(60f, 30f, 60f, 30f).fill()
 
         // Last trick page
@@ -138,15 +141,28 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
             enabled = false
         }
         lastTrickPage = PagedSubMenu.Page(3, strings["scoreboard_last_trick"],
-                skin.getDrawable(MenuIcons.CARDS), SubMenu.ITEM_POS_TOP)
+                skin.getDrawable(CoreIcons.CARDS), SubMenu.ITEM_POS_TOP)
         lastTrickPage.content = Container(TableViewContent(skin).apply {
             add(lastTrick).grow()
         }).pad(60f, 30f, 60f, 30f).fill()
 
         // Continue item
         continueItem = MenuItem(4, strings["scoreboard_continue"],
-                skin.getDrawable(MenuIcons.ARROW_RIGHT), SubMenu.ITEM_POS_BOTTOM)
+                skin.getDrawable(CoreIcons.ARROW_RIGHT), SubMenu.ITEM_POS_BOTTOM)
         continueItem.checkable = false
+
+        // ABOUT MENU
+        // About page
+        val aboutPage = PagedSubMenu.Page(0, strings["about_menu"],
+                skin.getDrawable(CoreIcons.INFO), SubMenu.ITEM_POS_TOP)
+        val aboutView = AboutView(skin, strings["app_name"],
+                strings["about_version"], strings["about_author"]).apply {
+            addButton(strings["about_rate"], skin.getDrawable(CoreIcons.STAR))
+                    .onClick(presenter::onAboutRateClicked)
+            addButton(strings["about_report_bug"], skin.getDrawable(CoreIcons.ALERT))
+                    .onClick(presenter::onAboutReportBugClicked)
+        }
+        aboutPage.content = aboutView
 
         // MENU
         menu = DefaultGameMenu(skin)
@@ -163,6 +179,9 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
                 presenter.onScoreboardContinueItemClicked()
             }
         }
+
+        menu.aboutMenu.addItems(aboutPage)
+        menu.aboutMenu.checkItem(aboutPage)
 
         // Confirm dialog, for settings that resets the saved game
         resetGameDialog = ResetGameDialog(skin)
