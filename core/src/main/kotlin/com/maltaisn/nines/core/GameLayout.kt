@@ -46,7 +46,7 @@ import com.maltaisn.nines.core.game.player.Player
 import com.maltaisn.nines.core.widget.HandsTable
 import com.maltaisn.nines.core.widget.TrumpIndicator
 import ktx.actors.onClick
-import ktx.actors.onKeyDown
+import ktx.actors.onKeyDownEvent
 import ktx.style.get
 import java.text.NumberFormat
 import kotlin.properties.ReadWriteProperty
@@ -148,7 +148,7 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
 
         // Continue item
         continueItem = MenuItem(4, strings["scoreboard_continue"],
-                skin.getDrawable(CoreIcons.ARROW_RIGHT), SubMenu.ITEM_POS_BOTTOM)
+                skin.getDrawable(CoreIcons.ARROW_RIGHT), SubMenu.ITEM_POS_BOTTOM, true)
         continueItem.checkable = false
 
         // ABOUT MENU
@@ -165,7 +165,7 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
         aboutPage.content = aboutView
 
         // MENU
-        menu = DefaultGameMenu(skin)
+        menu = DefaultGameMenu(skin, cardStyle)
         menu.callback = presenter
         menu.newGameOptions = newGameOptions
         menu.settings = settings
@@ -179,6 +179,9 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
                 presenter.onScoreboardContinueItemClicked()
             }
         }
+
+        menu.mainMenu.cards = listOf(PCard("9♥"), PCard("9♠"),
+                PCard("A♥"), PCard("9♦"), PCard("9♣"))
 
         menu.aboutMenu.addItems(aboutPage)
         menu.aboutMenu.checkItem(aboutPage)
@@ -296,8 +299,9 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
         }
 
         // Back key listener
-        onKeyDown(true) {
-            if (it == Input.Keys.BACK || it == Input.Keys.ESCAPE) {
+        // Back key listener
+        onKeyDownEvent(true) { event, _, key ->
+            if (!event.isHandled && (key == Input.Keys.BACK || key == Input.Keys.ESCAPE)) {
                 presenter.onBackPress()
             }
         }
