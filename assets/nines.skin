@@ -1,4 +1,9 @@
 {
+  com.maltaisn.nines.core.GameLayout$GameLayoutStyle: {
+    default: {
+      logo: logo
+    }
+  }
   com.maltaisn.nines.core.widget.HandsTable$HandsTableStyle: {
     default: {
       headerFontStyle: normalBold

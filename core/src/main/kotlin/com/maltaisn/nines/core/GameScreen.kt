@@ -43,8 +43,9 @@ class GameScreen(private val app: GameApp, locale: Locale) : CardGameScreen(loca
     override fun load() {
         super.load()
 
-        // Load PCard skin
+        // Load skins
         assetManager.load<TextureAtlas>(PCardRes.SKIN_ATLAS)
+        assetManager.load<TextureAtlas>(Res.ATLAS)
 
         // Load localized data
         assetManager.load(Res.STRINGS_BUNDLE, I18NBundleLoader.I18NBundleParameter(locale))
@@ -61,7 +62,7 @@ class GameScreen(private val app: GameApp, locale: Locale) : CardGameScreen(loca
         super.start()
 
         addSkin(PCardRes.SKIN, PCardRes.SKIN_ATLAS)
-        addSkin(Res.SKIN)
+        addSkin(Res.SKIN, Res.ATLAS)
 
         val settings = assetManager.get<GamePrefs>(Res.PREFS_SETTINGS)
         skin.add("settings", settings)
