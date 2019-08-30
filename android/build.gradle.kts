@@ -7,7 +7,7 @@ val appVersionCode: Int by project
 val appVersion: String by project
 
 android {
-    buildToolsVersion("29.0.0")
+    buildToolsVersion("29.0.2")
     compileSdkVersion(29)
     defaultConfig {
         applicationId = "com.maltaisn.nines.android"
@@ -28,6 +28,11 @@ android {
     }
     packagingOptions {
         exclude("META-INF/core.kotlin_module")
+    }
+    sourceSets {
+        named("main") {
+            java.srcDir("src/main/kotlin")  // Not necessary but works better with IntelliJ
+        }
     }
 }
 
