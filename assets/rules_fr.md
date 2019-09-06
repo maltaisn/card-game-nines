@@ -1,4 +1,4 @@
-# ![](icon-cards) Neuf
+# ![](icon-cards) Le Neuf
 Le neuf est un jeu de plis se jouant à 3 joueurs avec un jeu standard 
 de 52 cartes. Le but du jeu est de baisser le score à zéro en 
 remportant le maximum de plis à chaque manche. Le nom du jeu vient

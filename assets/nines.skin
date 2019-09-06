@@ -1,15 +1,10 @@
 {
-  com.maltaisn.nines.core.GameLayout$GameLayoutStyle: {
-    default: {
-      logo: logo
-    }
-  }
   com.maltaisn.nines.core.widget.HandsTable$HandsTableStyle: {
     default: {
       headerFontStyle: normalBold
       playerNameFontStyle: {
-        fontSize: 44
-        fontColor: textColorGray
+        size: 44
+        color: textColorGray
       }
     }
   }
@@ -17,10 +12,9 @@
     default: {
       pcardStyle: default
       fontStyle: {
-        bold: true
-        fontSize: 44
-        fontColor: textColorWhite
-        drawShadow: true
+        weight: 0.1
+        size: 44
+        color: textColorWhite
         shadowColor: black
       }
       iconSize: 64

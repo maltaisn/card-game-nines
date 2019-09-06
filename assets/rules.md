@@ -41,7 +41,7 @@ suit.
 # ![](icon-book) Scoring
 All players start the game with a score of nine, and the object is to
 bring one's score to zero or lower. Ties are broken by playing
-additionalrounds.
+additional rounds.
 
 In each hand, the number of tricks a player has collected translates to
 the change that will happen to their score. If four tricks are

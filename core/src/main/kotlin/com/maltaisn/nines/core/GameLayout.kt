@@ -24,7 +24,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Container
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable
 import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.I18NBundle
 import com.maltaisn.cardgame.pcard.PCard
@@ -55,8 +54,6 @@ import kotlin.reflect.KProperty
 
 
 class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
-
-    private val style: GameLayoutStyle = skin.get()
 
     private val presenter: GameContract.Presenter = GamePresenter()
 
@@ -183,7 +180,7 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
             }
         }
 
-        menu.mainMenu.logo = style.logo
+        menu.mainMenu.title = strings["app_name"]
         menu.mainMenu.cards = listOf(PCard("9♥"), PCard("9♠"),
                 PCard("A♥"), PCard("9♦"), PCard("9♣"))
 
@@ -646,11 +643,6 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
         } else {
             strings.format("game_over_message_ai", name)
         }
-    }
-
-
-    class GameLayoutStyle {
-        lateinit var logo: Drawable
     }
 
 }

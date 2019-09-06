@@ -7,8 +7,8 @@ import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.widget.card.CardActor
 import com.maltaisn.cardgame.widget.card.CardHand
 import com.maltaisn.cardgame.widget.table.TableView
-import com.maltaisn.cardgame.widget.text.FontStyle
-import com.maltaisn.cardgame.widget.text.SdfLabel
+import com.maltaisn.msdfgdx.FontStyle
+import com.maltaisn.msdfgdx.widget.MsdfLabel
 import ktx.style.get
 
 
@@ -63,7 +63,7 @@ class HandsTable(skin: Skin, private val cardStyle: CardActor.CardStyle) :
 
     private inner class HeaderViewHolder : ViewHolder() {
 
-        private val titleLabel = SdfLabel(skin, style.headerFontStyle)
+        private val titleLabel = MsdfLabel(null, skin, style.headerFontStyle)
 
         init {
             table.add(titleLabel).growX().pad(20f)
@@ -78,7 +78,7 @@ class HandsTable(skin: Skin, private val cardStyle: CardActor.CardStyle) :
 
     private inner class NameViewHolder : ViewHolder() {
 
-        private val nameLabel = SdfLabel(skin, style.playerNameFontStyle)
+        private val nameLabel = MsdfLabel(null, skin, style.playerNameFontStyle)
 
         init {
             table.add(nameLabel).grow().pad(20f)
