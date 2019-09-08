@@ -44,14 +44,12 @@ import kotlin.math.PI
 import kotlin.math.max
 
 
-class GamePresenter : GameContract.Presenter {
-
-    private var layout: GameContract.View? = null
+class GamePresenter(private val layout: GameContract.View) : GameContract.Presenter {
 
     private var game: Game? = null
 
     private val namesPref: PlayerNamesPref
-        get() = requireLayout().settings[PrefKeys.PLAYER_NAMES] as PlayerNamesPref
+        get() = layout.settings[PrefKeys.PLAYER_NAMES] as PlayerNamesPref
 
     /** Whether a game is currently shown in the layout or not. */
     private var gameShown = false
@@ -71,9 +69,7 @@ class GamePresenter : GameContract.Presenter {
     private var animationDuration = 0f
 
 
-    override fun attach(layout: GameContract.View) {
-        this.layout = layout
-
+    override fun attach() {
         layout.settings.addValueListener(::onPreferenceValueChanged)
         updateAnimationDuration()
 
@@ -86,8 +82,7 @@ class GamePresenter : GameContract.Presenter {
     }
 
     override fun detach() {
-        layout?.settings?.removeValueListener(::onPreferenceValueChanged)
-        layout = null
+        layout.settings.removeValueListener(::onPreferenceValueChanged)
 
         disposeGame()
     }
@@ -97,13 +92,11 @@ class GamePresenter : GameContract.Presenter {
 
     private fun requireState() = checkNotNull(game?.state) { "Game must have a round started." }
 
-    private fun requireLayout() = checkNotNull(layout) { "Presenter must be attached." }
-
 
     override fun onSave() {
         game?.save(GAME_SAVE_FILE, GameSaveJson)
 
-        requireLayout().apply {
+        layout.apply {
             settings.save()
             newGameOptions.save()
             stats.save()
@@ -112,7 +105,7 @@ class GamePresenter : GameContract.Presenter {
 
     override fun onPrefNeedsConfirm(pref: GamePref<*>, callback: (Boolean) -> Unit) {
         if (GAME_SAVE_FILE.exists()) {
-            requireLayout().showResetGameDialog(pref, callback)
+            layout.showResetGameDialog(pref, callback)
         }
     }
 
@@ -132,13 +125,12 @@ class GamePresenter : GameContract.Presenter {
         when {
             gameShown -> onExitGameClicked()
             scoreboardShown -> onScoreboardCloseClicked()
-            else -> requireLayout().goToPreviousMenu()
+            else -> layout.goToPreviousMenu()
         }
     }
 
 
     override fun onContinueClicked() {
-        val layout = requireLayout()
         Game.load(GAME_SAVE_FILE, layout.settings, GameSaveJson) {
             if (it != null) {
                 // Game loaded successfully, show the game.
@@ -157,8 +149,6 @@ class GamePresenter : GameContract.Presenter {
     }
 
     override fun onStartGameClicked() {
-        val layout = requireLayout()
-
         layout.showInGameMenu(false)
 
         val difficulty = layout.newGameOptions.getInt(PrefKeys.DIFFICULTY)
@@ -176,7 +166,7 @@ class GamePresenter : GameContract.Presenter {
     }
 
     private fun debugGetPlayer(typeKey: String): Player =
-            when (requireLayout().newGameOptions.getChoice(typeKey)) {
+            when (layout.newGameOptions.getChoice(typeKey)) {
                 "human" -> HumanPlayer()
                 "mcts_0" -> MctsPlayer(MctsPlayer.Difficulty.BEGINNER)
                 "mcts_1" -> MctsPlayer(MctsPlayer.Difficulty.INTERMEDIATE)
@@ -189,8 +179,6 @@ class GamePresenter : GameContract.Presenter {
             }
 
     override fun onExitGameClicked() {
-        val layout = requireLayout()
-
         hide()
         layout.goToPreviousMenu()
 
@@ -205,7 +193,6 @@ class GamePresenter : GameContract.Presenter {
 
     override fun onScoreboardCloseClicked() {
         val game = requireGame()
-        val layout = requireLayout()
 
         layout.goToPreviousMenu()
         show()
@@ -225,7 +212,6 @@ class GamePresenter : GameContract.Presenter {
     override fun onTradeBtnClicked(trade: Boolean) {
         val game = requireGame()
         val state = requireState()
-        val layout = requireLayout()
 
         // Do the trade move and hide the popup
         game.doMove(state.getMoves().find { (it as TradeHandMove).trade == trade }!!)
@@ -235,7 +221,6 @@ class GamePresenter : GameContract.Presenter {
     override fun onCollectTrickBtnClicked() {
         collectTrick()
 
-        val layout = requireLayout()
         layout.collectPopupShown = false
         layout.doDelayed(animationDuration) {
             playNext()
@@ -245,7 +230,6 @@ class GamePresenter : GameContract.Presenter {
     override fun onPlayerCardClicked(card: PCard) {
         val game = requireGame()
         val state = requireState()
-        val layout = requireLayout()
 
         if (game.players[0] is HumanPlayer && state.posToMove == 0
                 && state.phase == GameState.Phase.PLAY) {
@@ -275,8 +259,6 @@ class GamePresenter : GameContract.Presenter {
     }
 
     override fun onGameOverDialogNewGameBtnClicked() {
-        val layout = requireLayout()
-
         layout.setGameOverDialogShown(false)
         layout.hideDealerChip()
 
@@ -290,8 +272,6 @@ class GamePresenter : GameContract.Presenter {
      * Initialize a new [game], if no game is currently set.
      */
     private fun initGame(game: Game) {
-        val layout = requireLayout()
-
         check(this.game == null) { "A game is already shown in the layout." }
         this.game = game
 
@@ -324,7 +304,6 @@ class GamePresenter : GameContract.Presenter {
      */
     private fun show() {
         val game = requireGame()
-        val layout = requireLayout()
 
         layout.completeAnimations()
 
@@ -414,7 +393,7 @@ class GamePresenter : GameContract.Presenter {
     private fun hide() {
         val game = requireGame()
 
-        requireLayout().apply {
+        layout.apply {
             completeAnimations()
 
             unhighlightAllPlayerCards()
@@ -451,7 +430,6 @@ class GamePresenter : GameContract.Presenter {
 
     private fun onGameEnded() {
         // Show the game over dialog
-        val layout = requireLayout()
         layout.doDelayed(1f) {
             layout.setTrumpIndicatorShown(false)
             layout.setScoreboardContinueItemShown(false)
@@ -466,7 +444,6 @@ class GamePresenter : GameContract.Presenter {
     private fun onRoundStarted() {
         val game = requireGame()
         val state = requireState()
-        val layout = requireLayout()
 
         tradePhaseEnded = false
 
@@ -544,7 +521,6 @@ class GamePresenter : GameContract.Presenter {
      */
     private fun onRoundEnded(event: RoundEndEvent) {
         val game = requireGame()
-        val layout = requireLayout()
 
         layout.cancelDelayedIdlePopup()
 
@@ -574,7 +550,6 @@ class GamePresenter : GameContract.Presenter {
     private fun onMove(move: MoveEvent) {
         val game = requireGame()
         val state = requireState()
-        val layout = requireLayout()
 
         val pos = move.playerPos
         val isSouth = (pos == 0)
@@ -702,7 +677,6 @@ class GamePresenter : GameContract.Presenter {
      * Also updates the scores in the labels and the last trick in the scoreboard.
      */
     private fun collectTrick() {
-        val layout = requireLayout()
         val state = requireState()
 
         layout.collectTrick(state.posToMove, animationDuration)
@@ -719,7 +693,6 @@ class GamePresenter : GameContract.Presenter {
     private fun playNext() {
         val game = requireGame()
         val state = requireState()
-        val layout = requireLayout()
 
         val player = state.playerToMove
         var moveDone = false
@@ -777,7 +750,6 @@ class GamePresenter : GameContract.Presenter {
      */
     private fun updatePlayerScores() {
         val game = requireGame()
-        val layout = requireLayout()
 
         if (tradePhaseEnded) {
             val scores = List(3) { game.players[it].score }
@@ -801,7 +773,6 @@ class GamePresenter : GameContract.Presenter {
      */
     private fun updatePlayerNames() {
         val game = requireGame()
-        val layout = requireLayout()
 
         // Player labels
         val names = List(3) { namesPref.getPlayerName(it) }
@@ -833,7 +804,7 @@ class GamePresenter : GameContract.Presenter {
     private fun showScoreboard() {
         hide()
 
-        requireLayout().apply {
+        layout.apply {
             showScoreboard()
             checkScoreboardScoresPage()
             scrollScoresPageToBottom()
@@ -847,7 +818,6 @@ class GamePresenter : GameContract.Presenter {
      */
     private fun updateTotalScoreFooters() {
         val game = requireGame()
-        val layout = requireLayout()
 
         // Find the leader player position
         val leaderPos = game.leaderPos
@@ -865,7 +835,6 @@ class GamePresenter : GameContract.Presenter {
      * Add the scores row corresponding to the end [event] of a round.
      */
     private fun addScoresTableRow(event: RoundEndEvent) {
-        val layout = requireLayout()
         layout.addScoresTableRow(List(3) {
             val diff = Game.MINIMUM_TRICKS - event.result[it]
             ScoresTable.Score(layout.numberFormat.format(diff))
@@ -877,7 +846,6 @@ class GamePresenter : GameContract.Presenter {
      */
     private fun updateHandsPage() {
         val game = requireGame()
-        val layout = requireLayout()
 
         val shown = game.round > 0 && (game.phase == Phase.ENDED ||
                 game.phase == Phase.ROUND_ENDED)
@@ -909,7 +877,6 @@ class GamePresenter : GameContract.Presenter {
      */
     private fun updateTricksPage() {
         val game = requireGame()
-        val layout = requireLayout()
 
         val shown = game.round > 0 && (game.phase == Phase.ENDED ||
                 game.phase == Phase.ROUND_ENDED)
@@ -933,7 +900,6 @@ class GamePresenter : GameContract.Presenter {
      */
     private fun updateLastTrickPage() {
         val game = requireGame()
-        val layout = requireLayout()
 
         var shown = (game.phase == Phase.ROUND_STARTED)
         if (shown) {
@@ -954,7 +920,6 @@ class GamePresenter : GameContract.Presenter {
      */
     private fun showGameOverDialog() {
         val game = requireGame()
-        val layout = requireLayout()
 
         val winner = game.players[game.winnerPos]
         layout.setGameOverDialogMessage(namesPref.getPlayerName(winner.position), winner is HumanPlayer)
@@ -972,21 +937,20 @@ class GamePresenter : GameContract.Presenter {
      */
     private fun eraseGameSave() {
         GAME_SAVE_FILE.delete()
-        layout?.setContinueItemEnabled(false)
+        layout.setContinueItemEnabled(false)
     }
 
     /**
      * Play a [sound] by name if sounds are enabled.
      */
     private fun playSound(sound: String, volume: Float = 1f) {
-        val layout = requireLayout()
         if (layout.settings.getBoolean(PrefKeys.ENABLE_SOUND)) {
             layout.playSound(sound, volume)
         }
     }
 
     private fun updateAnimationDuration() {
-        animationDuration = when (requireLayout().settings.getChoice(PrefKeys.GAME_SPEED)) {
+        animationDuration = when (layout.settings.getChoice(PrefKeys.GAME_SPEED)) {
             "slow", "normal" -> 0.4f
             "fast" -> 0.3f
             else -> 0.2f

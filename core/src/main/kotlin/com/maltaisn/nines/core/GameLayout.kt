@@ -56,7 +56,7 @@ import kotlin.reflect.KProperty
 
 class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
 
-    private val presenter: GameContract.Presenter = GamePresenter()
+    private val presenter: GameContract.Presenter = GamePresenter(this)
 
     //@GDXAssets(propertiesFiles = ["assets/strings.properties"])
     private val strings: I18NBundle = skin.get()
@@ -301,7 +301,6 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
         }
 
         // Back key listener
-        // Back key listener
         onKeyDownEvent(true) { event, _, key ->
             if (!event.isHandled && (key == Input.Keys.BACK || key == Input.Keys.ESCAPE)) {
                 presenter.onBackPress()
@@ -313,7 +312,7 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
     override fun setStage(stage: Stage?) {
         super.setStage(stage)
         if (stage != null) {
-            presenter.attach(this)
+            presenter.attach()
         } else {
             presenter.detach()
         }

@@ -142,7 +142,7 @@ interface GameContract {
 
     interface Presenter : DefaultGameMenu.Callback {
 
-        fun attach(layout: View)
+        fun attach()
         fun detach()
 
         fun onSave()
