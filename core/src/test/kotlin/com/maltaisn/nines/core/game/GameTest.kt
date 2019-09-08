@@ -23,7 +23,6 @@ import com.maltaisn.cardgame.prefs.buildGamePrefsFromMap
 import com.maltaisn.nines.core.PrefKeys
 import com.maltaisn.nines.core.game.event.*
 import com.maltaisn.nines.core.game.player.AiPlayer
-import com.maltaisn.nines.core.game.player.CheatingPlayer
 import com.maltaisn.nines.core.game.player.MctsPlayer
 import com.maltaisn.nines.core.game.player.Player
 import kotlinx.coroutines.GlobalScope
@@ -35,10 +34,16 @@ import java.util.concurrent.atomic.AtomicIntegerArray
 
 
 fun main() {
+    val settings = buildGamePrefsFromMap(mapOf(
+            PrefKeys.START_SCORE to 9,
+            PrefKeys.GAME_SPEED to "none",
+            PrefKeys.PLAYER_NAMES to arrayOf("South", "West", "North")
+    ))
+
     // Create players
-    val south = CheatingPlayer()
-    val west = MctsPlayer(MctsPlayer.Difficulty.PERFECT)
-    val north = MctsPlayer(MctsPlayer.Difficulty.PERFECT)
+    val south = MctsPlayer(MctsPlayer.Difficulty.EXPERT)
+    val west = MctsPlayer(MctsPlayer.Difficulty.ADVANCED)
+    val north = MctsPlayer(MctsPlayer.Difficulty.ADVANCED)
 
     //playGame(settings, south, west, north, VERBOSE_MOVES)
     playGames(settings, south, west, north, 1000)
@@ -56,7 +61,7 @@ private fun playGame(settings: GamePrefs,
 
     var lastScores = IntArray(3) { settings.getInt(PrefKeys.START_SCORE) }
 
-    game.eventListener = { event ->
+    game.eventListeners += { event ->
         when (event) {
             is StartEvent -> {
                 if (verbosity >= VERBOSE_ROUNDS) {
@@ -110,6 +115,8 @@ private fun playGame(settings: GamePrefs,
                         println("> Trick #${state.tricksPlayed} taken by ${names[state.posToMove]}\n")
                     }
                 }
+
+
             }
         }
     }
@@ -167,12 +174,6 @@ private fun playGames(settings: GamePrefs,
         }.awaitAll()
     }
 }
-
-private val settings = buildGamePrefsFromMap(mapOf(
-        PrefKeys.START_SCORE to 9,
-        PrefKeys.GAME_SPEED to "none",
-        PrefKeys.PLAYER_NAMES to arrayOf("South", "West", "North")
-))
 
 private const val VERBOSE_NONE = 0
 private const val VERBOSE_ROUNDS = 1
