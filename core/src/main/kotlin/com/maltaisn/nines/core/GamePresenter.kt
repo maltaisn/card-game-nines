@@ -17,6 +17,7 @@
 package com.maltaisn.nines.core
 
 import com.badlogic.gdx.Files
+import com.maltaisn.cardgame.CoreRes
 import com.maltaisn.cardgame.game.CardPlayer
 import com.maltaisn.cardgame.game.sortWith
 import com.maltaisn.cardgame.pcard.PCard
@@ -541,6 +542,8 @@ class GamePresenter : GameContract.Presenter {
         val game = requireGame()
         val layout = requireLayout()
 
+        layout.cancelDelayedIdlePopup()
+
         // Update scoreboard
         addScoresTableRow(event)
         updateTotalScoreFooters()
@@ -553,6 +556,7 @@ class GamePresenter : GameContract.Presenter {
         if (game.winnerPos == CardPlayer.NO_POSITION) {
             layout.doDelayed(1f) {
                 showScoreboard()
+                playSound(CoreRes.SOUND_GAME_DONE)
             }
         }
     }
@@ -578,6 +582,8 @@ class GamePresenter : GameContract.Presenter {
                 updatePlayerScores()
 
                 if (move.trade) {
+                    val volume = if (game.players[pos] is HumanPlayer) 1f else 0.5f
+
                     // Do swap hand animation
                     if (isSouth) {
                         // Hide player hand
@@ -594,17 +600,20 @@ class GamePresenter : GameContract.Presenter {
 
                             // Move cards from extra hand to player hand
                             layout.moveCardsFromExtraHandToPlayerHand(GameState.CARDS_COUNT)
+                            playSound(CoreRes.SOUND_CARD_TAKE)
                         }
 
                     } else {
                         // Move cards from extra hand to hidden stack
                         layout.moveCardsFromExtraHandToHiddenStack(pos, GameState.CARDS_COUNT)
+                        playSound(CoreRes.SOUND_CARD_TAKE, volume)
                     }
 
                     // Move cards from hidden stack to extra hand
                     moveDuration += CardAnimationGroup.UPDATE_DURATION + 0.1f
                     layout.doDelayed(moveDuration) {
                         layout.moveCardsFromHiddenStackToExtraHand(pos, GameState.CARDS_COUNT)
+                        playSound(CoreRes.SOUND_CARD_TAKE, volume)
                     }
                     moveDuration += CardAnimationGroup.UPDATE_DURATION
 
@@ -636,6 +645,7 @@ class GamePresenter : GameContract.Presenter {
                 if (layout.settings.getBoolean(PrefKeys.REORDER_HAND)) {
                     layout.sortPlayerHand()
                 }
+                playSound(CoreRes.SOUND_CARD_SHOVE, 0.5f)
 
                 moveDuration = CardAnimationGroup.UPDATE_DURATION
 
@@ -695,6 +705,8 @@ class GamePresenter : GameContract.Presenter {
 
         updateLastTrickPage()
         updatePlayerScores()
+
+        playSound(CoreRes.SOUND_CARD_TAKE, 0.5f)
     }
 
     /**
@@ -943,17 +955,36 @@ class GamePresenter : GameContract.Presenter {
         val winner = game.players[game.winnerPos]
         layout.setGameOverDialogMessage(namesPref.getPlayerName(winner.position), winner is HumanPlayer)
         layout.setGameOverDialogShown(true)
+
+        playSound(if (winner is HumanPlayer) {
+            CoreRes.SOUND_GAME_WIN
+        } else {
+            CoreRes.SOUND_GAME_LOSE
+        })
     }
 
-    /** Erase the game save file and disable the continue item. */
+    /**
+     * Erase the game save file and disable the continue item.
+     */
     private fun eraseGameSave() {
         GAME_SAVE_FILE.delete()
         layout?.setContinueItemEnabled(false)
     }
 
+    /**
+     * Play a [sound] by name if sounds are enabled.
+     */
+    private fun playSound(sound: String, volume: Float = 1f) {
+        val layout = requireLayout()
+        if (layout.settings.getBoolean(PrefKeys.ENABLE_SOUND)) {
+            layout.playSound(sound, volume)
+        }
+    }
+
+
     companion object {
         /** The delay after the start of a human player turn before the idle popup is shown. */
-        private const val IDLE_POPUP_DELAY = 3f
+        private const val IDLE_POPUP_DELAY = 5f
 
         /** The minimum time between each back press needed to actually trigger it. */
         private const val BACK_PRESS_COOLDOWN = 1f

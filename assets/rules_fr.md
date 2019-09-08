@@ -1,6 +1,6 @@
 # ![](icon-cards) Le Neuf
-Le neuf est un jeu de plis se jouant à 3 joueurs avec un jeu standard 
-de 52 cartes. Le but du jeu est de baisser le score à zéro en 
+Le neuf est un jeu de plis se jouant à 3 joueurs avec un jeu standard
+de 52 cartes. Le but du jeu est de baisser le score à zéro en
 remportant le maximum de plis à chaque manche. Le nom du jeu vient
 du fait que le score initial est habituellement de 9.
 
@@ -10,7 +10,7 @@ Les cartes d'atout sont plus forte que les autres cartes.
 
 # ![](icon-cards) Déroulement
 Au début de la manche, les cartes sont réparties également en 4 mains
-de 13 cartes. Une main pour chaque joueur ainsi qu'une main 
+de 13 cartes. Une main pour chaque joueur ainsi qu'une main
 supplémentaire.
 
 Après la distribution des cartes, chaque joueur décide à tour de rôle
@@ -23,11 +23,11 @@ Le but du jeu est de remporter le maximum de plis à chaque manche.
 La couleur de l'atout change à chaque manche en suivant le séquence
 suivante: Cœur, Pique, Carreau, Trèfle, Sans atout.
 
-Le jeu commence avec le joueur à la gauche du brasseur et avance 
+Le jeu commence avec le joueur à la gauche du brasseur et avance
 toujours vers la gauche (dans le sens horaire). Le joueur qui joue la
 carte la plus forte dans la couleur demandée remporte le pli.
 Chaque joueur est obligé de joueur la couleur demandée. Si un joueur
-ne possède pas de carte dans cette couleur, il peut soit défausser une 
+ne possède pas de carte dans cette couleur, il peut soit défausser une
 carte dans une autre couleur (pas une carte d'atout) et perdre la
 possibilité de remporter le pli, soit jouer une carte d'atout, ce qui
 lui fait remporter le pli, à condition qu'aucun autre joueur ne

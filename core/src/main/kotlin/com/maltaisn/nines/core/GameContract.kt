@@ -135,6 +135,9 @@ interface GameContract {
         // Game over dialog
         fun setGameOverDialogShown(shown: Boolean)
         fun setGameOverDialogMessage(name: String, isHuman: Boolean)
+
+        // Sound
+        fun playSound(sound: String, volume: Float)
     }
 
     interface Presenter : DefaultGameMenu.Callback {

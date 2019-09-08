@@ -17,6 +17,7 @@
 package com.maltaisn.nines.core
 
 import com.badlogic.gdx.Input
+import com.badlogic.gdx.audio.Sound
 import com.badlogic.gdx.scenes.scene2d.Action
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.Touchable
@@ -643,6 +644,11 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
         } else {
             strings.format("game_over_message_ai", name)
         }
+    }
+
+    // Sound
+    override fun playSound(sound: String, volume: Float) {
+        skin.get<Sound>(sound).play(volume)
     }
 
 }

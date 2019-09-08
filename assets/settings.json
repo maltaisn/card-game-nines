@@ -16,6 +16,11 @@
           }
           defaultValue: "auto"
         }
+        enable_sound: {
+          type: "switch"
+          title: "@string/pref_enable_sound"
+          defaultValue: true
+        }
         player_names: {
           type: "player-names"
           title: "@string/pref_player_names"
@@ -84,7 +89,7 @@
         start_score: {
           type: "slider"
           title: "@string/pref_start_score"
-          minValue: 1
+          minValue: 4
           maxValue: 30
           defaultValue: 9
           confirmChanges: true

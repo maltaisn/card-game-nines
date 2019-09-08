@@ -81,7 +81,7 @@ tasks.whenTaskAdded {
 // Tasks to copy the assets to the android module assets dir
 val assetsPath = android.sourceSets.named("main").get().assets.srcDirs.last().path
 
-tasks.register("copyTestAssets") {
+tasks.register("copyAssets") {
     file(assetsPath).mkdirs()
     copy {
         from("../assets")
@@ -89,14 +89,14 @@ tasks.register("copyTestAssets") {
     }
 }
 
-tasks.register<Delete>("cleanTestAssets") {
+tasks.register<Delete>("cleanAssets") {
     delete(assetsPath)
 }
 
 tasks.named("clean") {
-    finalizedBy("cleanTestAssets")
+    finalizedBy("cleanAssets")
 }
 
 tasks.named("build") {
-    finalizedBy("copyTestAssets")
+    finalizedBy("copyAssets")
 }
