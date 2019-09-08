@@ -156,6 +156,7 @@ interface GameContract {
         fun onCollectTrickBtnClicked()
 
         fun onPlayerCardClicked(card: PCard)
+        fun onPlayerCardDealt()
 
         fun onScoreboardContinueItemClicked()
 

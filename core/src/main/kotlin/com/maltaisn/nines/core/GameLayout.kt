@@ -406,7 +406,9 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
 
     override fun dealPlayerCards(delay: Float) {
         cardAnimationGroup.deal(hiddenStacks[0], playerHand,
-                hiddenStacks[0].size, fromLast = false, delay = delay)
+                hiddenStacks[0].size, fromLast = false, delay = delay) {
+            presenter.onPlayerCardDealt()
+        }
     }
 
     override fun moveCardsFromExtraHandToPlayerHand(count: Int) {

@@ -246,6 +246,10 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         }
     }
 
+    override fun onPlayerCardDealt() {
+        playSound(CoreRes.SOUND_CARD_DROP, 0.3f)
+    }
+
     override fun onAboutRateClicked() {
         // TODO
     }
