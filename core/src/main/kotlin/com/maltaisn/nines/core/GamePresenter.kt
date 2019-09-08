@@ -264,7 +264,9 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
 
     override fun onGameOverDialogNewGameBtnClicked() {
         layout.setGameOverDialogShown(false)
+
         layout.hideDealerChip()
+        layout.setPlayerHandShown(false, animate = false)
 
         layout.doDelayed(DealerChip.FADE_DURATION) {
             disposeGame()
@@ -433,11 +435,21 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
     }
 
     private fun onGameEnded() {
+        val game = requireGame()
+
         // Show the game over dialog
         layout.doDelayed(1f) {
             layout.setTrumpIndicatorShown(false)
             layout.setScoreboardContinueItemShown(false)
             showGameOverDialog()
+
+            // Play game over sound
+            playSound(if (game.players[0] !is HumanPlayer || game.winnerPos == 0) {
+                // Play this sound if winner is human or there's no human in the game.
+                CoreRes.SOUND_GAME_WIN
+            } else {
+                CoreRes.SOUND_GAME_LOSE
+            })
         }
     }
 
@@ -928,12 +940,6 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         val winner = game.players[game.winnerPos]
         layout.setGameOverDialogMessage(namesPref.getPlayerName(winner.position), winner is HumanPlayer)
         layout.setGameOverDialogShown(true)
-
-        playSound(if (winner is HumanPlayer) {
-            CoreRes.SOUND_GAME_WIN
-        } else {
-            CoreRes.SOUND_GAME_LOSE
-        })
     }
 
     /**
