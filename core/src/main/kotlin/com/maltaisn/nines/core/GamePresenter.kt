@@ -68,9 +68,14 @@ class GamePresenter : GameContract.Presenter {
 
     private var lastBackPressTime = 0L
 
+    private var animationDuration = 0f
+
 
     override fun attach(layout: GameContract.View) {
         this.layout = layout
+
+        layout.settings.addValueListener(::onPreferenceValueChanged)
+        updateAnimationDuration()
 
         // Check the scores page, thus adding the scores table to the layout.
         // It must be pre-added so that when it's time to show it, it will have been laid out
@@ -81,6 +86,7 @@ class GamePresenter : GameContract.Presenter {
     }
 
     override fun detach() {
+        layout?.settings?.removeValueListener(::onPreferenceValueChanged)
         layout = null
 
         disposeGame()
@@ -169,20 +175,18 @@ class GamePresenter : GameContract.Presenter {
         game.start()
     }
 
-    private fun debugGetPlayer(typeKey: String): Player {
-        val type = requireLayout().newGameOptions.getChoice(typeKey)
-        return when (type) {
-            "human" -> HumanPlayer()
-            "mcts_0" -> MctsPlayer(MctsPlayer.Difficulty.BEGINNER)
-            "mcts_1" -> MctsPlayer(MctsPlayer.Difficulty.INTERMEDIATE)
-            "mcts_2" -> MctsPlayer(MctsPlayer.Difficulty.ADVANCED)
-            "mcts_3" -> MctsPlayer(MctsPlayer.Difficulty.EXPERT)
-            "mcts_4" -> MctsPlayer(MctsPlayer.Difficulty.PERFECT)
-            "cheat" -> CheatingPlayer()
-            "random" -> RandomPlayer()
-            else -> error("Unknown player type")
-        }
-    }
+    private fun debugGetPlayer(typeKey: String): Player =
+            when (requireLayout().newGameOptions.getChoice(typeKey)) {
+                "human" -> HumanPlayer()
+                "mcts_0" -> MctsPlayer(MctsPlayer.Difficulty.BEGINNER)
+                "mcts_1" -> MctsPlayer(MctsPlayer.Difficulty.INTERMEDIATE)
+                "mcts_2" -> MctsPlayer(MctsPlayer.Difficulty.ADVANCED)
+                "mcts_3" -> MctsPlayer(MctsPlayer.Difficulty.EXPERT)
+                "mcts_4" -> MctsPlayer(MctsPlayer.Difficulty.PERFECT)
+                "cheat" -> CheatingPlayer()
+                "random" -> RandomPlayer()
+                else -> error("Unknown player type")
+            }
 
     override fun onExitGameClicked() {
         val layout = requireLayout()
@@ -233,7 +237,7 @@ class GamePresenter : GameContract.Presenter {
 
         val layout = requireLayout()
         layout.collectPopupShown = false
-        layout.doDelayed(CardAnimationGroup.UPDATE_DURATION) {
+        layout.doDelayed(animationDuration) {
             playNext()
         }
     }
@@ -500,9 +504,9 @@ class GamePresenter : GameContract.Presenter {
             layout.setPlayerHandShown(true, animate = false)
 
             layout.doDelayed(moveDuration) {
-                layout.dealPlayerCards()
+                layout.dealPlayerCards(animationDuration)
             }
-            moveDuration += CardAnimationGroup.DEAL_DELAY * playerCards.size
+            moveDuration += animationDuration * playerCards.size
 
         } else {
             layout.setHiddenStackCards(0, emptyList())
@@ -610,15 +614,15 @@ class GamePresenter : GameContract.Presenter {
                     }
 
                     // Move cards from hidden stack to extra hand
-                    moveDuration += CardAnimationGroup.UPDATE_DURATION + 0.1f
+                    moveDuration += CardAnimationGroup.DEFAULT_UPDATE_DURATION + 0.1f
                     layout.doDelayed(moveDuration) {
                         layout.moveCardsFromHiddenStackToExtraHand(pos, GameState.CARDS_COUNT)
                         playSound(CoreRes.SOUND_CARD_TAKE, volume)
                     }
-                    moveDuration += CardAnimationGroup.UPDATE_DURATION
+                    moveDuration += CardAnimationGroup.DEFAULT_UPDATE_DURATION
 
                 } else {
-                    moveDuration = 1f
+                    moveDuration = animationDuration * 2
                 }
 
                 // If this player had the last choice
@@ -641,13 +645,13 @@ class GamePresenter : GameContract.Presenter {
             }
             is PlayMove -> {
                 // Move card from player hand to the trick
-                layout.movePlayerCardToTrick(pos, move.card)
+                layout.movePlayerCardToTrick(pos, move.card, animationDuration)
                 if (layout.settings.getBoolean(PrefKeys.REORDER_HAND)) {
                     layout.sortPlayerHand()
                 }
                 playSound(CoreRes.SOUND_CARD_SHOVE, 0.5f)
 
-                moveDuration = CardAnimationGroup.UPDATE_DURATION
+                moveDuration = animationDuration
 
                 if (isSouth && layout.settings.getBoolean(PrefKeys.SELECT_PLAYABLE)) {
                     // Unhighlight cards in case they were highlighted before move
@@ -663,11 +667,11 @@ class GamePresenter : GameContract.Presenter {
                         // Player plays last
                         if (layout.settings.getBoolean(PrefKeys.AUTO_COLLECT)) {
                             // Collect the trick automatically.
-                            moveDuration += 1f
+                            moveDuration += animationDuration * 2
                             layout.doDelayed(moveDuration) {
                                 collectTrick()
                             }
-                            moveDuration += CardAnimationGroup.UPDATE_DURATION
+                            moveDuration += animationDuration
 
                         } else {
                             // Show the collect popup for confirmation
@@ -701,7 +705,7 @@ class GamePresenter : GameContract.Presenter {
         val layout = requireLayout()
         val state = requireState()
 
-        layout.collectTrick(state.posToMove)
+        layout.collectTrick(state.posToMove, animationDuration)
 
         updateLastTrickPage()
         updatePlayerScores()
@@ -981,6 +985,19 @@ class GamePresenter : GameContract.Presenter {
         }
     }
 
+    private fun updateAnimationDuration() {
+        animationDuration = when (requireLayout().settings.getChoice(PrefKeys.GAME_SPEED)) {
+            "slow", "normal" -> 0.4f
+            "fast" -> 0.3f
+            else -> 0.2f
+        }
+    }
+
+    private fun <T> onPreferenceValueChanged(pref: GamePref<T>, value: T) {
+        if (pref.key == PrefKeys.GAME_SPEED) {
+            updateAnimationDuration()
+        }
+    }
 
     companion object {
         /** The delay after the start of a human player turn before the idle popup is shown. */

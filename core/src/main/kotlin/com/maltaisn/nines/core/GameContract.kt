@@ -67,7 +67,7 @@ interface GameContract {
 
         fun setPlayerHandEnabled(enabled: Boolean)
         fun setPlayerHandCards(cards: List<PCard>)
-        fun dealPlayerCards()
+        fun dealPlayerCards(delay: Float)
         fun moveCardsFromExtraHandToPlayerHand(count: Int)
         fun moveCardsFromExtraHandToHiddenStack(pos: Int, count: Int)
         fun moveCardsFromHiddenStackToExtraHand(pos: Int, count: Int)
@@ -89,9 +89,9 @@ interface GameContract {
         fun setHiddenStackCards(pos: Int, cards: List<PCard>)
 
         fun setHiddenStackCardsShown(pos: Int, shown: Boolean)
-        fun movePlayerCardToTrick(pos: Int, card: PCard)
+        fun movePlayerCardToTrick(pos: Int, card: PCard, duration: Float)
         fun sortPlayerHand()
-        fun collectTrick(playerPos: Int)
+        fun collectTrick(playerPos: Int, duration: Float)
 
         // Popups
         var tradePopupShown: Boolean

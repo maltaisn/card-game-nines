@@ -397,6 +397,7 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
     }
 
     override fun setPlayerHandEnabled(enabled: Boolean) {
+        hiddenStacks[0].enabled = enabled
         playerHand.enabled = enabled
     }
 
@@ -404,9 +405,9 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
         playerHand.cards = cards
     }
 
-    override fun dealPlayerCards() {
+    override fun dealPlayerCards(delay: Float) {
         cardAnimationGroup.deal(hiddenStacks[0], playerHand,
-                hiddenStacks[0].size, fromLast = false)
+                hiddenStacks[0].size, fromLast = false, delay = delay)
     }
 
     override fun moveCardsFromExtraHandToPlayerHand(count: Int) {
@@ -482,26 +483,26 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
         }
     }
 
-    override fun movePlayerCardToTrick(pos: Int, card: PCard) {
+    override fun movePlayerCardToTrick(pos: Int, card: PCard, duration: Float) {
         val src = if (pos == 0) playerHand else hiddenStacks[pos]
         cardAnimationGroup.moveCard(src, trick, src.cards.indexOf(card),
                 trick.actors.count { it != null }, replaceSrc = false, replaceDst = true)
-        cardAnimationGroup.update()
+        cardAnimationGroup.update(duration)
     }
 
     override fun sortPlayerHand() {
         playerHand.sort()
     }
 
-    override fun collectTrick(playerPos: Int) {
+    override fun collectTrick(playerPos: Int, duration: Float) {
         setHiddenStackCardsShown(playerPos, true)
 
         for (i in 0 until trick.capacity) {
             cardAnimationGroup.moveCard(trick, hiddenStacks[playerPos], i, 0, replaceSrc = true)
         }
-        cardAnimationGroup.update()
+        cardAnimationGroup.update(duration)
 
-        postDelayed(CardAnimationGroup.UPDATE_DURATION) {
+        postDelayed(duration) {
             setHiddenStackCardsShown(playerPos, false)
         }
     }
