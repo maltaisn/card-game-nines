@@ -182,8 +182,8 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
         }
 
         menu.mainMenu.title = strings["app_name"]
-        menu.mainMenu.cards = listOf(PCard("9♥"), PCard("9♠"),
-                PCard("A♥"), PCard("9♦"), PCard("9♣"))
+        menu.mainMenu.cards = listOf(PCard("Q♥"), PCard("K♠"),
+                PCard("A♥"), PCard("K♦"), PCard("Q♣"))
 
         menu.aboutMenu.addItems(aboutPage)
         menu.aboutMenu.checkItem(aboutPage)
@@ -396,7 +396,6 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
     }
 
     override fun setPlayerHandEnabled(enabled: Boolean) {
-        hiddenStacks[0].enabled = enabled
         playerHand.enabled = enabled
     }
 
