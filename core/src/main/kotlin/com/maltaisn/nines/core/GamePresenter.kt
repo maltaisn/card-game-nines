@@ -250,12 +250,12 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         playSound(CoreRes.SOUND_CARD_DROP, 0.3f)
     }
 
-    override fun onAboutRateClicked() {
-        // TODO
+    override fun onAboutRateAppClicked() {
+        layout.listener.onRateAppClicked()
     }
 
     override fun onAboutReportBugClicked() {
-        // TODO
+        layout.listener.onReportBugClicked()
     }
 
     override fun onGameOverDialogScoresBtnClicked() {

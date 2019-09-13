@@ -54,7 +54,8 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 
-class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
+class GameLayout(skin: Skin, override val listener: GameListener) :
+        CardGameLayout(skin), GameContract.View {
 
     private val presenter: GameContract.Presenter = GamePresenter(this)
 
@@ -158,8 +159,10 @@ class GameLayout(skin: Skin) : CardGameLayout(skin), GameContract.View {
                 skin.getDrawable(CoreIcons.INFO), SubMenu.ITEM_POS_TOP)
         val aboutView = AboutView(skin, strings["app_name"],
                 strings["about_version"], strings["about_author"]).apply {
-            addButton(strings["about_rate"], skin.getDrawable(CoreIcons.STAR))
-                    .onClick(presenter::onAboutRateClicked)
+            if (listener.isRateAppSupported) {
+                addButton(strings["about_rate"], skin.getDrawable(CoreIcons.STAR))
+                        .onClick(presenter::onAboutRateAppClicked)
+            }
             addButton(strings["about_report_bug"], skin.getDrawable(CoreIcons.ALERT))
                     .onClick(presenter::onAboutReportBugClicked)
         }

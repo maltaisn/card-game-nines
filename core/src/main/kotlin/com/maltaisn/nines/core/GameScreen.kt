@@ -70,7 +70,7 @@ class GameScreen(private val app: GameApp, locale: Locale) : CardGameScreen(loca
         skin.add("default", assetManager.get<Statistics>(Res.STATS))
         skin.add("default", assetManager.get<I18NBundle>(Res.STRINGS_BUNDLE))
 
-        gameLayout = GameLayout(skin)
+        gameLayout = GameLayout(skin, app.listener)
         addActor(gameLayout)
 
         languagePref = settings[PrefKeys.LANGUAGE] as ListPref

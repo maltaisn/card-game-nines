@@ -19,16 +19,30 @@ package com.maltaisn.nines.desktop
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration
 import com.maltaisn.nines.core.GameApp
+import com.maltaisn.nines.core.GameListener
+import java.awt.Desktop
+import java.net.URI
 
 
-object DesktopLauncher {
+object DesktopLauncher : GameListener {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        Lwjgl3Application(GameApp(), Lwjgl3ApplicationConfiguration().apply {
+        Lwjgl3Application(GameApp(this), Lwjgl3ApplicationConfiguration().apply {
             setTitle("Cards")
             setWindowedMode(1440, 810)
             setWindowSizeLimits(960, 540, -1, -1)
         })
     }
+
+
+    override val isRateAppSupported = false
+
+    override fun onReportBugClicked() {
+        // Open feedback form
+        if (Desktop.isDesktopSupported()) {
+            Desktop.getDesktop().browse(URI("https://forms.gle/AoB7AZdU6QCY1jNC7"))
+        }
+    }
+
 }

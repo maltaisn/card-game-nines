@@ -32,6 +32,8 @@ interface GameContract {
 
     interface View {
 
+        val listener: GameListener
+
         val settings: GamePrefs
         val newGameOptions: GamePrefs
 
@@ -160,7 +162,7 @@ interface GameContract {
 
         fun onScoreboardContinueItemClicked()
 
-        fun onAboutRateClicked()
+        fun onAboutRateAppClicked()
         fun onAboutReportBugClicked()
 
         fun onGameOverDialogScoresBtnClicked()
