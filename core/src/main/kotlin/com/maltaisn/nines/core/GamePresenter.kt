@@ -36,7 +36,10 @@ import com.maltaisn.nines.core.game.Game.Phase
 import com.maltaisn.nines.core.game.GameSaveJson
 import com.maltaisn.nines.core.game.GameState
 import com.maltaisn.nines.core.game.event.*
-import com.maltaisn.nines.core.game.player.*
+import com.maltaisn.nines.core.game.player.CheatingPlayer
+import com.maltaisn.nines.core.game.player.HumanPlayer
+import com.maltaisn.nines.core.game.player.MctsPlayer
+import com.maltaisn.nines.core.game.player.RandomPlayer
 import com.maltaisn.nines.core.widget.HandsTable
 import ktx.assets.file
 import java.util.*
@@ -151,12 +154,12 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
     override fun onStartGameClicked() {
         layout.showInGameMenu(false)
 
-        val difficulty = layout.newGameOptions.getInt(PrefKeys.DIFFICULTY)
+        val difficulty = "mcts_${layout.newGameOptions.getInt(PrefKeys.DIFFICULTY)}"
 
         // Create players
-        val south = debugGetPlayer(PrefKeys.SOUTH_PLAYER_TYPE)
-        val west = debugGetPlayer(PrefKeys.WEST_PLAYER_TYPE)
-        val north = debugGetPlayer(PrefKeys.NORTH_PLAYER_TYPE)
+        val south = HumanPlayer()
+        val west = createPlayer(difficulty)
+        val north = createPlayer(difficulty)
 
         // Create and start the game
         val game = Game(layout.settings, south, west, north)
@@ -165,18 +168,17 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         game.start()
     }
 
-    private fun debugGetPlayer(typeKey: String): Player =
-            when (layout.newGameOptions.getChoice(typeKey)) {
-                "human" -> HumanPlayer()
-                "mcts_0" -> MctsPlayer(MctsPlayer.Difficulty.BEGINNER)
-                "mcts_1" -> MctsPlayer(MctsPlayer.Difficulty.INTERMEDIATE)
-                "mcts_2" -> MctsPlayer(MctsPlayer.Difficulty.ADVANCED)
-                "mcts_3" -> MctsPlayer(MctsPlayer.Difficulty.EXPERT)
-                "mcts_4" -> MctsPlayer(MctsPlayer.Difficulty.PERFECT)
-                "cheat" -> CheatingPlayer()
-                "random" -> RandomPlayer()
-                else -> error("Unknown player type")
-            }
+    private fun createPlayer(type: String) = when (type) {
+        "human" -> HumanPlayer()
+        "mcts_0" -> MctsPlayer(MctsPlayer.Difficulty.BEGINNER)
+        "mcts_1" -> MctsPlayer(MctsPlayer.Difficulty.INTERMEDIATE)
+        "mcts_2" -> MctsPlayer(MctsPlayer.Difficulty.ADVANCED)
+        "mcts_3" -> MctsPlayer(MctsPlayer.Difficulty.EXPERT)
+        "mcts_4" -> MctsPlayer(MctsPlayer.Difficulty.PERFECT)
+        "cheat" -> CheatingPlayer()
+        "random" -> RandomPlayer()
+        else -> error("Unknown player type")
+    }
 
     override fun onExitGameClicked() {
         hide()

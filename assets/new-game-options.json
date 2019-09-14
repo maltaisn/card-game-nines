@@ -15,55 +15,5 @@
       maxValue: 3
       defaultValue: 1
     }
-    debug_catg: {
-      type: "category"
-      title: "Debug"
-      icon: "icon-pencil"
-      prefs: {
-        south_player_type: {
-          type: "list"
-          title: "South player type"
-          entries: {
-            human: "Human"
-            random: "Random"
-            mcts_0: "MCTS - Beginner"
-            mcts_1: "MCTS - Intermediate"
-            mcts_2: "MCTS - Advanced"
-            mcts_3: "MCTS - Expert"
-            mcts_4: "MCTS - Perfect"
-            cheat: "Cheating"
-          }
-          defaultValue: "human"
-        }
-        west_player_type: {
-          type: "list"
-          title: "West player type"
-          entries: {
-            random: "Random"
-            mcts_0: "MCTS - Beginner"
-            mcts_1: "MCTS - Intermediate"
-            mcts_2: "MCTS - Advanced"
-            mcts_3: "MCTS - Expert"
-            mcts_4: "MCTS - Perfect"
-            cheat: "Cheating"
-          }
-          defaultValue: "mcts_2"
-        }
-        north_player_type: {
-          type: "list"
-          title: "North player type"
-          entries: {
-            random: "Random"
-            mcts_0: "MCTS - Beginner"
-            mcts_1: "MCTS - Intermediate"
-            mcts_2: "MCTS - Advanced"
-            mcts_3: "MCTS - Expert"
-            mcts_4: "MCTS - Perfect"
-            cheat: "Cheating"
-          }
-          defaultValue: "mcts_2"
-        }
-      }
-    }
   }
 }
