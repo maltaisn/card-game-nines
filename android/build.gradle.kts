@@ -11,7 +11,7 @@ android {
     compileSdkVersion(29)
     defaultConfig {
         applicationId = "com.maltaisn.nines.android"
-        minSdkVersion(14)
+        minSdkVersion(16)
         targetSdkVersion(29)
         versionCode = appVersionCode
         versionName = appVersion
@@ -86,6 +86,7 @@ tasks.register("copyAssets") {
     copy {
         from("../assets")
         into(assetsPath)
+        exclude("saved-game.json")
     }
 }
 

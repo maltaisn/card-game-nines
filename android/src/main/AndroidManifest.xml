@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
           package="com.maltaisn.nines">
 
     <uses-feature
@@ -12,12 +13,13 @@
         android:appCategory="game"
         android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher"
-        android:theme="@style/GdxTheme">
+        android:theme="@style/GdxTheme"
+        tools:ignore="AllowBackup,GoogleAppIndexingWarning,UnusedAttribute">
         <activity
-                android:name="com.maltaisn.nines.android.AndroidLauncher"
-                android:label="@string/app_name"
-                android:screenOrientation="landscape"
-                android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize|screenLayout">
+            android:name="com.maltaisn.nines.android.AndroidLauncher"
+            android:label="@string/app_name"
+            android:screenOrientation="sensorLandscape"
+            android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize|screenLayout">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
