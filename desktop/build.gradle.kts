@@ -21,6 +21,12 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_6
 }
 
+sourceSets {
+    named("main") {
+        resources.srcDir("src/main/res")
+    }
+}
+
 tasks.register<JavaExec>("run") {
     main = mainClassName
     classpath = sourceSets.main.get().runtimeClasspath
@@ -33,6 +39,7 @@ tasks.register<Jar>("dist") {
     from(files(sourceSets.main.get().output.classesDirs))
     from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
     from(assetsDir)
+    from(sourceSets.named("main").get().resources)
 
     manifest {
         attributes["Main-Class"] = mainClassName

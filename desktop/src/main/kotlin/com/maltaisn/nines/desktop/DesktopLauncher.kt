@@ -32,6 +32,7 @@ object DesktopLauncher : GameListener {
             setTitle("Cards")
             setWindowedMode(1440, 810)
             setWindowSizeLimits(960, 540, -1, -1)
+            setWindowIcon("icon-16.png", "icon-32.png", "icon-48.png")
         })
     }
 
