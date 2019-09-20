@@ -16,6 +16,7 @@
 
 package com.maltaisn.nines.android
 
+import android.app.AlertDialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
@@ -24,7 +25,6 @@ import android.os.Bundle
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import com.badlogic.gdx.backends.android.AndroidApplication
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration
 import com.maltaisn.nines.R
