@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Le Neuf</string>
+
+    <string name="action_ok">OK</string>
+    <string name="action_cancel">Annuler</string>
 </resources>

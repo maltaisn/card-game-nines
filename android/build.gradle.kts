@@ -55,6 +55,8 @@ dependencies {
 
     implementation(kotlin("stdlib"))
 
+    implementation("androidx.appcompat:appcompat:1.1.0")
+
     implementation("com.badlogicgames.gdx:gdx-backend-android:$gdxVersion")
 
     natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi")

@@ -22,7 +22,7 @@ import com.maltaisn.cardgame.CardGameApp
 import ktx.async.KtxAsync
 import java.util.*
 
-class GameApp(val listener: GameListener) : CardGameApp() {
+class GameApp(listener: GameListener) : CardGameApp<GameListener>(listener) {
 
     /**
      * The game locale, stored in a preferences file.

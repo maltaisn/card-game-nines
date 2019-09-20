@@ -33,7 +33,8 @@ import com.maltaisn.cardgame.utils.post
 import ktx.assets.load
 import java.util.*
 
-class GameScreen(private val app: GameApp, locale: Locale) : CardGameScreen(locale) {
+class GameScreen(private val app: GameApp, locale: Locale) :
+        CardGameScreen<GameListener>(locale, app.listener) {
 
     private lateinit var gameLayout: GameLayout
 

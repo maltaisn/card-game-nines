@@ -26,6 +26,10 @@ import java.net.URI
 
 object DesktopLauncher : GameListener {
 
+    override val isTextInputDelegated = false
+    override val isRateAppSupported = false
+
+
     @JvmStatic
     fun main(args: Array<String>) {
         Lwjgl3Application(GameApp(this), Lwjgl3ApplicationConfiguration().apply {
@@ -35,9 +39,6 @@ object DesktopLauncher : GameListener {
             setWindowIcon("icon-16.png", "icon-32.png", "icon-48.png")
         })
     }
-
-
-    override val isRateAppSupported = false
 
     override fun onReportBugClicked() {
         // Open feedback form

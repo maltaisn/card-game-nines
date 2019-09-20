@@ -24,6 +24,7 @@
         player_names: {
           type: "player-names"
           title: "@string/pref_player_names"
+          inputTitle: "@string/pref_player_names_input"
           maxLength: 15
           defaultValue: [
             "@string/pref_player_names_south",

@@ -21,21 +21,49 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.view.WindowManager
+import android.view.inputmethod.EditorInfo
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import com.badlogic.gdx.backends.android.AndroidApplication
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration
+import com.maltaisn.nines.R
 import com.maltaisn.nines.core.GameApp
 import com.maltaisn.nines.core.GameListener
 
 
 class AndroidLauncher : AndroidApplication(), GameListener {
 
+    private lateinit var inputDialog: AlertDialog
+    private lateinit var inputField: TextView
+
+    override val isTextInputDelegated = true
+
+
     override fun onCreate(state: Bundle?) {
         super.onCreate(state)
 
+        // Input dialog
+        val view = layoutInflater.inflate(R.layout.dialog_input, null, false)
+        inputField = view.findViewById(R.id.input_field)
+        inputField.setOnEditorActionListener { _, actionId, _ ->
+            return@setOnEditorActionListener if (actionId == EditorInfo.IME_ACTION_DONE) {
+                inputDialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick()
+                true
+            } else {
+                false
+            }
+        }
+        inputDialog = AlertDialog.Builder(this).apply {
+            setView(view)
+            setPositiveButton(R.string.action_ok, null)
+            setNegativeButton(R.string.action_cancel, null)
+        }.create()
+
+        // Start game
         val config = AndroidApplicationConfiguration()
         config.useAccelerometer = false
         config.useCompass = false
-
         initialize(GameApp(this), config)
     }
 
@@ -69,6 +97,26 @@ class AndroidLauncher : AndroidApplication(), GameListener {
                 }
         intent.addFlags(flags)
         return intent
+    }
+
+    override fun onTextInput(text: CharSequence?, title: CharSequence?,
+                             onTextEntered: (String) -> Unit) {
+        runOnUiThread {
+            inputField.text = text
+            inputField.requestFocus()
+            inputDialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+
+            inputDialog.apply {
+                setTitle(title)
+                setOnShowListener {
+                    getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                        inputDialog.dismiss()
+                        onTextEntered(inputField.text.toString())
+                    }
+                }
+                show()
+            }
+        }
     }
 
 }

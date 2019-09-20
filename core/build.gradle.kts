@@ -14,9 +14,11 @@ dependencies {
     val gdxVersion: String by project
     val ktxVersion: String by project
     val junitVersion: String by project
+    val cardGameVersion: String by project
+    val pcardVersion: String by project
 
-    api("com.maltaisn.cardgame:core:0.0.1")
-    api("com.maltaisn.cardgame:pcard:0.0.1")
+    api("com.maltaisn.cardgame:core:$cardGameVersion")
+    api("com.maltaisn.cardgame:pcard:$pcardVersion")
 
     implementation(kotlin("stdlib"))
 

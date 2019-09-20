@@ -16,15 +16,22 @@
 
 package com.maltaisn.nines.core
 
+import com.maltaisn.cardgame.CardGameListener
+
 
 /**
  * Listener to be implemented for each backend to provide backend dependent behavior
  */
-interface GameListener {
+interface GameListener : CardGameListener {
 
+    /**
+     * Whether there's a way to rate app or not.
+     * The rate button in the About menu will only be shown if yes.
+     */
     val isRateAppSupported: Boolean
 
     fun onReportBugClicked()
+
     fun onRateAppClicked() = Unit
 
 }
