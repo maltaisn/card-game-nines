@@ -3,7 +3,7 @@ plugins {
     kotlin("android")
 }
 
-val appVersionCode: Int by project
+val appVersionCode: String by project
 val appVersion: String by project
 
 android {
@@ -13,13 +13,22 @@ android {
         applicationId = "com.maltaisn.nines.android"
         minSdkVersion(16)
         targetSdkVersion(29)
-        versionCode = appVersionCode
+        versionCode = appVersionCode.toInt()
         versionName = appVersion
+    }
+    signingConfigs {
+        create("release") {
+            storeFile = file(extra.get("releaseKeyStoreFile") as String)
+            storePassword = extra["releaseKeyStorePassword"] as String
+            keyAlias = extra["releaseKeyStoreKey"] as String
+            keyPassword = extra["releaseKeyStoreKeyPassword"] as String
+        }
     }
     buildTypes {
         named("release") {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.named("release").get()
         }
     }
     compileOptions {
@@ -27,7 +36,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_6
     }
     packagingOptions {
-        exclude("META-INF/core.kotlin_module")
+        exclude("com/badlogic/**")  // Unused default shader files and assets
+        exclude("META-INF/core.kotlin_module")  // Collision between core and cardgame/core modules
     }
     sourceSets {
         named("main") {
