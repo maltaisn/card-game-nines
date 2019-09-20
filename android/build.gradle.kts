@@ -27,6 +27,7 @@ android {
     buildTypes {
         named("release") {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.named("release").get()
         }
