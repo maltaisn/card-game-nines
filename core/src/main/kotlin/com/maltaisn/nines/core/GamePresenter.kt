@@ -67,6 +67,9 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
      */
     private var tradePhaseEnded = false
 
+    /** Whether continue was clicked and the game is currently loading. */
+    private var gameLoading = false
+
     private var lastBackPressTime = 0L
 
     private var animationDuration = 0f
@@ -134,7 +137,11 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
 
 
     override fun onContinueClicked() {
+        if (gameLoading) return
+        gameLoading = true
+
         Game.load(GAME_SAVE_FILE, layout.settings, GameSaveJson) {
+            gameLoading = false
             if (it != null) {
                 // Game loaded successfully, show the game.
                 layout.showInGameMenu(true)
@@ -311,6 +318,9 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
      * If the game hasn't started, layout will stay hidden.
      */
     private fun show() {
+        if (gameShown) return
+        gameShown = true
+
         val game = requireGame()
 
         layout.completeAnimations()
@@ -391,14 +401,15 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
             layout.setPlayerLabelsShown(true)
             updatePlayerScores()
         }
-
-        gameShown = true
     }
 
     /**
      * Hide the layout cancelling all animations and disposes of the game.
      */
     private fun hide() {
+        if (!gameShown) return
+        gameShown = false
+
         val game = requireGame()
 
         layout.apply {
@@ -426,8 +437,6 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         }
 
         game.cancelAiTurn()
-
-        gameShown = false
     }
 
     private fun onGameStarted() {

@@ -326,11 +326,11 @@ class Game() : CardGame() {
         fun load(file: FileHandle, settings: GamePrefs, json: Json, onDone: (Game?) -> Unit) {
             KtxAsync.launch(Dispatchers.IO) {
                 onDone(try {
-                    val game: Game = json.fromJson(file)
+                    val game: Game = json.fromJson(file)!!
                     game.settings = settings
                     game.state?.settings = settings
                     game
-                } catch (e: SerializationException) {
+                } catch (e: Exception) {
                     // Corrupt game file or version mismatch
                     error(e) { "Could not deserialize saved game." }
                     null
