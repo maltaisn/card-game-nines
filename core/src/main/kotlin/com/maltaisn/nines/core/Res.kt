@@ -20,6 +20,7 @@ package com.maltaisn.nines.core
 object Res {
 
     const val SKIN = "nines.skin"
+    const val ATLAS = "nines.atlas"
 
     const val PREFS_NEW_GAME = "new-game-options.json"
     const val PREFS_SETTINGS = "settings.json"

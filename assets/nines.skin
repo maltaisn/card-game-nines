@@ -20,4 +20,9 @@
       iconSize: 64
     }
   }
+  com.maltaisn.nines.core.GameLayout$GameLayoutStyle: {
+    default: {
+      appIcon: icon
+    }
+  }
 }

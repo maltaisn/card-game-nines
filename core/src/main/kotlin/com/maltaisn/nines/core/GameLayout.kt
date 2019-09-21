@@ -25,6 +25,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Container
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.ui.WidgetGroup
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable
 import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.I18NBundle
 import com.maltaisn.cardgame.pcard.PCard
@@ -56,6 +57,8 @@ import kotlin.reflect.KProperty
 
 class GameLayout(skin: Skin, override val listener: GameListener) :
         CardGameLayout(skin), GameContract.View {
+
+    private val style: GameLayoutStyle = skin.get()
 
     private val presenter: GameContract.Presenter = GamePresenter(this)
 
@@ -158,14 +161,14 @@ class GameLayout(skin: Skin, override val listener: GameListener) :
         val aboutPage = PagedSubMenu.Page(0, strings["about_menu"],
                 skin.getDrawable(CoreIcons.INFO), SubMenu.ITEM_POS_TOP)
         val aboutView = AboutView(skin, strings["app_name"],
-                strings["about_version"], strings["about_author"]).apply {
-            if (listener.isRateAppSupported) {
-                addButton(strings["about_rate"], skin.getDrawable(CoreIcons.STAR))
-                        .onClick(presenter::onAboutRateAppClicked)
-            }
-            addButton(strings["about_report_bug"], skin.getDrawable(CoreIcons.ALERT))
-                    .onClick(presenter::onAboutReportBugClicked)
+                strings["about_version"], strings["about_author"])
+        if (listener.isRateAppSupported) {
+            aboutView.addButton(strings["about_rate"], skin.getDrawable(CoreIcons.STAR))
+                    .onClick(presenter::onAboutRateAppClicked)
         }
+        aboutView.addButton(strings["about_report_bug"], skin.getDrawable(CoreIcons.ALERT))
+                .onClick(presenter::onAboutReportBugClicked)
+        aboutView.appIcon = style.appIcon
         aboutPage.content = aboutView
 
         // MENU
@@ -653,6 +656,11 @@ class GameLayout(skin: Skin, override val listener: GameListener) :
     // Sound
     override fun playSound(sound: String, volume: Float) {
         skin.get<Sound>(sound).play(volume)
+    }
+
+
+    class GameLayoutStyle {
+        lateinit var appIcon: Drawable
     }
 
 }
