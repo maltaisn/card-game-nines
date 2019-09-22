@@ -26,7 +26,7 @@ import ktx.style.get
 
 
 class TrumpIndicator(skin: Skin) :
-        MenuButton(skin, skin.get<TrumpIndicatorStyle>().fontStyle) {
+        MenuButton(skin, skin.get<TrumpIndicatorStyle>().fontStyle, anchorSide = AnchorSide.TOP) {
 
     private val indicatorStyle: TrumpIndicatorStyle = skin.get()
     private val strings: I18NBundle = skin.get()
@@ -48,9 +48,8 @@ class TrumpIndicator(skin: Skin) :
 
 
     init {
-        anchorSide = Side.TOP
-        iconSide = Side.RIGHT
-        iconSize = indicatorStyle.iconSize
+        add(iconImage).size(indicatorStyle.iconSize)
+        add(titleLabel).padLeft(30f)
         pad(40f)
 
         trumpSuit = GameState.NO_TRUMP
