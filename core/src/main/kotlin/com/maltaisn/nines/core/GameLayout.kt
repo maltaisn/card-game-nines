@@ -350,17 +350,15 @@ class GameLayout(skin: Skin, override val listener: GameListener) :
     }
 
     override fun showResetGameDialog(pref: GamePref<*>, callback: (Boolean) -> Unit) {
-        resetGameDialog.let {
-            it.pref = pref
-            it.callback = { keep ->
-                if (keep) {
-                    // User decided to change the setting, so reset the saved game
-                    presenter.onPrefConfirmed()
-                }
-                callback(keep)
+        resetGameDialog.pref = pref
+        resetGameDialog.callback = { keep ->
+            if (keep) {
+                // User decided to change the setting, so reset the saved game
+                presenter.onPrefConfirmed()
             }
-            it.show(stage)
+            callback(keep)
         }
+        resetGameDialog.show(stage)
     }
 
     // Player labels

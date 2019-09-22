@@ -140,16 +140,16 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         if (gameLoading) return
         gameLoading = true
 
-        Game.load(GAME_SAVE_FILE, layout.settings, GameSaveJson) {
+        Game.load(GAME_SAVE_FILE, layout.settings, GameSaveJson) { game ->
             gameLoading = false
-            if (it != null) {
+            if (game != null) {
                 // Game loaded successfully, show the game.
                 layout.showInGameMenu(true)
-                initGame(it)
+                initGame(game)
                 show()
-                if (it.phase == Phase.ROUND_ENDED) {
+                if (game.phase == Phase.ROUND_ENDED) {
                     // Game was saved after round end, start a new round.
-                    it.startRound()
+                    game.startRound()
                 }
             } else {
                 // Could not load save file.
@@ -807,9 +807,9 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
 
         // Scores table headers
         val diffPref = layout.newGameOptions[PrefKeys.DIFFICULTY] as SliderPref
-        layout.setScoresTableHeaders(List(3) {
-            val player = game.players[it]
-            ScoresTable.Header(names[it], when (player) {
+        layout.setScoresTableHeaders(List(3) { pos ->
+            val player = game.players[pos]
+            ScoresTable.Header(names[pos], when (player) {
                 is MctsPlayer -> if (player.difficulty == MctsPlayer.Difficulty.PERFECT) {
                     "Perfect"
                 } else {
@@ -848,13 +848,13 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
 
         // Find the leader player position
         val leaderPos = game.leaderPos
-        layout.setScoresTableFooters(List(3) {
-            val highlight = if (it == leaderPos) {
+        layout.setScoresTableFooters(List(3) { pos ->
+            val highlight = if (pos == leaderPos) {
                 ScoresTable.Score.Highlight.POSITIVE
             } else {
                 ScoresTable.Score.Highlight.NONE
             }
-            ScoresTable.Score(layout.numberFormat.format(game.players[it].score), highlight)
+            ScoresTable.Score(layout.numberFormat.format(game.players[pos].score), highlight)
         })
     }
 

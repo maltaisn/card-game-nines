@@ -199,13 +199,13 @@ class GameState() : CardGameState<Player>() {
         }
     }
 
-    override fun clone() = cloneTo(GameState()).also {
-        it.dealerPos = dealerPos
-        it.trumpSuit = trumpSuit
-        it.extraHand = extraHand.clone()
-        it.phase = phase
-        it.tricksPlayed += tricksPlayed
-        it.currentTrick = currentTrick.clone()
+    override fun clone() = cloneTo(GameState()).also { state ->
+        state.dealerPos = dealerPos
+        state.trumpSuit = trumpSuit
+        state.extraHand = extraHand.clone()
+        state.phase = phase
+        state.tricksPlayed += tricksPlayed
+        state.currentTrick = currentTrick.clone()
     }
 
     override fun toString() = "[posToMove: $posToMove, " +

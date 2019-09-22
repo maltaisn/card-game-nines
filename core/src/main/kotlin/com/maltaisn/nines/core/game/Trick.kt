@@ -79,9 +79,9 @@ class Trick() : Cloneable, Json.Serializable {
         return (highestIndex + startPos) % 3
     }
 
-    public override fun clone() = Trick().also {
-        it.startPos = startPos
-        it.cards += cards
+    public override fun clone() = Trick().also { trick ->
+        trick.startPos = startPos
+        trick.cards += cards
     }
 
     override fun toString() = "[startPos: $startPos, cards: $cards]"

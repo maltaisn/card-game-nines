@@ -171,8 +171,8 @@ class MctsPlayer() : AiPlayer() {
                 val costMatrix = arrayOfNulls<IntArray>(unknownCards.size)
                 for (hand in unknownHands) {
                     repeat(hand.cards.size) {
-                        costMatrix[i] = IntArray(unknownCards.size) {
-                            if (unknownCards[it].suit in knownSuits[hand.id]) {
+                        costMatrix[i] = IntArray(unknownCards.size) { card ->
+                            if (unknownCards[card].suit in knownSuits[hand.id]) {
                                 Random.nextInt(1024)
                             } else {
                                 Hungarian.DISALLOWED
@@ -208,9 +208,9 @@ class MctsPlayer() : AiPlayer() {
     }
 
 
-    override fun clone() = cloneTo(MctsPlayer(difficulty)).also {
-        it.knownHandIds = knownHandIds
-        it.knownSuits = knownSuits.clone()
+    override fun clone() = cloneTo(MctsPlayer(difficulty)).also { player ->
+        player.knownHandIds = knownHandIds
+        player.knownSuits = knownSuits.clone()
     }
 
     override fun toString() = super.toString().dropLast(1) + ", difficulty: $difficulty]"

@@ -56,11 +56,11 @@ abstract class Player : CardPlayer(), Json.Serializable {
     open fun onMove(state: GameState, move: CardGameEvent.Move) = Unit
 
 
-    protected fun <T : Player> cloneTo(player: T) = super.cloneTo(player).also {
-        it.score = score
-        it.hand = hand.clone()
-        it.trade = trade
-        it.tricksTaken = tricksTaken
+    protected fun <T : Player> cloneTo(player: T) = super.cloneTo(player).also { player ->
+        player.score = score
+        player.hand = hand.clone()
+        player.trade = trade
+        player.tricksTaken = tricksTaken
     }
 
     abstract override fun clone(): Player
