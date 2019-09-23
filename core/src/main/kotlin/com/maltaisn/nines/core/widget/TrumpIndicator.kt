@@ -16,9 +16,12 @@
 
 package com.maltaisn.nines.core.widget
 
+import com.badlogic.gdx.scenes.scene2d.ui.Cell
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable
 import com.badlogic.gdx.utils.I18NBundle
 import com.maltaisn.cardgame.pcard.PCardStyle
+import com.maltaisn.cardgame.widget.ShadowImage
 import com.maltaisn.cardgame.widget.menu.MenuButton
 import com.maltaisn.msdfgdx.FontStyle
 import com.maltaisn.nines.core.game.GameState
@@ -28,8 +31,19 @@ import ktx.style.get
 class TrumpIndicator(skin: Skin) :
         MenuButton(skin, skin.get<TrumpIndicatorStyle>().fontStyle, anchorSide = AnchorSide.TOP) {
 
-    private val indicatorStyle: TrumpIndicatorStyle = skin.get()
+    private val style: TrumpIndicatorStyle = skin.get()
     private val strings: I18NBundle = skin.get()
+
+    override var icon: Drawable?
+        get() = super.icon
+        set(value) {
+            super.icon = value
+            if (value == null) {
+                iconCell.size(0f).padRight(0f)
+            } else {
+                iconCell.size(style.iconSize).padRight(30f)
+            }
+        }
 
     /**
      * The trump suit shown by the indicator, or [GameState.NO_TRUMP] for none.
@@ -41,17 +55,21 @@ class TrumpIndicator(skin: Skin) :
                 icon = null
                 title = strings["trump_indicator_title_none"]
             } else {
-                icon = indicatorStyle.pcardStyle.suitIcons[value]
+                icon = style.pcardStyle.suitIcons[value]
                 title = strings["trump_indicator_title"]
             }
         }
 
+    private val iconCell: Cell<ShadowImage>
+
 
     init {
-        add(iconImage).size(indicatorStyle.iconSize)
-        add(titleLabel).padLeft(30f)
+        // Do the layout
+        iconCell = add(iconImage)
+        add(titleLabel)
         pad(40f)
 
+        icon = null
         trumpSuit = GameState.NO_TRUMP
     }
 
