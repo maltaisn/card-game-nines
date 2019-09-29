@@ -27,6 +27,9 @@ android {
         }
     }
     buildTypes {
+        named("debug") {
+            extra["enableCrashlytics"] = false
+        }
         named("release") {
             isMinifyEnabled = true
             isShrinkResources = true
