@@ -1,6 +1,8 @@
 plugins {
     id("com.android.application")
     kotlin("android")
+    id("com.google.gms.google-services")
+    id("io.fabric")
 }
 
 val appVersionCode: String by project
@@ -56,13 +58,18 @@ dependencies {
 
     implementation(kotlin("stdlib"))
 
+    // LibGDX
     implementation("com.badlogicgames.gdx:gdx-backend-android:$gdxVersion")
-
     natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi")
     natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi-v7a")
     natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-arm64-v8a")
     natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86")
     natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86_64")
+
+    // Firebase
+    implementation("com.google.firebase:firebase-analytics:17.2.0")
+    implementation("com.crashlytics.sdk.android:crashlytics:2.10.1")
+
 }
 
 // Called every time gradle gets executed, takes the native dependencies of

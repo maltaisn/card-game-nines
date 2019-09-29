@@ -1,22 +1,24 @@
 production/
 assets/saved-game.json
 
-## Android Studio and Intellij and Android in general
-/android/src/main/jniLibs/*/libgdx.so
-/android/gen/
-/android/src/main/assets
+# IntelliJ
 .idea/
 *.iml
+
+## Copied assets
+/assets/core/
+/assets/pcard/
 
 ## Gradle
 /local.properties
 .gradle/
 build/
 
-## Copied assets
-/assets/core/
-/assets/pcard/
-/android/assets/
+## Android
+/android/src/main/jniLibs/*/libgdx.so
+/android/gen/
+/android/src/main/assets
+/android/google-services.json
 
 ## OS Specific
 .DS_Store

@@ -19,3 +19,7 @@
 # Keep classes used in preferences and stats files
 -keep class * extends com.maltaisn.cardgame.prefs.PrefEntry { *; }
 -keep class * extends com.maltaisn.cardgame.stats.Statistic { *; }
+
+# Crashlytics
+-keepattributes *Annotation*
+-keepattributes SourceFile,LineNumberTable
