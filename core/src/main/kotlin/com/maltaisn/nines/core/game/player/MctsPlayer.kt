@@ -43,11 +43,11 @@ import kotlin.random.Random
  *
  * Higher difficulties do more simulations to find better moves.
  * Games won when playing 1000 games against 2 players of the difficulty below:
- * - Beginner: 766, Random: 79, Random: 155
- * - Intermediate: 668, Beginner: 170, Beginner: 162
- * - Advanced: 630, Intermediate: 190, Intermediate: 180
- * - Expert: 606, Advanced: 176, Advanced: 218
- * - Perfect: 585, Expert: 204, Expert: 211
+ * - Beginner: 67941, Random: 12395, Random: 19664
+ * - Intermediate: 793, Beginner: 115, Beginner: 92
+ * - Advanced: 714, Intermediate: 138, Intermediate: 148
+ * - Expert: 615, Advanced: 182, Advanced: 203
+ * - Perfect: 544, Expert: 228, Expert: 228
  * - Cheating: 509, Perfect: 239, Perfect: 252
  *
  * Beginner should be much better than random but still very easily beatable.
@@ -246,10 +246,10 @@ class MctsPlayer() : AiPlayer() {
                           val remembersHandAfterTrade: Boolean,
                           val rememberOpponentSuits: Boolean) {
 
-        BEGINNER(3, 4, 0.75f, false, false),
+        BEGINNER(2, 0, 0.75f, false, false),
         INTERMEDIATE(6, 8, 0.5f, true, false),
-        ADVANCED(10, 20, 0.25f, true, false),
-        EXPERT(50, 50, 0f, true, true),
+        ADVANCED(16, 30, 0.25f, true, false),
+        EXPERT(50, 75, 0f, true, true),
         PERFECT(250, 500, 0f, true, true)
     }
 
