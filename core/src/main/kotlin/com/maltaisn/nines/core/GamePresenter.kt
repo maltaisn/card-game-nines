@@ -29,6 +29,7 @@ import com.maltaisn.cardgame.widget.FadeTable
 import com.maltaisn.cardgame.widget.card.CardAnimationGroup
 import com.maltaisn.cardgame.widget.card.CardContainer
 import com.maltaisn.cardgame.widget.card.CardHand
+import com.maltaisn.cardgame.widget.menu.SubMenu
 import com.maltaisn.cardgame.widget.table.ScoresTable
 import com.maltaisn.cardgame.widget.table.TricksTable
 import com.maltaisn.nines.core.game.Game
@@ -209,6 +210,12 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         if (game.phase == Phase.ROUND_ENDED) {
             // Last round has ended, start a new one.
             game.startRound()
+
+            // Wait until scoreboard is hidden to hide the pages
+            layout.doDelayed(SubMenu.TRANSITION_DURATION) {
+                layout.setHandsPageShown(false)
+                layout.setTricksPageShown(false)
+            }
         }
 
         scoreboardShown = false
@@ -276,6 +283,10 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
 
         layout.hideDealerChip()
         layout.setPlayerHandShown(false, animate = false)
+
+        layout.setHandsPageShown(false)
+        layout.setTricksPageShown(false)
+        layout.clearScoresTable()
 
         layout.doDelayed(DealerChip.FADE_DURATION) {
             disposeGame()
@@ -388,7 +399,10 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
 
             updatePlayerScores()
 
-            playNext()
+            // Wait a bit then start playing
+            layout.doDelayed(0.5f) {
+                playNext()
+            }
 
         } else if (game.phase == Phase.ENDED) {
             tradePhaseEnded = true
@@ -475,8 +489,6 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         tradePhaseEnded = false
 
         // Hide previous round scoreboard pages
-        layout.setHandsPageShown(false)
-        layout.setTricksPageShown(false)
         layout.setLastTrickPageShown(false)
         layout.setScoreboardContinueItemShown(false)
 
@@ -653,11 +665,10 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
                 }
                 playSound(CoreRes.SOUND_CARD_SHOVE, 0.5f)
 
-                moveDuration = animationDuration
+                moveDuration = animationDuration + 0.1f
 
                 if (isSouth && layout.settings.getBoolean(PrefKeys.SELECT_PLAYABLE)) {
                     // Unhighlight cards in case they were highlighted before move
-                    moveDuration += 0.1f
                     layout.doDelayed(moveDuration) {
                         layout.unhighlightAllPlayerCards()
                     }
