@@ -250,9 +250,9 @@ class GameLayout(skin: Skin, override val listener: GameListener) :
 
         playerLabelTable = FadeTable().apply {
             pad(0f, 60f, 330f, 60f)
-            add(trumpIndicator).align(Align.topLeft).minWidth(300f).padLeft(200f).expand()
-            add(playerLabels[2]).align(Align.topRight).width(240f).expand().pad(60f, 0f, 0f, 300f).row()
-            add(playerLabels[1]).align(Align.topLeft).width(240f).expand().row()
+            add(playerLabels[2]).align(Align.topLeft).width(240f).expand().pad(40f, 300f, 0f, 0f)
+            add(trumpIndicator).align(Align.topRight).minWidth(300f).padRight(300f).expand().row()
+            add(playerLabels[1]).align(Align.left).width(240f).expand().row()
             add(playerLabels[0]).align(Align.bottomLeft).width(240f).expand().padLeft(200f)
         }
         val containerTable = Table().apply {
@@ -552,12 +552,7 @@ class GameLayout(skin: Skin, override val listener: GameListener) :
 
     private fun getDealerChipActor(pos: Int) = playerLabels.getOrNull(pos) ?: centerTable
 
-    private fun getDealerChipSide(pos: Int) = when (pos) {
-        0 -> Align.right
-        1 -> Align.right
-        2 -> Align.left
-        else -> Align.center
-    }
+    private fun getDealerChipSide(pos: Int) = if (pos == -1) Align.center else Align.right
 
     // Trump indicator
     override fun setTrumpIndicatorShown(shown: Boolean) {
