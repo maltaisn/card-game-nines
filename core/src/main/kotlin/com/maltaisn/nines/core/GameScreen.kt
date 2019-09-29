@@ -23,10 +23,10 @@ import com.maltaisn.cardgame.CardGameScreen
 import com.maltaisn.cardgame.markdown.Markdown
 import com.maltaisn.cardgame.markdown.MdLoader
 import com.maltaisn.cardgame.pcard.PCardRes
-import com.maltaisn.cardgame.prefs.GamePref
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.prefs.GamePrefsLoader
 import com.maltaisn.cardgame.prefs.ListPref
+import com.maltaisn.cardgame.prefs.SwitchPref
 import com.maltaisn.cardgame.stats.Statistics
 import com.maltaisn.cardgame.stats.StatsLoader
 import com.maltaisn.cardgame.utils.post
@@ -37,8 +37,6 @@ class GameScreen(private val app: GameApp, locale: Locale) :
         CardGameScreen<GameListener>(locale, app.listener) {
 
     private lateinit var gameLayout: GameLayout
-
-    private lateinit var languagePref: ListPref
 
 
     override fun load() {
@@ -65,6 +63,7 @@ class GameScreen(private val app: GameApp, locale: Locale) :
         addSkin(PCardRes.SKIN, PCardRes.ATLAS)
         addSkin(Res.SKIN, Res.ATLAS)
 
+        // Add skin resources
         val settings = assetManager.get<GamePrefs>(Res.PREFS_SETTINGS)
         skin.add("settings", settings)
         skin.add("newGameOptions", assetManager.get<GamePrefs>(Res.PREFS_NEW_GAME))
@@ -72,17 +71,24 @@ class GameScreen(private val app: GameApp, locale: Locale) :
         skin.add("default", assetManager.get<Statistics>(Res.STATS))
         skin.add("default", assetManager.get<I18NBundle>(Res.STRINGS_BUNDLE))
 
+        // Language preference
+        val languagePref = settings[PrefKeys.LANGUAGE] as ListPref
+        languagePref.valueListeners += { _, language ->
+            // Persist language value and restart app.
+            app.languagePrefs.putString(PrefKeys.LANGUAGE, language).flush()
+            root.post { app.restart() }
+        }
+
+        // Fullscreen preference
+        val fullscreenPref = settings[PrefKeys.FULLSCREEN] as SwitchPref
+        fullscreenPref.valueListeners += { _, fullscreen ->
+            listener.isFullscreen = fullscreen
+        }
+        listener.isFullscreen = fullscreenPref.value
+
+        // Game layout
         gameLayout = GameLayout(skin, app.listener)
         addActor(gameLayout)
-
-        languagePref = settings[PrefKeys.LANGUAGE] as ListPref
-        languagePref.valueListeners += ::onLanguageChanged
-    }
-
-    private fun onLanguageChanged(pref: GamePref<String?>, value: String?) {
-        // Persist language value and restart app.
-        app.languagePrefs.putString(PrefKeys.LANGUAGE, value).flush()
-        root.post { app.restart() }
     }
 
     override fun pause() {
@@ -91,11 +97,6 @@ class GameScreen(private val app: GameApp, locale: Locale) :
         if (started) {
             gameLayout.save()
         }
-    }
-
-    override fun dispose() {
-        super.dispose()
-        languagePref.valueListeners -= ::onLanguageChanged
     }
 
 }

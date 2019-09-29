@@ -21,6 +21,11 @@
           title: "@string/pref_enable_sound"
           defaultValue: true
         }
+        fullscreen: {
+          type: "switch"
+          title: "@string/pref_fullscreen"
+          defaultValue: false
+        }
         player_names: {
           type: "player-names"
           title: "@string/pref_player_names"

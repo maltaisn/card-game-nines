@@ -25,6 +25,11 @@ import com.maltaisn.cardgame.CardGameListener
 interface GameListener : CardGameListener {
 
     /**
+     * Whether app is in fullscreen mode or not.
+     */
+    var isFullscreen: Boolean
+
+    /**
      * Whether there's a way to rate app or not.
      * The rate button in the About menu will only be shown if yes.
      */

@@ -32,6 +32,7 @@ import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.pcard.PCardStyle
 import com.maltaisn.cardgame.prefs.GamePref
 import com.maltaisn.cardgame.prefs.GamePrefs
+import com.maltaisn.cardgame.prefs.SwitchPref
 import com.maltaisn.cardgame.stats.Statistics
 import com.maltaisn.cardgame.utils.postDelayed
 import com.maltaisn.cardgame.widget.*
@@ -308,8 +309,17 @@ class GameLayout(skin: Skin, override val listener: GameListener) :
 
         // Back key listener
         onKeyDownEvent(true) { event, _, key ->
-            if (!event.isHandled && (key == Input.Keys.BACK || key == Input.Keys.ESCAPE)) {
-                presenter.onBackPress()
+            if (!event.isHandled) {
+                when (key) {
+                    Input.Keys.F11 -> {
+                        // Toggle fullscreen
+                        val fullscreenPref = settings[PrefKeys.FULLSCREEN] as SwitchPref
+                        fullscreenPref.value = !fullscreenPref.value
+                    }
+                    Input.Keys.BACK, Input.Keys.ESCAPE ->
+                        // Go back
+                        presenter.onBackPress()
+                }
             }
         }
     }

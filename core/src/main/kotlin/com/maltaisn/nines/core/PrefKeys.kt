@@ -25,6 +25,7 @@ object PrefKeys {
 
     // Interface
     const val ENABLE_SOUND = "enable_sound"
+    const val FULLSCREEN = "fullscreen"
     const val PLAYER_NAMES = "player_names"
     const val GAME_SPEED = "game_speed"
     const val CARD_DEAL_ANIMATION = "card_deal_animation"

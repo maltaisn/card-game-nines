@@ -45,8 +45,8 @@ additional rounds.
 
 In each hand, the number of tricks a player has collected translates to
 the change that will happen to their score. If four tricks are
-collected,the score will remain the same. For each trick there is in
-excess of four,the player's score will go down by one. For each trick
+collected, the score will remain the same. For each trick there is in
+excess of four, the player's score will go down by one. For each trick
 shy of four, the player's score will go up by one. So, three tricks will
 result in a score increase of one, six tricks will result in a score
 decrease of two.

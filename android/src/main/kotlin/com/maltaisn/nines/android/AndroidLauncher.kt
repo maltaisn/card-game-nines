@@ -22,6 +22,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
@@ -29,8 +30,6 @@ import com.badlogic.gdx.backends.android.AndroidApplication
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration
 import com.crashlytics.android.Crashlytics
 import com.crashlytics.android.core.CrashlyticsCore
-import com.maltaisn.nines.BuildConfig
-import com.maltaisn.nines.R
 import com.maltaisn.nines.core.GameApp
 import com.maltaisn.nines.core.GameListener
 import io.fabric.sdk.android.Fabric
@@ -42,6 +41,33 @@ class AndroidLauncher : AndroidApplication(), GameListener {
     private lateinit var inputField: EditText
 
     override val isTextInputDelegated = true
+
+    override var isFullscreen = false
+        set(value) {
+            field = value
+
+            // Enable or disable fullscreen
+            runOnUiThread {
+                var flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                        View.SYSTEM_UI_FLAG_LOW_PROFILE or
+                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                        View.SYSTEM_UI_FLAG_FULLSCREEN
+                if (Build.VERSION.SDK_INT >= 19) {
+                    // Fullscreen doesn't work really well before API 19 without immersive...
+                    flags = flags or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                }
+                window.decorView.systemUiVisibility = if (value) {
+                    window.decorView.systemUiVisibility or flags
+                } else {
+                    window.decorView.systemUiVisibility and flags.inv()
+                }
+            }
+        }
+
+
+    override val isRateAppSupported = true
 
 
     override fun onCreate(state: Bundle?) {
@@ -77,8 +103,6 @@ class AndroidLauncher : AndroidApplication(), GameListener {
         initialize(GameApp(this), config)
     }
 
-
-    override val isRateAppSupported = true
 
     override fun onRateAppClicked() {
         // Open play store app page

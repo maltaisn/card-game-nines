@@ -16,6 +16,7 @@
 
 package com.maltaisn.nines.desktop
 
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration
 import com.maltaisn.nines.core.GameApp
@@ -29,16 +30,35 @@ object DesktopLauncher : GameListener {
     override val isTextInputDelegated = false
     override val isRateAppSupported = false
 
+    override var isFullscreen = false
+        set(value) {
+            field = value
+            if (value) {
+                // Set fullscreen and remember previous window dimensions
+                val mode = Gdx.graphics.displayMode
+                windowWidth = Gdx.graphics.width
+                windowHeight = Gdx.graphics.height
+                Gdx.graphics.setFullscreenMode(mode)
+            } else {
+                // Restore window to its previous dimensions
+                Gdx.graphics.setWindowedMode(windowWidth, windowHeight)
+            }
+        }
+
+    private var windowWidth = 1440
+    private var windowHeight = 810
+
 
     @JvmStatic
     fun main(args: Array<String>) {
         Lwjgl3Application(GameApp(this), Lwjgl3ApplicationConfiguration().apply {
             setTitle("Cards")
-            setWindowedMode(1440, 810)
+            setWindowedMode(windowWidth, windowHeight)
             setWindowSizeLimits(960, 540, -1, -1)
             setWindowIcon("icon-16.png", "icon-32.png", "icon-48.png")
         })
     }
+
 
     override fun onReportBugClicked() {
         // Open feedback form
