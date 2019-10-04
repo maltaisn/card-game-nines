@@ -236,32 +236,37 @@ class GameLayout(skin: Skin, override val listener: GameListener) :
 
         // Player labels
         playerLabels = List(3) { PlayerLabel(skin) }
-
-        // Trump indicator
-        trumpIndicator = TrumpIndicator(skin)
+        playerLabelTable = FadeTable().apply {
+            pad(0f, 60f, 330f, 60f)
+            add(playerLabels[2]).align(Align.topLeft).width(240f).expand().pad(40f, 300f, 0f, 0f).row()
+            add(playerLabels[1]).align(Align.left).width(240f).expand().row()
+            add(playerLabels[0]).align(Align.bottomLeft).width(240f).expand().padLeft(200f)
+        }
 
         // Dealer chip
         dealerChip = DealerChip(skin)
         dealerChip.distance = 0f
 
-        // Do the layout
-        bottomTable.add(hiddenStacks[0]).grow()
-        leftTable.add(hiddenStacks[1]).grow()
-        topTable.add(hiddenStacks[2]).grow()
-
-        playerLabelTable = FadeTable().apply {
-            pad(0f, 60f, 330f, 60f)
-            add(playerLabels[2]).align(Align.topLeft).width(240f).expand().pad(40f, 300f, 0f, 0f)
-            add(trumpIndicator).align(Align.topRight).minWidth(300f).padRight(300f).expand().row()
-            add(playerLabels[1]).align(Align.left).width(240f).expand().row()
-            add(playerLabels[0]).align(Align.bottomLeft).width(240f).expand().padLeft(200f)
-        }
+        // Card containers layout
         val containerTable = Table().apply {
             pad(40f, 120f, 0f, 120f)
             stack(trick, extraHand).grow().row()
             add(playerHand).growX()
         }
-        centerTable.stack(playerLabelTable, WidgetGroup(dealerChip), containerTable).grow()
+        bottomTable.add(hiddenStacks[0]).grow()
+        leftTable.add(hiddenStacks[1]).grow()
+        topTable.add(hiddenStacks[2]).grow()
+
+        // Trump indicator
+        trumpIndicator = TrumpIndicator(skin)
+        val trumpTable = Table().apply {
+            add(trumpIndicator).expand().align(Align.topRight)
+                    .padRight(300f).minSize(300f, 150f)
+            touchable = Touchable.disabled
+        }
+
+        // Add all to center table
+        centerTable.stack(playerLabelTable, WidgetGroup(dealerChip), containerTable, trumpTable).grow()
 
         // Trade hand popup
         tradePopup = Popup(skin)
@@ -566,7 +571,7 @@ class GameLayout(skin: Skin, override val listener: GameListener) :
 
     // Trump indicator
     override fun setTrumpIndicatorShown(shown: Boolean) {
-        trumpIndicator.isVisible = shown
+        trumpIndicator.shown = shown
     }
 
     override fun setTrumpIndicatorSuit(suit: Int) {

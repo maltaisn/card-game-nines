@@ -42,6 +42,7 @@ import com.maltaisn.nines.core.game.player.HumanPlayer
 import com.maltaisn.nines.core.game.player.MctsPlayer
 import com.maltaisn.nines.core.game.player.RandomPlayer
 import com.maltaisn.nines.core.widget.HandsTable
+import com.maltaisn.nines.core.widget.TrumpIndicator
 import ktx.assets.file
 import java.util.*
 import kotlin.math.PI
@@ -190,6 +191,7 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
 
     override fun onExitGameClicked() {
         hide()
+        layout.setTrumpIndicatorShown(false)
         layout.goToPreviousMenu()
 
         game?.save(GAME_SAVE_FILE, GameSaveJson)
@@ -202,27 +204,11 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
     }
 
     override fun onScoreboardCloseClicked() {
-        val game = requireGame()
-
-        layout.goToPreviousMenu()
-        show()
-
-        if (game.phase == Phase.ROUND_ENDED) {
-            // Last round has ended, start a new one.
-            game.startRound()
-
-            // Wait until scoreboard is hidden to hide the pages
-            layout.doDelayed(SubMenu.TRANSITION_DURATION) {
-                layout.setHandsPageShown(false)
-                layout.setTricksPageShown(false)
-            }
-        }
-
-        scoreboardShown = false
+        hideScoreboard()
     }
 
     override fun onScoreboardContinueItemClicked() {
-        onScoreboardCloseClicked()
+        hideScoreboard()
     }
 
     override fun onTradeBtnClicked(trade: Boolean) {
@@ -336,8 +322,15 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
 
         layout.completeAnimations()
 
-        layout.setTrumpIndicatorShown(game.phase != Phase.ENDED)
         layout.setPlayerHandEnabled(game.players[0] is HumanPlayer)
+
+        // Show trump indicator after some time
+        if (game.phase != Phase.ENDED) {
+            layout.doDelayed(TrumpIndicator.TRANSITION_DURATION + 0.1f) {
+                layout.setTrumpIndicatorSuit(game.trumpSuit)
+                layout.setTrumpIndicatorShown(true)
+            }
+        }
 
         // Update player names displayed everywhere
         // This also calls updateHandsPage()
@@ -363,7 +356,6 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
 
             layout.setPlayerLabelsShown(true)
             layout.showDealerChip(game.dealerPos)
-            layout.setTrumpIndicatorSuit(game.trumpSuit)
 
             tradePhaseEnded = (state.phase == GameState.Phase.PLAY)
 
@@ -413,6 +405,7 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
             // Only show player labels with scores
             layout.showDealerChip(game.dealerPos)
             layout.setPlayerLabelsShown(true)
+            layout.setTrumpIndicatorShown(false)
             updatePlayerScores()
         }
     }
@@ -493,8 +486,6 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         layout.setScoreboardContinueItemShown(false)
 
         updatePlayerScores()
-
-        layout.setTrumpIndicatorSuit(game.trumpSuit)
 
         // Show the player labels and the dealer chip
         var moveDuration = 0.2f
@@ -848,7 +839,37 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
             scrollScoresPageToBottom()
         }
 
+        // Show trump indicator
+        val game = requireGame()
+        layout.setTrumpIndicatorShown(true)
+        layout.setTrumpIndicatorSuit(game.trumpSuit)
+
         scoreboardShown = true
+    }
+
+    private fun hideScoreboard() {
+        val game = requireGame()
+
+        layout.goToPreviousMenu()
+        show()
+
+        if (game.phase != Phase.ROUND_STARTED) {
+            // Hide trump indicator to change suit later (in show)
+            layout.setTrumpIndicatorShown(false)
+        }
+
+        if (game.phase == Phase.ROUND_ENDED) {
+            // Last round has ended, start a new one.
+            game.startRound()
+
+            // Wait until scoreboard is hidden to hide the pages
+            layout.doDelayed(SubMenu.TRANSITION_DURATION) {
+                layout.setHandsPageShown(false)
+                layout.setTricksPageShown(false)
+            }
+        }
+
+        scoreboardShown = false
     }
 
     /**
