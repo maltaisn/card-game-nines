@@ -99,4 +99,10 @@ class GameScreen(private val app: GameApp, locale: Locale) :
         }
     }
 
+    override fun resume() {
+        if (listener.isFullscreen) {
+            listener.isFullscreen = true
+        }
+    }
+
 }
