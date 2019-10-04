@@ -173,6 +173,7 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         // Create and start the game
         val game = Game(layout.settings, south, west, north)
         initGame(game)
+
         show()
         game.start()
     }
@@ -270,12 +271,10 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         layout.hideDealerChip()
         layout.setPlayerHandShown(false, animate = false)
 
-        layout.setHandsPageShown(false)
-        layout.setTricksPageShown(false)
-        layout.clearScoresTable()
-
         layout.doDelayed(DealerChip.FADE_DURATION) {
             disposeGame()
+
+            gameShown = false
             onStartGameClicked()
         }
     }
@@ -294,11 +293,10 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
                 is StartEvent -> onGameStarted()
                 is EndEvent -> onGameEnded()
                 is RoundStartEvent -> onRoundStarted()
-                is RoundEndEvent -> onRoundEnded(event)
+                is RoundEndEvent -> onRoundEnded()
                 is MoveEvent -> onMove(event)
             }
         }
-
     }
 
     /**
@@ -332,23 +330,8 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
             }
         }
 
-        // Update player names displayed everywhere
-        // This also calls updateHandsPage()
+        // Update player names
         updatePlayerNames()
-
-        // Update scores page
-        layout.clearScoresTable()
-        for (event in game.events) {
-            if (event is RoundEndEvent) {
-                addScoresTableRow(event)
-            }
-        }
-        updateTotalScoreFooters()
-
-        updateTricksPage()
-        updateLastTrickPage()
-
-        layout.setScoreboardContinueItemShown(false)
 
         if (game.phase == Phase.ROUND_STARTED) {
             // Round has started
@@ -371,8 +354,6 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
                     // Immediately show idle popup if it's a human player's turn
                     layout.idlePopupShown = true
                 }
-
-                updateLastTrickPage()
 
             } else {
                 // Trade phase: show extra hand
@@ -447,8 +428,6 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
     }
 
     private fun onGameStarted() {
-        updateTotalScoreFooters()
-
         game?.startRound()
     }
 
@@ -458,7 +437,6 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         // Show the game over dialog
         layout.doDelayed(1f) {
             layout.setTrumpIndicatorShown(false)
-            layout.setScoreboardContinueItemShown(false)
             showGameOverDialog()
 
             // Play game over sound
@@ -480,10 +458,6 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         val state = requireState()
 
         tradePhaseEnded = false
-
-        // Hide previous round scoreboard pages
-        layout.setLastTrickPageShown(false)
-        layout.setScoreboardContinueItemShown(false)
 
         updatePlayerScores()
 
@@ -549,18 +523,10 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
     /**
      * End the round by updating and then showing the scoreboard.
      */
-    private fun onRoundEnded(event: RoundEndEvent) {
+    private fun onRoundEnded() {
         val game = requireGame()
 
         layout.cancelDelayedIdlePopup()
-
-        // Update scoreboard
-        addScoresTableRow(event)
-        updateTotalScoreFooters()
-        updateHandsPage()
-        updateTricksPage()
-        updateLastTrickPage()
-        layout.setScoreboardContinueItemShown(true)
 
         // Show scoreboard after a small delay if nobody has won yet.
         if (game.winnerPos == CardPlayer.NO_POSITION) {
@@ -710,7 +676,6 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
 
         layout.collectTrick(state.posToMove, animationDuration)
 
-        updateLastTrickPage()
         updatePlayerScores()
 
         playSound(CoreRes.SOUND_CARD_TAKE, 0.5f)
@@ -823,26 +788,32 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
             })
         })
 
-        // Hands page
-        updateHandsPage()
-
         // Tricks page
         layout.setTricksTableHeaders(names)
     }
 
     private fun showScoreboard() {
+        val game = requireGame()
+
+        // Hide game layout
         hide()
+
+        // Update all pages and items
+        updateScoresPage()
+        updateLastTrickPage()
+        updateTricksPage()
+        updateHandsPage()
 
         layout.apply {
             showScoreboard()
             checkScoreboardScoresPage()
             scrollScoresPageToBottom()
-        }
+            setScoreboardContinueItemShown(game.phase == Phase.ROUND_ENDED)
 
-        // Show trump indicator
-        val game = requireGame()
-        layout.setTrumpIndicatorShown(true)
-        layout.setTrumpIndicatorSuit(game.trumpSuit)
+            // Show trump indicator
+            setTrumpIndicatorShown(true)
+            setTrumpIndicatorSuit(game.trumpSuit)
+        }
 
         scoreboardShown = true
     }
@@ -866,6 +837,7 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
             layout.doDelayed(SubMenu.TRANSITION_DURATION) {
                 layout.setHandsPageShown(false)
                 layout.setTricksPageShown(false)
+                layout.setScoreboardContinueItemShown(false)
             }
         }
 
@@ -873,12 +845,23 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
     }
 
     /**
-     * Update the total scores in the scores table footers.
+     * Update the scores page in scoreboard.
      */
-    private fun updateTotalScoreFooters() {
+    private fun updateScoresPage() {
         val game = requireGame()
 
-        // Find the leader player position
+        // Clear table and re-add all rows
+        layout.clearScoresTable()
+        for (event in game.events) {
+            if (event is RoundEndEvent) {
+                layout.addScoresTableRow(List(3) {
+                    val diff = Game.MINIMUM_TRICKS - event.result[it]
+                    ScoresTable.Score(layout.numberFormat.format(diff))
+                })
+            }
+        }
+
+        // Update total score footers
         val leaderPos = game.leaderPos
         layout.setScoresTableFooters(List(3) { pos ->
             val highlight = if (pos == leaderPos) {
@@ -891,17 +874,7 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
     }
 
     /**
-     * Add the scores row corresponding to the end [event] of a round.
-     */
-    private fun addScoresTableRow(event: RoundEndEvent) {
-        layout.addScoresTableRow(List(3) {
-            val diff = Game.MINIMUM_TRICKS - event.result[it]
-            ScoresTable.Score(layout.numberFormat.format(diff))
-        })
-    }
-
-    /**
-     * If round is done, update the hands page in scoreboard.
+     * Update the hands page in scoreboard.
      */
     private fun updateHandsPage() {
         val game = requireGame()
@@ -932,7 +905,7 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
     }
 
     /**
-     * If round is done, update the tricks page in scoreboard.
+     * Update the tricks page in scoreboard.
      */
     private fun updateTricksPage() {
         val game = requireGame()
@@ -954,8 +927,7 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
     }
 
     /**
-     * Copy the current trick to the last trick container
-     * and update the page visibility in scoreboard.
+     * Update the last trick page in scoreboard.
      */
     private fun updateLastTrickPage() {
         val game = requireGame()
