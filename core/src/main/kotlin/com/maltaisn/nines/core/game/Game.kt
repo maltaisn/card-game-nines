@@ -92,9 +92,9 @@ class Game() : CardGame() {
 
     val gameSpeedDelay: Float
         get() = when (settings.getChoice(PrefKeys.GAME_SPEED)) {
-            "slow" -> 1.3f
-            "normal" -> 0.7f
-            "fast" -> 0.3f
+            "slow" -> 1f
+            "normal" -> 0.5f
+            "fast" -> 0.25f
             else -> 0f
         }
 
