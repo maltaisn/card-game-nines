@@ -584,7 +584,10 @@ class GameLayout(skin: Skin, override val listener: GameListener) :
     }
 
     override fun scrollScoresPageToBottom() {
-        scoresTable.itemScrollView.scrollToBottom()
+        // Delay scroll a little otherwise it doesn't work...
+        postDelayed(0.1f) {
+            scoresTable.itemScrollView.scrollToBottom()
+        }
     }
 
     override fun setScoresTableHeaders(headers: List<ScoresTable.Header>) {
