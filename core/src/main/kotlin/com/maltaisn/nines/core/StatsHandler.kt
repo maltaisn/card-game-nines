@@ -144,17 +144,17 @@ class StatsHandler(private val game: Game,
     companion object {
         private const val VARIANT_NONE = -1
 
-        private const val GAMES_PLAYED = "gamesPlayed"
-        private const val GAMES_WON = "gamesWon"
-        private const val ROUNDS_PLAYED = "roundsPlayed"
-        private const val ROUNDS_PLAYED_COMPLETE = "roundsPlayedComplete"
-        private const val ROUNDS_WON = "roundsWon"
-        private const val ROUND_SCORE_TOTAL = "roundScoreTotal"
-        private const val TRICKS_PLAYED = "tricksPlayed"
-        private const val TRICKS_WON = "tricksWon"
-        private const val TRADES_DONE = "tradesDone"
-        private const val MIN_ROUNDS_IN_GAME = "minRoundsInGame"
-        private const val MAX_ROUNDS_IN_GAME = "maxRoundsInGame"
+        const val GAMES_PLAYED = "gamesPlayed"
+        const val GAMES_WON = "gamesWon"
+        const val ROUNDS_PLAYED = "roundsPlayed"
+        const val ROUNDS_PLAYED_COMPLETE = "roundsPlayedComplete"
+        const val ROUNDS_WON = "roundsWon"
+        const val ROUND_SCORE_TOTAL = "roundScoreTotal"
+        const val TRICKS_PLAYED = "tricksPlayed"
+        const val TRICKS_WON = "tricksWon"
+        const val TRADES_DONE = "tradesDone"
+        const val MIN_ROUNDS_IN_GAME = "minRoundsInGame"
+        const val MAX_ROUNDS_IN_GAME = "maxRoundsInGame"
     }
 
 }
