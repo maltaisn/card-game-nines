@@ -23,13 +23,13 @@ import com.maltaisn.cardgame.CardGameScreen
 import com.maltaisn.cardgame.markdown.Markdown
 import com.maltaisn.cardgame.markdown.MdLoader
 import com.maltaisn.cardgame.pcard.PCardRes
-import com.maltaisn.cardgame.prefs.GamePrefs
-import com.maltaisn.cardgame.prefs.GamePrefsLoader
 import com.maltaisn.cardgame.prefs.ListPref
 import com.maltaisn.cardgame.prefs.SwitchPref
 import com.maltaisn.cardgame.stats.Statistics
 import com.maltaisn.cardgame.stats.StatsLoader
 import com.maltaisn.cardgame.utils.post
+import com.maltaisn.nines.core.builders.buildNewGameOptions
+import com.maltaisn.nines.core.builders.buildSettings
 import ktx.assets.load
 import java.util.*
 
@@ -48,10 +48,6 @@ class GameScreen(private val app: GameApp, locale: Locale) :
 
         // Load localized data
         assetManager.load(Res.STRINGS_BUNDLE, I18NBundleLoader.I18NBundleParameter(locale))
-        assetManager.load(Res.PREFS_NEW_GAME, GamePrefsLoader.Parameter(
-                locale = locale, bundlePath = Res.STRINGS_BUNDLE))
-        assetManager.load(Res.PREFS_SETTINGS, GamePrefsLoader.Parameter(
-                locale = locale, bundlePath = Res.STRINGS_BUNDLE))
         assetManager.load(Res.MD_RULES, MdLoader.Parameter(locale = locale))
         assetManager.load(Res.STATS, StatsLoader.Parameter(
                 locale = locale, bundlePath = Res.STRINGS_BUNDLE))
@@ -64,12 +60,15 @@ class GameScreen(private val app: GameApp, locale: Locale) :
         addSkin(Res.SKIN, Res.ATLAS)
 
         // Add skin resources
-        val settings = assetManager.get<GamePrefs>(Res.PREFS_SETTINGS)
+        val strings = assetManager.get<I18NBundle>(Res.STRINGS_BUNDLE)
+        val settings = buildSettings(strings)
+        val newGameOptions = buildNewGameOptions(strings)
+
+        skin.add("default", strings)
         skin.add("settings", settings)
-        skin.add("newGameOptions", assetManager.get<GamePrefs>(Res.PREFS_NEW_GAME))
+        skin.add("newGameOptions", newGameOptions)
         skin.add("rules", assetManager.get<Markdown>(Res.MD_RULES))
         skin.add("default", assetManager.get<Statistics>(Res.STATS))
-        skin.add("default", assetManager.get<I18NBundle>(Res.STRINGS_BUNDLE))
 
         // Language preference
         val languagePref = settings[PrefKeys.LANGUAGE] as ListPref

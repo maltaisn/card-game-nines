@@ -982,7 +982,7 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         }
     }
 
-    private fun <T> onPreferenceValueChanged(pref: GamePref<T>, value: T) {
+    private fun <T : Any> onPreferenceValueChanged(pref: GamePref<T>, value: T) {
         if (pref.key == PrefKeys.GAME_SPEED) {
             updateAnimationDuration()
         }

@@ -37,19 +37,14 @@ dependencies {
 
     compileOnly("com.gmail.blueboxware:libgdxpluginannotations:1.16")
 
-    testImplementation("junit:junit:$junitVersion")
+    testImplementation(kotlin("test"))
+    testImplementation(kotlin("test-junit"))
+    testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
 }
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_6
     targetCompatibility = JavaVersion.VERSION_1_6
-}
-
-tasks.register<JavaExec>("runGameTest") {
-    main = "com.maltaisn.nines.core.game.GameTestKt"
-    classpath = sourceSets.test.get().runtimeClasspath
-    standardInput = System.`in`
-    isIgnoreExitValue = true
 }
 
 // Tasks to copy the card game assets to the project assets folder
