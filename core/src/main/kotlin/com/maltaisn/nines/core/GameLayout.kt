@@ -670,8 +670,6 @@ class GameLayout(skin: Skin, override val listener: GameListener) :
     }
 
 
-    class GameLayoutStyle {
-        lateinit var appIcon: Drawable
-    }
+    class GameLayoutStyle(val appIcon: Drawable)
 
 }

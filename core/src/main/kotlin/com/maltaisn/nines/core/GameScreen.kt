@@ -23,13 +23,16 @@ import com.maltaisn.cardgame.CardGameScreen
 import com.maltaisn.cardgame.markdown.Markdown
 import com.maltaisn.cardgame.markdown.MdLoader
 import com.maltaisn.cardgame.pcard.PCardRes
+import com.maltaisn.cardgame.pcard.loadPCardSkin
 import com.maltaisn.cardgame.prefs.ListPref
 import com.maltaisn.cardgame.prefs.SwitchPref
 import com.maltaisn.cardgame.utils.post
 import com.maltaisn.nines.core.builders.buildNewGameOptions
 import com.maltaisn.nines.core.builders.buildSettings
 import com.maltaisn.nines.core.builders.buildStatistics
+import com.maltaisn.nines.core.builders.loadSkin
 import ktx.assets.load
+import ktx.style.add
 import java.util.*
 
 class GameScreen(private val app: GameApp, locale: Locale) :
@@ -41,7 +44,7 @@ class GameScreen(private val app: GameApp, locale: Locale) :
     override fun load() {
         super.load()
 
-        // Load skins
+        // Load skin atlases
         assetManager.load<TextureAtlas>(PCardRes.ATLAS)
         assetManager.load<TextureAtlas>(Res.ATLAS)
 
@@ -53,16 +56,17 @@ class GameScreen(private val app: GameApp, locale: Locale) :
     override fun start() {
         super.start()
 
-        addSkin(PCardRes.SKIN, PCardRes.ATLAS)
-        addSkin(Res.SKIN, Res.ATLAS)
+        // Load skins
+        loadPCardSkin(assetManager, skin)
+        loadSkin(assetManager, skin)
 
         // Add skin resources
         val strings = assetManager.get<I18NBundle>(Res.STRINGS)
         val settings = buildSettings(strings)
-        skin.add("default", strings)
+        skin.add(strings)
         skin.add("settings", settings)
         skin.add("newGameOptions", buildNewGameOptions(strings))
-        skin.add("default", buildStatistics(strings))
+        skin.add(buildStatistics(strings))
         skin.add("rules", assetManager.get<Markdown>(Res.MD_RULES))
 
         // Language preference

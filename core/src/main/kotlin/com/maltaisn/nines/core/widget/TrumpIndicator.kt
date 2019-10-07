@@ -120,11 +120,11 @@ class TrumpIndicator(skin: Skin) : FboWidgetGroup() {
     }
 
 
-    class TrumpIndicatorStyle {
-        lateinit var pcardStyle: PCardStyle
-        lateinit var fontStyle: FontStyle
-        var iconSize = 0f
-    }
+    class TrumpIndicatorStyle(
+            val pcardStyle: PCardStyle,
+            val fontStyle: FontStyle,
+            val iconSize: Float)
+
 
     companion object {
         const val TRANSITION_DURATION = 0.3f

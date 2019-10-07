@@ -116,9 +116,8 @@ class HandsTable(skin: Skin, private val cardStyle: CardActor.CardStyle) :
     class PlayerRow(val name: String, val cards: List<PCard>)
 
 
-    class HandsTableStyle {
-        lateinit var headerFontStyle: FontStyle
-        lateinit var playerNameFontStyle: FontStyle
-    }
+    class HandsTableStyle(
+            val headerFontStyle: FontStyle,
+            val playerNameFontStyle: FontStyle)
 
 }

@@ -9,12 +9,6 @@
 -keep class com.badlogic.gdx.backends.android.AndroidInput* { *; }
 -keep class com.badlogic.gdx.backends.android.AndroidInputThreePlus* { *; }
 
-# Keep classes used in skin files
--keep class com.maltaisn.**.*Style { *; }
--keep class com.badlogic.gdx.**.*Style { *; }
--keep class com.badlogic.gdx.graphics.Color { *; }
--keep class com.badlogic.gdx.math.Vector2 { *; }
-
 # Crashlytics
 -keepattributes *Annotation*
 -keepattributes SourceFile,LineNumberTable
