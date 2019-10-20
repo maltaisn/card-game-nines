@@ -84,12 +84,14 @@ class StatsHandler(private val game: Game,
             addToStat(GAMES_WON)
         }
 
+        // If there was less rounds in the game than last minimum, update it.
         val minRoundsStat = stats.getNumber(MIN_ROUNDS_IN_GAME)
         val minRounds = minRoundsStat[variant]
         if (minRounds.isNaN() || minRounds > game.round) {
             minRoundsStat[variant] = game.round
         }
 
+        // Same with maximum.
         val maxRoundsStat = stats.getNumber(MAX_ROUNDS_IN_GAME)
         val maxRounds = maxRoundsStat[variant]
         if (maxRounds.isNaN() || maxRounds < game.round) {
@@ -104,14 +106,26 @@ class StatsHandler(private val game: Game,
 
         val diff = event.result.map { 4 - it.toInt() }
 
+        // Increment rounds won if player has lowest score in the round
         if (Game.findLowestScorePosition(diff) == 0) {
             addToStat(ROUNDS_WON)
         }
 
+        // Increment total round score with the player's score for the round
         addToStat(ROUND_SCORE_TOTAL, diff[0])
 
-        if (game.players[0].trade == Player.Trade.TRADE) {
+        // Increment trades done if player had traded.
+        val player = game.players[0]
+        if (player.trade == Player.Trade.TRADE) {
             addToStat(TRADES_DONE)
+        }
+
+        // Update highest points reached over start score if the player's current score is higher.
+        val highestScoreStat = stats.getNumber(GAME_HIGHEST_SCORE)
+        val ptsOverStart = player.score - game.settings.getFloat(PrefKeys.START_SCORE)
+        val currentHighest = highestScoreStat[variant]
+        if (ptsOverStart > 0 && (currentHighest.isNaN() || ptsOverStart > currentHighest)) {
+            highestScoreStat[variant] = ptsOverStart
         }
 
         stats.save()
@@ -150,6 +164,7 @@ class StatsHandler(private val game: Game,
         const val ROUNDS_PLAYED_COMPLETE = "roundsPlayedComplete"
         const val ROUNDS_WON = "roundsWon"
         const val ROUND_SCORE_TOTAL = "roundScoreTotal"
+        const val GAME_HIGHEST_SCORE = "gameHighestScore"
         const val TRICKS_PLAYED = "tricksPlayed"
         const val TRICKS_WON = "tricksWon"
         const val TRADES_DONE = "tradesDone"

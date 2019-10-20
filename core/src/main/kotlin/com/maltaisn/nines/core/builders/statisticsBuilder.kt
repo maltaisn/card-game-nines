@@ -36,8 +36,8 @@ fun buildStatistics(strings: I18NBundle) =
             }
             percent("gamesWonPercent") {
                 title = strings["stat_games_won_percent"]
-                fracStatKey = "gamesWon"
-                totalStatKey = "gamesPlayed"
+                fracStatKey = StatsHandler.GAMES_WON
+                totalStatKey = StatsHandler.GAMES_PLAYED
             }
             number(StatsHandler.ROUNDS_PLAYED) {
                 title = strings["stat_rounds_played"]
@@ -50,13 +50,13 @@ fun buildStatistics(strings: I18NBundle) =
             }
             percent("roundsWonPercent") {
                 title = strings["stat_rounds_won_percent"]
-                fracStatKey = "roundsWon"
-                totalStatKey = "roundsPlayed"
+                fracStatKey = StatsHandler.ROUNDS_WON
+                totalStatKey = StatsHandler.ROUNDS_PLAYED
             }
             average("averageRoundsPerGame") {
                 title = strings["stat_average_rounds_per_game"]
-                totalStatKey = "roundsPlayedComplete"
-                countStatKey = "gamesPlayed"
+                totalStatKey = StatsHandler.ROUNDS_PLAYED_COMPLETE
+                countStatKey = StatsHandler.GAMES_PLAYED
             }
             number(StatsHandler.MIN_ROUNDS_IN_GAME) {
                 defaultValue = Float.NaN
@@ -71,9 +71,13 @@ fun buildStatistics(strings: I18NBundle) =
             }
             average("averageScorePerRound") {
                 title = strings["stat_average_score_per_round"]
-                totalStatKey = "roundScoreTotal"
-                countStatKey = "roundsPlayed"
-                precision = 1
+                totalStatKey = StatsHandler.ROUND_SCORE_TOTAL
+                countStatKey = StatsHandler.ROUNDS_PLAYED
+                precision = 2
+            }
+            number(StatsHandler.GAME_HIGHEST_SCORE) {
+                title = strings["stat_game_highest_score"]
+                defaultValue = Float.NaN
             }
             number(StatsHandler.TRICKS_PLAYED) {
                 title = strings["stat_tricks_played"]
@@ -83,15 +87,15 @@ fun buildStatistics(strings: I18NBundle) =
             }
             percent("tricksWonPercent") {
                 title = strings["stat_tricks_won_percent"]
-                fracStatKey = "tricksWon"
-                totalStatKey = "tricksPlayed"
+                fracStatKey = StatsHandler.TRICKS_WON
+                totalStatKey = StatsHandler.TRICKS_PLAYED
             }
             number(StatsHandler.TRADES_DONE) {
                 internal = true
             }
             percent("tradesDonePercent") {
                 title = strings["stat_trades_done_percent"]
-                fracStatKey = "tradesDone"
-                totalStatKey = "roundsPlayed"
+                fracStatKey = StatsHandler.TRADES_DONE
+                totalStatKey = StatsHandler.ROUNDS_PLAYED
             }
         }
