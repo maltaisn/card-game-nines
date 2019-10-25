@@ -59,8 +59,8 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
     /** Whether a game is currently shown in the layout or not. */
     private var gameShown = false
 
-    /** Whether the scoreboard menu is currently opened or not. */
-    private var scoreboardShown = false
+    /** Whether the game_summary menu is currently opened or not. */
+    private var gameSummaryShown = false
 
     /**
      * Whether the trade phase has ended in the layout. This is used by [updatePlayerScores]
@@ -84,7 +84,7 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         // Check the scores page, thus adding the scores table to the layout.
         // It must be pre-added so that when it's time to show it, it will have been laid out
         // and scroll to bottom will work...
-        layout.checkScoreboardScoresPage()
+        layout.checkGameSummaryScoresPage()
 
         layout.setContinueItemEnabled(GAME_SAVE_FILE.exists())
     }
@@ -132,7 +132,7 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         // Do the same action as when the back arrow is pressed.
         when {
             gameShown -> onExitGameClicked()
-            scoreboardShown -> onScoreboardCloseClicked()
+            gameSummaryShown -> onGameSummaryCloseClicked()
             else -> layout.goToPreviousMenu()
         }
     }
@@ -200,16 +200,16 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         disposeGame()
     }
 
-    override fun onScoreboardOpenClicked() {
-        showScoreboard()
+    override fun onGameSummaryOpenClicked() {
+        showGameSummary()
     }
 
-    override fun onScoreboardCloseClicked() {
-        hideScoreboard()
+    override fun onGameSummaryCloseClicked() {
+        hideGameSummary()
     }
 
-    override fun onScoreboardContinueItemClicked() {
-        hideScoreboard()
+    override fun onGameSummaryContinueItemClicked() {
+        hideGameSummary()
     }
 
     override fun onTradeBtnClicked(trade: Boolean) {
@@ -262,7 +262,7 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
     }
 
     override fun onGameOverDialogScoresBtnClicked() {
-        showScoreboard()
+        showGameSummary()
     }
 
     override fun onGameOverDialogNewGameBtnClicked() {
@@ -521,17 +521,17 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
     }
 
     /**
-     * End the round by updating and then showing the scoreboard.
+     * End the round by updating and then showing the game summary.
      */
     private fun onRoundEnded() {
         val game = requireGame()
 
         layout.cancelDelayedIdlePopup()
 
-        // Show scoreboard after a small delay if nobody has won yet.
+        // Show game summary after a small delay if nobody has won yet.
         if (game.winnerPos == CardPlayer.NO_POSITION) {
             layout.doDelayed(1f) {
-                showScoreboard()
+                showGameSummary()
                 playSound(CoreRes.SOUND_GAME_DONE)
             }
         }
@@ -669,7 +669,7 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
 
     /**
      * Collect the trick to the hidden stack of the player who won the trick.
-     * Also updates the scores in the labels and the last trick in the scoreboard.
+     * Also updates the scores in the labels and the last trick in the game summary.
      */
     private fun collectTrick() {
         val state = requireState()
@@ -792,7 +792,7 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         layout.setTricksTableHeaders(names)
     }
 
-    private fun showScoreboard() {
+    private fun showGameSummary() {
         val game = requireGame()
 
         // Hide game layout
@@ -805,20 +805,20 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         updateHandsPage()
 
         layout.apply {
-            showScoreboard()
-            checkScoreboardScoresPage()
+            showGameSummary()
+            checkGameSummaryScoresPage()
             scrollScoresPageToBottom()
-            setScoreboardContinueItemShown(game.phase == Phase.ROUND_ENDED)
+            setGameSummaryContinueItemShown(game.phase == Phase.ROUND_ENDED)
 
             // Show trump indicator
             setTrumpIndicatorShown(true)
             setTrumpIndicatorSuit(game.trumpSuit)
         }
 
-        scoreboardShown = true
+        gameSummaryShown = true
     }
 
-    private fun hideScoreboard() {
+    private fun hideGameSummary() {
         val game = requireGame()
 
         layout.goToPreviousMenu()
@@ -833,19 +833,19 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
             // Last round has ended, start a new one.
             game.startRound()
 
-            // Wait until scoreboard is hidden to hide the pages
+            // Wait until game summary is hidden to hide the pages
             layout.doDelayed(SubMenu.TRANSITION_DURATION) {
                 layout.setHandsPageShown(false)
                 layout.setTricksPageShown(false)
-                layout.setScoreboardContinueItemShown(false)
+                layout.setGameSummaryContinueItemShown(false)
             }
         }
 
-        scoreboardShown = false
+        gameSummaryShown = false
     }
 
     /**
-     * Update the scores page in scoreboard.
+     * Update the scores page in game summary.
      */
     private fun updateScoresPage() {
         val game = requireGame()
@@ -874,7 +874,7 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
     }
 
     /**
-     * Update the hands page in scoreboard.
+     * Update the hands page in game summary.
      */
     private fun updateHandsPage() {
         val game = requireGame()
@@ -905,7 +905,7 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
     }
 
     /**
-     * Update the tricks page in scoreboard.
+     * Update the tricks page in game summary.
      */
     private fun updateTricksPage() {
         val game = requireGame()
@@ -927,7 +927,7 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
     }
 
     /**
-     * Update the last trick page in scoreboard.
+     * Update the last trick page in game summary.
      */
     private fun updateLastTrickPage() {
         val game = requireGame()

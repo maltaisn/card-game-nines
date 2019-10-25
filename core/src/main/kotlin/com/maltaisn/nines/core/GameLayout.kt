@@ -115,29 +115,29 @@ class GameLayout(skin: Skin, override val listener: GameListener) :
 
     override val numberFormat: NumberFormat = NumberFormat.getInstance()
 
-    override val extraHandString: String = strings["scoreboard_hands_extra"]
+    override val extraHandString: String = strings["game_summary_hands_extra"]
 
 
     init {
         val cardStyle: PCardStyle = skin.get()
 
-        // SCOREBOARD
+        // GAME SUMMARY
         // Scores page
         scoresTable = ScoresTable(skin, 3)
-        scoresPage = PagedSubMenu.Page(0, strings["scoreboard_scores"],
+        scoresPage = PagedSubMenu.Page(0, strings["game_summary_scores"],
                 skin.getDrawable(CoreIcons.LIST), SubMenu.ITEM_POS_TOP)
         scoresPage.content = Container(scoresTable).pad(60f, 30f, 60f, 30f).fill()
 
         // Hands page
         handsTable = HandsTable(skin, cardStyle)
-        handsPage = PagedSubMenu.Page(1, strings["scoreboard_hands"],
+        handsPage = PagedSubMenu.Page(1, strings["game_summary_hands"],
                 skin.getDrawable(CoreIcons.CARDS), SubMenu.ITEM_POS_TOP)
         handsPage.content = Container(handsTable).pad(60f, 30f, 60f, 30f).fill()
 
         // Tricks page
         tricksTable = TricksTable(skin, cardStyle, 3)
         tricksTable.cardSize = CardActor.SIZE_NORMAL
-        tricksPage = PagedSubMenu.Page(2, strings["scoreboard_tricks"],
+        tricksPage = PagedSubMenu.Page(2, strings["game_summary_tricks"],
                 skin.getDrawable(CoreIcons.CARDS), SubMenu.ITEM_POS_TOP)
         tricksPage.content = Container(tricksTable).pad(60f, 30f, 60f, 30f).fill()
 
@@ -146,14 +146,14 @@ class GameLayout(skin: Skin, override val listener: GameListener) :
             cardSize = CardActor.SIZE_BIG
             enabled = false
         }
-        lastTrickPage = PagedSubMenu.Page(3, strings["scoreboard_last_trick"],
+        lastTrickPage = PagedSubMenu.Page(3, strings["game_summary_last_trick"],
                 skin.getDrawable(CoreIcons.CARDS), SubMenu.ITEM_POS_TOP)
         lastTrickPage.content = Container(TableViewContent(skin).apply {
             add(lastTrick).grow()
         }).pad(60f, 30f, 60f, 30f).fill()
 
         // Continue item
-        continueItem = MenuItem(4, strings["scoreboard_continue"],
+        continueItem = MenuItem(4, strings["game_summary_continue"],
                 skin.getDrawable(CoreIcons.ARROW_RIGHT), SubMenu.ITEM_POS_BOTTOM, true)
         continueItem.checkable = false
 
@@ -180,11 +180,11 @@ class GameLayout(skin: Skin, override val listener: GameListener) :
         menu.rules = skin[Res.MD_RULES]
         menu.stats = stats
 
-        menu.scoreboardMenu.addItems(scoresPage, handsPage,
+        menu.gameSummaryMenu.addItems(scoresPage, handsPage,
                 tricksPage, lastTrickPage, continueItem)
-        menu.scoreboardMenu.itemClickListener = { item ->
+        menu.gameSummaryMenu.itemClickListener = { item ->
             if (item === continueItem) {
-                presenter.onScoreboardContinueItemClicked()
+                presenter.onGameSummaryContinueItemClicked()
             }
         }
 
@@ -358,7 +358,7 @@ class GameLayout(skin: Skin, override val listener: GameListener) :
 
     override fun showInGameMenu(saveLast: Boolean) = menu.showMenu(menu.inGameMenu, saveLast)
 
-    override fun showScoreboard() = menu.showMenu(menu.scoreboardMenu)
+    override fun showGameSummary() = menu.showMenu(menu.gameSummaryMenu)
 
     override fun setContinueItemEnabled(enabled: Boolean) {
         menu.continueItem.enabled = enabled
@@ -579,8 +579,8 @@ class GameLayout(skin: Skin, override val listener: GameListener) :
     }
 
     // Scores page
-    override fun checkScoreboardScoresPage() {
-        menu.scoreboardMenu.checkItem(scoresPage)
+    override fun checkGameSummaryScoresPage() {
+        menu.gameSummaryMenu.checkItem(scoresPage)
     }
 
     override fun scrollScoresPageToBottom() {
@@ -643,7 +643,7 @@ class GameLayout(skin: Skin, override val listener: GameListener) :
         lastTrick.startAngle = angle
     }
 
-    override fun setScoreboardContinueItemShown(shown: Boolean) {
+    override fun setGameSummaryContinueItemShown(shown: Boolean) {
         continueItem.shown = shown
     }
 

@@ -50,7 +50,7 @@ class HandsTable(skin: Skin, private val cardStyle: CardActor.CardStyle) :
         }
 
         val strings: I18NBundle = skin.get()
-        val headers = listOf(strings["scoreboard_hands_player"], strings["scoreboard_hands_hand"])
+        val headers = listOf(strings["game_summary_hands_player"], strings["game_summary_hands_hand"])
         headerAdapter = object : HeaderAdapter() {
             override fun createViewHolder(column: Int) = HeaderViewHolder()
 

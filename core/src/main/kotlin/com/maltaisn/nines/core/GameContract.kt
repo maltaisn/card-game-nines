@@ -52,7 +52,7 @@ interface GameContract {
         fun goToPreviousMenu()
 
         fun showInGameMenu(saveLast: Boolean)
-        fun showScoreboard()
+        fun showGameSummary()
         fun setContinueItemEnabled(enabled: Boolean)
 
         fun showResetGameDialog(pref: GamePref<*>, callback: (Boolean) -> Unit)
@@ -112,8 +112,8 @@ interface GameContract {
         fun setTrumpIndicatorShown(shown: Boolean)
         fun setTrumpIndicatorSuit(suit: Int)
 
-        // Scoreboard
-        fun checkScoreboardScoresPage()
+        // Game summary
+        fun checkGameSummaryScoresPage()
 
         fun scrollScoresPageToBottom()
         fun setScoresTableHeaders(headers: List<ScoresTable.Header>)
@@ -132,7 +132,7 @@ interface GameContract {
         fun setLastTrickCards(cards: List<PCard>)
         fun setLastTrickStartAngle(angle: Float)
 
-        fun setScoreboardContinueItemShown(shown: Boolean)
+        fun setGameSummaryContinueItemShown(shown: Boolean)
 
         // Game over dialog
         fun setGameOverDialogShown(shown: Boolean)
@@ -160,7 +160,7 @@ interface GameContract {
         fun onPlayerCardClicked(card: PCard)
         fun onPlayerCardDealt()
 
-        fun onScoreboardContinueItemClicked()
+        fun onGameSummaryContinueItemClicked()
 
         fun onAboutRateAppClicked()
         fun onAboutReportBugClicked()
