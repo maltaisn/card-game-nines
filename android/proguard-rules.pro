@@ -9,6 +9,6 @@
 -keep class com.badlogic.gdx.backends.android.AndroidInput* { *; }
 -keep class com.badlogic.gdx.backends.android.AndroidInputThreePlus* { *; }
 
-# Crashlytics
+# For deobfuscating crash reports
 -keepattributes *Annotation*
 -keepattributes SourceFile,LineNumberTable

@@ -28,11 +28,8 @@ import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import com.badlogic.gdx.backends.android.AndroidApplication
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration
-import com.crashlytics.android.Crashlytics
-import com.crashlytics.android.core.CrashlyticsCore
 import com.maltaisn.nines.core.GameApp
 import com.maltaisn.nines.core.GameListener
-import io.fabric.sdk.android.Fabric
 
 
 class AndroidLauncher : AndroidApplication(), GameListener {
@@ -72,12 +69,6 @@ class AndroidLauncher : AndroidApplication(), GameListener {
 
     override fun onCreate(state: Bundle?) {
         super.onCreate(state)
-
-        // Crashlytics
-        val crashlytics = Crashlytics.Builder()
-                .core(CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build())
-                .build()
-        Fabric.with(this, crashlytics)
 
         // Input dialog
         val view = layoutInflater.inflate(R.layout.dialog_input, null, false)

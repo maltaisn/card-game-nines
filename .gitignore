@@ -1,4 +1,5 @@
 production/
+release/
 assets/saved-game.json
 
 # IntelliJ

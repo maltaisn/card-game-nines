@@ -1,12 +1,11 @@
 plugins {
     id("com.android.application")
     kotlin("android")
-    id("com.google.gms.google-services")
-    id("io.fabric")
 }
 
-val appVersionCode: String by project
 val appVersion: String by project
+val appVersionCode = appVersion.split('.')
+        .joinToString("") { it.padStart(2, '0') }.toInt()
 
 android {
     buildToolsVersion("29.0.2")
@@ -15,7 +14,7 @@ android {
         applicationId = "com.maltaisn.nines.android"
         minSdkVersion(16)
         targetSdkVersion(29)
-        versionCode = appVersionCode.toInt()
+        versionCode = appVersionCode
         versionName = appVersion
     }
     signingConfigs {
@@ -27,9 +26,6 @@ android {
         }
     }
     buildTypes {
-        named("debug") {
-            extra["enableCrashlytics"] = false
-        }
         named("release") {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -68,11 +64,6 @@ dependencies {
     natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-arm64-v8a")
     natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86")
     natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86_64")
-
-    // Firebase
-    implementation("com.google.firebase:firebase-analytics:17.2.0")
-    implementation("com.crashlytics.sdk.android:crashlytics:2.10.1")
-
 }
 
 // Called every time gradle gets executed, takes the native dependencies of
