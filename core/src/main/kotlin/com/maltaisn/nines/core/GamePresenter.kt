@@ -69,6 +69,14 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
      */
     private var tradePhaseEnded = false
 
+    /**
+     * Whether game is currently in the state of waiting for human input. Can be either:
+     * - Waiting to play a card
+     * - Waiting to decide to trade or not
+     * - Waiting to confirm collect trick popup
+     */
+    private var waitingForHumanInput = false
+
     /** Whether continue was clicked and the game is currently loading. */
     private var gameLoading = false
 
@@ -213,6 +221,9 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
     }
 
     override fun onTradeBtnClicked(trade: Boolean) {
+        if (!waitingForHumanInput) return
+        waitingForHumanInput = false
+
         val game = requireGame()
         val state = requireState()
 
@@ -222,6 +233,9 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
     }
 
     override fun onCollectTrickBtnClicked() {
+        if (!waitingForHumanInput) return
+        waitingForHumanInput = false
+
         collectTrick()
 
         layout.collectPopupShown = false
@@ -231,21 +245,21 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
     }
 
     override fun onPlayerCardClicked(card: PCard) {
+        if (!waitingForHumanInput) return
+        waitingForHumanInput = false
+
         val game = requireGame()
         val state = requireState()
 
-        if (game.players[0] is HumanPlayer && state.posToMove == 0
-                && state.phase == GameState.Phase.PLAY) {
-            // If it's south turn and south is human, play the clicked card if it can be played.
-            val move = state.getMoves().find { (it as PlayMove).card == card }
-            if (move != null) {
-                // This card can be played, play it.
-                game.doMove(move)
+        // Play the clicked card if it can be played.
+        val move = state.getMoves().find { (it as PlayMove).card == card }
+        if (move != null) {
+            // This card can be played, play it.
+            game.doMove(move)
 
-                // Hide and cancel idle popup
-                layout.idlePopupShown = false
-                layout.cancelDelayedIdlePopup()
-            }
+            // Hide and cancel idle popup
+            layout.idlePopupShown = false
+            layout.cancelDelayedIdlePopup()
         }
     }
 
@@ -636,7 +650,7 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
                     0 -> {
                         // Player plays last
                         if (layout.settings.getBoolean(PrefKeys.AUTO_COLLECT)) {
-                            // Collect the trick automatically.
+                            // Collect the trick automatically after some time.
                             moveDuration += animationDuration * 2
                             layout.doDelayed(moveDuration) {
                                 collectTrick()
@@ -649,6 +663,7 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
                                 layout.collectPopupShown = true
                             }
                             moveDuration = Float.POSITIVE_INFINITY
+                            waitingForHumanInput = true
                         }
                     }
                     1 -> {
@@ -701,6 +716,9 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
                 moveDone = true
 
             } else {
+                // More than one possible move, wait for input.
+                waitingForHumanInput = true
+
                 if (state.phase == GameState.Phase.TRADE) {
                     layout.tradePopupShown = true
 
