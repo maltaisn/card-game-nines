@@ -149,11 +149,16 @@ class AndroidLauncher : AndroidApplication(), GameListener {
                     getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                         inputDialog.dismiss()
                         onTextEntered(inputField.text.toString())
+
                     }
                     getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener { cancel() }
                 }
                 setOnCancelListener {
                     onTextEntered(text.toString())
+                }
+                setOnDismissListener {
+                    // Update fullscreen which will have been disabled.
+                    isFullscreen = isFullscreen
                 }
                 show()
             }
