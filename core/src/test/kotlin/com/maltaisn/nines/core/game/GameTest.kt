@@ -16,17 +16,19 @@
 
 package com.maltaisn.nines.core.game
 
-import com.badlogic.gdx.utils.I18NBundle
+import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.Preferences
 import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.prefs.PlayerNamesPref
 import com.maltaisn.nines.core.PrefKeys
-import com.maltaisn.nines.core.builders.buildSettings
 import com.maltaisn.nines.core.game.event.*
 import com.maltaisn.nines.core.game.player.AiPlayer
 import com.maltaisn.nines.core.game.player.MctsPlayer
 import com.maltaisn.nines.core.game.player.Player
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -43,10 +45,18 @@ internal class GameTest {
 
     @Test
     fun runGameTest() {
-        val strings: I18NBundle = mock()
-        // FIXME cant mock bundle, final get...
-
-        val settings = buildSettings(strings)
+        // Mock settings
+        Gdx.app = mock()
+        val prefs: Preferences = mock()
+        whenever(Gdx.app.getPreferences(any())).thenReturn(prefs)
+        val settings = GamePrefs("com.maltaisn.nines.settings") {
+            slider(PrefKeys.START_SCORE) {
+                defaultValue = 9f
+            }
+            playerNames(PrefKeys.PLAYER_NAMES) {
+                defaultValue = arrayOf("South", "East", "North")
+            }
+        }
 
         // Create players
         val south = MctsPlayer(MctsPlayer.Difficulty.EXPERT)

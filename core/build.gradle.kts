@@ -13,7 +13,7 @@ idea {
 dependencies {
     val gdxVersion: String by project
     val ktxVersion: String by project
-    val junitVersion: String by project
+    val coroutinesVersion: String by project
     val cardGameVersion: String by project
     val pcardVersion: String by project
 
@@ -22,7 +22,7 @@ dependencies {
 
     implementation(kotlin("stdlib"))
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.0-RC")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("io.github.libktx:ktx-async:$ktxVersion")
 
     implementation("com.badlogicgames.gdx:gdx:$gdxVersion")
