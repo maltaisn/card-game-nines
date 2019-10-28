@@ -245,11 +245,11 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
     }
 
     override fun onPlayerCardClicked(card: PCard) {
-        if (!waitingForHumanInput) return
-        waitingForHumanInput = false
-
         val game = requireGame()
         val state = requireState()
+
+        if (!waitingForHumanInput || state.phase != GameState.Phase.PLAY) return
+        waitingForHumanInput = false
 
         // Play the clicked card if it can be played.
         val move = state.getMoves().find { (it as PlayMove).card == card }
