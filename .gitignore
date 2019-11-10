@@ -19,7 +19,6 @@ build/
 /android/src/main/jniLibs/*/libgdx.so
 /android/gen/
 /android/src/main/assets
-/android/google-services.json
 
 ## OS Specific
 .DS_Store

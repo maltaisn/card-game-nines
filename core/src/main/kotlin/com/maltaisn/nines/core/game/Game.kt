@@ -265,8 +265,8 @@ class Game() : CardGame() {
         json as GameSaveJson
         super.read(json, jsonData)
 
-        val version = jsonData.getInt("_ninesVersion")
-        json.ninesVersion = version
+        val version = jsonData.getInt("_gameVersion")
+        json.gameVersion = version
         if (version != VERSION || json.version != CardGame.VERSION) {
             // Version of saved game doesn't match game version.
             // Current behavior is to throw an exception to abort.
@@ -287,7 +287,7 @@ class Game() : CardGame() {
 
     override fun write(json: Json) {
         super.write(json)
-        json.writeValue("_ninesVersion", VERSION)
+        json.writeValue("_gameVersion", VERSION)
         json.writeValue("players", players)
         if (state != null) {
             json.writeValue("state", state)

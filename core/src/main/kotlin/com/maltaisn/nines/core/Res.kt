@@ -19,11 +19,10 @@ package com.maltaisn.nines.core
 
 object Res {
 
-    const val SKIN = "nines.skin"
     const val ATLAS = "nines.atlas"
 
     const val STRINGS = "strings"
 
-    const val MD_RULES = "rules"
+    const val RULES = "rules"
 
 }

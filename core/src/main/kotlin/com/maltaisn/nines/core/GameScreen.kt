@@ -50,7 +50,7 @@ class GameScreen(private val app: GameApp, locale: Locale) :
 
         // Load localized data
         assetManager.load(Res.STRINGS, I18NBundleLoader.I18NBundleParameter(locale))
-        assetManager.load(Res.MD_RULES, MdLoader.Parameter(locale = locale))
+        assetManager.load(Res.RULES, MdLoader.Parameter(locale = locale))
     }
 
     override fun start() {
@@ -67,7 +67,7 @@ class GameScreen(private val app: GameApp, locale: Locale) :
         skin.add("settings", settings)
         skin.add("newGameOptions", buildNewGameOptions(strings))
         skin.add(buildStatistics(strings))
-        skin.add("rules", assetManager.get<Markdown>(Res.MD_RULES))
+        skin.add("rules", assetManager.get<Markdown>(Res.RULES))
 
         // Language preference
         val languagePref = settings[PrefKeys.LANGUAGE] as ListPref

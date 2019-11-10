@@ -177,7 +177,7 @@ class GameLayout(skin: Skin, override val listener: GameListener) :
         menu.callback = presenter
         menu.newGameOptions = newGameOptions
         menu.settings = settings
-        menu.rules = skin[Res.MD_RULES]
+        menu.rules = skin[Res.RULES]
         menu.stats = stats
 
         menu.gameSummaryMenu.addItems(scoresPage, handsPage,

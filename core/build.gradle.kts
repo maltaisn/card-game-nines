@@ -1,13 +1,5 @@
 plugins {
     kotlin("jvm")
-    idea
-}
-
-idea {
-    module {
-        outputDir = file("build/classes/main")
-        testOutputDir = file("build/classes/test")
-    }
 }
 
 dependencies {

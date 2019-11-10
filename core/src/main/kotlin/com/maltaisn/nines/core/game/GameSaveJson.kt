@@ -33,7 +33,7 @@ object GameSaveJson : CardGameJson() {
      * The version of the card game library that the [Game] being currently
      * deserialized was written by.
      */
-    var ninesVersion = -1
+    var gameVersion = -1
 
     init {
         // Add class tags
