@@ -41,7 +41,7 @@ class Hand() : Cloneable, Json.Serializable {
 
     public override fun clone() = Hand(id, cards)
 
-    override fun toString() = cards.apply { sortWith(PCard.DEFAULT_SORTER) }.toString()
+    override fun toString() = cards.toMutableList().apply { sortWith(PCard.DEFAULT_SORTER) }.toString()
 
 
     override fun read(json: Json, jsonData: JsonValue) {
