@@ -99,7 +99,7 @@ class GameState() : CardGameState<Player>() {
                     // Everyone had the chance to trade hands.
                     // Player to the left of the dealer starts.
                     phase = Phase.PLAY
-                    posToMove = (dealerPos + 1) % 3
+                    posToMove = getPositionNextTo(dealerPos)
                     currentTrick = Trick(posToMove)
                 }
             }
@@ -133,8 +133,8 @@ class GameState() : CardGameState<Player>() {
         }
     }
 
-    override fun getMoves(): MutableList<CardGameEvent.Move> {
-        val moves = mutableListOf<CardGameEvent.Move>()
+    override fun getMoves(): MutableList<out CardGameEvent.Move> {
+        val moves = mutableListOf<MoveEvent>()
         if (isGameDone) {
             return moves
         }

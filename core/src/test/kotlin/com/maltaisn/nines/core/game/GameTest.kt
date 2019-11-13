@@ -24,8 +24,8 @@ import com.maltaisn.cardgame.prefs.PlayerNamesPref
 import com.maltaisn.nines.core.PrefKeys
 import com.maltaisn.nines.core.game.event.*
 import com.maltaisn.nines.core.game.player.AiPlayer
-import com.maltaisn.nines.core.game.player.MctsPlayer
 import com.maltaisn.nines.core.game.player.Player
+import com.maltaisn.nines.core.game.player.RandomPlayer
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
@@ -36,6 +36,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.junit.MockitoJUnitRunner
+import java.text.DecimalFormat
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicIntegerArray
 
@@ -59,12 +60,12 @@ internal class GameTest {
         }
 
         // Create players
-        val south = MctsPlayer(MctsPlayer.Difficulty.EXPERT)
-        val west = MctsPlayer(MctsPlayer.Difficulty.ADVANCED)
-        val north = MctsPlayer(MctsPlayer.Difficulty.ADVANCED)
+        val south = RandomPlayer()
+        val west = RandomPlayer()
+        val north = RandomPlayer()
 
         //playGame(settings, south, west, north, VERBOSE_MOVES)
-        playGames(settings, south, west, north, 1000)
+        playGames(settings, south, west, north, 10000)
     }
 
     /**
@@ -180,6 +181,7 @@ internal class GameTest {
                           count: Int) {
         val gamesPlayed = AtomicInteger()
         val gamesWon = AtomicIntegerArray(3)
+        val scoreDistribution = AtomicIntegerArray(14)
 
         runBlocking {
             (0 until count).map {
@@ -188,8 +190,30 @@ internal class GameTest {
                     gamesWon.addAndGet(game.winnerPos, 1)
                     val played = gamesPlayed.addAndGet(1)
                     println("$played / $count, scores: $gamesWon")
+
+                    for (event in game.events) {
+                        if (event is RoundEndEvent) {
+                            for (score in event.result) {
+                                scoreDistribution.incrementAndGet(score.toInt())
+                            }
+                        }
+                    }
                 }
             }.awaitAll()
+        }
+
+        println("\nROUND SCORE DISTRIBUTION")
+        var total = 0
+        for (i in 0..13) {
+            total += scoreDistribution[i]
+        }
+        val numberFmt = DecimalFormat.getPercentInstance().apply {
+            maximumFractionDigits = 3
+            minimumFractionDigits = 3
+        }
+        for (i in 0..13) {
+            val amount = scoreDistribution[i]
+            println("${4 - i} pts; $amount; ${numberFmt.format(amount.toFloat() / total)}")
         }
     }
 
