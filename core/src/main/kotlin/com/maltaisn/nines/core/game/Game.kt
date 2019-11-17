@@ -257,7 +257,7 @@ class Game() : CardGame() {
         dispatcher.dispose()
     }
 
-    override fun toString() = "${events.size} events, phase: $phase, round: $round, " +
+    override fun toString() = "[${events.size} events, phase: $phase, round: $round, " +
             "dealerPos: $dealerPos, trumpSuit: ${(PCard.SUIT_STR.getOrNull(trumpSuit) ?: "none")}]"
 
 

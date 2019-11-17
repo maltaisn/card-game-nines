@@ -38,12 +38,10 @@ class TradeHandMove() : MoveEvent() {
     }
 
 
-    override fun equals(other: Any?): Boolean {
-        if (other !is TradeHandMove) return false
-        return playerPos == other.playerPos && trade == other.trade
-    }
+    override fun equals(other: Any?) = other === this || other is TradeHandMove &&
+            super.equals(other) && trade == other.trade
 
-    override fun hashCode() = playerPos
+    override fun hashCode() = arrayOf(super.hashCode(), trade).contentHashCode()
 
     override fun toString() = if (trade) "Trade hand" else "Don't trade hand"
 

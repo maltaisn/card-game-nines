@@ -84,6 +84,11 @@ class Trick() : Cloneable, Json.Serializable {
         trick.cards += cards
     }
 
+    override fun equals(other: Any?) = other === this || other is Trick &&
+            startPos == other.startPos && cards == other.cards
+
+    override fun hashCode() = arrayOf(startPos, cards).contentHashCode()
+
     override fun toString() = "[startPos: $startPos, cards: $cards]"
 
 

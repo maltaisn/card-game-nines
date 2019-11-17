@@ -65,6 +65,13 @@ abstract class Player : CardPlayer(), Json.Serializable {
 
     abstract override fun clone(): Player
 
+    override fun equals(other: Any?) = other === this || other is Player &&
+            super.equals(other) && score == other.score && hand == other.hand &&
+            trade == other.trade && tricksTaken == other.tricksTaken
+
+    override fun hashCode() = arrayOf(super.hashCode(), score,
+            hand, trade, tricksTaken).contentHashCode()
+
     override fun toString() = super.toString().dropLast(1) +
             ", score: $score, tricksTaken: $tricksTaken, hand: $hand]"
 

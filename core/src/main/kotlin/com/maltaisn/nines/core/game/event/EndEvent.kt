@@ -20,4 +20,8 @@ package com.maltaisn.nines.core.game.event
 /**
  * An event for the end of the game.
  */
-class EndEvent : GameEvent()
+class EndEvent : GameEvent() {
+    override fun equals(other: Any?) = other == this || other is EndEvent
+    override fun hashCode() = 0
+    override fun toString() = "Game end"
+}

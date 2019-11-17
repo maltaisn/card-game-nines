@@ -39,6 +39,14 @@ class RoundStartEvent() : GameEvent() {
         this.hands = hands
     }
 
+    override fun equals(other: Any?) = other == this || other is RoundStartEvent &&
+            trumpSuit == other.trumpSuit && hands == other.hands
+
+    override fun hashCode() = arrayOf(trumpSuit, hands).contentHashCode()
+
+    override fun toString() = "Round start [trumpSuit: $trumpSuit, hands: $hands]"
+
+
     override fun read(json: Json, jsonData: JsonValue) {
         trumpSuit = jsonData.getInt("trumpSuit")
         hands = json.readArrayValue(jsonData, "hands")

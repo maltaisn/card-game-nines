@@ -38,6 +38,14 @@ class RoundEndEvent() : GameEvent() {
         this.tricks = tricks
     }
 
+    override fun equals(other: Any?) = other === this || other is RoundEndEvent &&
+            result == other.result && tricks == other.tricks
+
+    override fun hashCode() = arrayOf(result, tricks).contentHashCode()
+
+    override fun toString() = "Round end [result: $result, tricks: $tricks]"
+
+
     override fun read(json: Json, jsonData: JsonValue) {
         result = json.readArrayValue(jsonData, "result")
         tricks = json.readArrayValue(jsonData, "tricks")

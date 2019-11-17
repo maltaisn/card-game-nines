@@ -33,6 +33,12 @@ abstract class MoveEvent : GameEvent(), CardGameEvent.Move {
         protected set
 
 
+    override fun equals(other: Any?) = other === this || other is MoveEvent &&
+            playerPos == other.playerPos
+
+    override fun hashCode() = playerPos
+
+
     override fun read(json: Json, jsonData: JsonValue) {
         playerPos = jsonData.getInt("playerPos")
     }

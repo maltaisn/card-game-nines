@@ -1,3 +1,3 @@
 rootProject.name = "nines"
 
-include(":core", ":android", ":desktop")
+include(":core", ":android", ":desktop", ":test")

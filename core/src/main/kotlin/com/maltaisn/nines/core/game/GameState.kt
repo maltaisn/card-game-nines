@@ -208,6 +208,14 @@ class GameState() : CardGameState<Player>() {
         state.currentTrick = currentTrick.clone()
     }
 
+    override fun equals(other: Any?) = other === this || other is GameState && super.equals(other) &&
+            dealerPos == other.dealerPos && trumpSuit == other.trumpSuit &&
+            extraHand == other.extraHand && phase == other.phase &&
+            tricksPlayed == other.tricksPlayed && currentTrick == other.currentTrick
+
+    override fun hashCode() = arrayOf(super.hashCode(), dealerPos, trumpSuit,
+            extraHand, phase, tricksPlayed, currentTrick).contentHashCode()
+
     override fun toString() = "[posToMove: $posToMove, " +
             "tricksPlayed: ${tricksPlayed.size}, phase: $phase, trump: ${if (trumpSuit == NO_TRUMP)
                 "none" else PCard.SUIT_STR[trumpSuit].toString()}, currentTrick: $currentTrick]"

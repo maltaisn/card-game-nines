@@ -18,8 +18,8 @@ package com.maltaisn.nines.core.game
 
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
-import com.maltaisn.cardgame.game.sortWith
 import com.maltaisn.cardgame.pcard.PCard
+import com.maltaisn.cardgame.pcard.toSortedString
 import ktx.json.readArrayValue
 
 
@@ -41,7 +41,12 @@ class Hand() : Cloneable, Json.Serializable {
 
     public override fun clone() = Hand(id, cards)
 
-    override fun toString() = cards.toMutableList().apply { sortWith(PCard.DEFAULT_SORTER) }.toString()
+    override fun equals(other: Any?) = other === this || other is Hand &&
+            id == other.id && cards == other.cards
+
+    override fun hashCode() = arrayOf(id, cards).contentHashCode()
+
+    override fun toString() = "[id: $id, cards: ${cards.toSortedString()}]"
 
 
     override fun read(json: Json, jsonData: JsonValue) {

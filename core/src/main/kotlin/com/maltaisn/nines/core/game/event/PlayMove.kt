@@ -39,13 +39,10 @@ class PlayMove() : MoveEvent() {
         this.card = card
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (other === this) return true
-        if (other !is PlayMove) return false
-        return playerPos == other.playerPos && card == other.card
-    }
+    override fun equals(other: Any?) = other === this || other is PlayMove &&
+            super.equals(other) && card == other.card
 
-    override fun hashCode() = card.value
+    override fun hashCode() = arrayOf(super.hashCode(), card).contentHashCode()
 
     override fun toString() = "Play $card"
 

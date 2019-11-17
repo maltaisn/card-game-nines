@@ -19,4 +19,8 @@ package com.maltaisn.nines.core.game.event
 /**
  * An event for the start of the game.
  */
-class StartEvent : GameEvent()
+class StartEvent : GameEvent() {
+    override fun equals(other: Any?) = other == this || other is StartEvent
+    override fun hashCode() = 0
+    override fun toString() = "Game start"
+}
