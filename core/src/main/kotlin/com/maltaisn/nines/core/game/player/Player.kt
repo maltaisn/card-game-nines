@@ -99,7 +99,7 @@ abstract class Player : CardPlayer(), Json.Serializable {
     }
 
     companion object {
-        private val EMPTY_HAND = Hand(Hand.NO_ID, mutableListOf())
+        val EMPTY_HAND = Hand(Hand.NO_ID, mutableListOf())
     }
 
 }

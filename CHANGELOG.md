@@ -1,3 +1,14 @@
+## v1.1.0
+- AI fixes and improvements
+    - Fixed cheating bug. The known hand IDs was never reset, so the player
+    kept knowing more and more hands as more rounds were played.
+    - The "forgetting" algorithm for cards used random cards on every simulation,
+    which probably resulted in no forgetting at all. Known and unknown cards are
+    now fixed for a whole round.
+    - Known suits was never updated so it was basically useless until now.
+    - Added weighting heuristic for hand trading. Effect on play level is barely noticeable.
+    - Rebalanced AI difficulties, all of them should be somewhat better.
+
 ### v1.0.2
 - Fixed crash with msdf-gdx on devices with older Open GL ES versions.
 
@@ -5,5 +16,5 @@
 - Fixed crash when player card is clicked during trade phase.
 - Updated coroutines to 1.3.2
 
-## v1.0.0
+# v1.0.0
 - Initial release

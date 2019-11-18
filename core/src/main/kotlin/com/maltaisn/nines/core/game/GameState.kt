@@ -60,6 +60,10 @@ class GameState() : CardGameState<Player>() {
     var currentTrick = Trick(CardPlayer.NO_POSITION)
         private set
 
+    /** The number of players that traded. */
+    val tradesCount: Int
+        get() = players.count { it.trade == Player.Trade.TRADE }
+
 
     constructor(settings: GamePrefs, players: List<Player>,
                 dealerPos: Int, trumpSuit: Int) : this() {

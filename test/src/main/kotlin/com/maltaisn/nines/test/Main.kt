@@ -14,71 +14,65 @@
  * limitations under the License.
  */
 
-package com.maltaisn.nines.core.game
+package com.maltaisn.nines.test
 
+import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.Preferences
+import com.badlogic.gdx.backends.headless.HeadlessApplication
+import com.badlogic.gdx.utils.I18NBundle
 import com.maltaisn.cardgame.pcard.PCard
+import com.maltaisn.cardgame.pcard.toSortedString
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.prefs.PlayerNamesPref
 import com.maltaisn.nines.core.PrefKeys
+import com.maltaisn.nines.core.Res
+import com.maltaisn.nines.core.builders.buildSettings
+import com.maltaisn.nines.core.game.Game
+import com.maltaisn.nines.core.game.GameState
 import com.maltaisn.nines.core.game.event.*
 import com.maltaisn.nines.core.game.player.AiPlayer
+import com.maltaisn.nines.core.game.player.MctsPlayer
+import com.maltaisn.nines.core.game.player.MctsPlayer.Difficulty
 import com.maltaisn.nines.core.game.player.Player
-import com.maltaisn.nines.core.game.player.RandomPlayer
-import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.junit.MockitoJUnitRunner
 import java.text.DecimalFormat
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicIntegerArray
 
 
-@RunWith(MockitoJUnitRunner::class)
-internal class GameTest {
+object Main {
 
-    @Test
-    fun runGameTest() {
-        // Mock settings
-        Gdx.app = mock()
-        val prefs: Preferences = mock()
-        whenever(Gdx.app.getPreferences(any())).thenReturn(prefs)
-        val settings = GamePrefs("com.maltaisn.nines.settings") {
-            slider(PrefKeys.START_SCORE) {
-                defaultValue = 9f
-            }
-            playerNames(PrefKeys.PLAYER_NAMES) {
-                defaultValue = arrayOf("South", "East", "North")
-            }
-        }
+    @JvmStatic
+    fun main(args: Array<String>) {
+        Gdx.gl = mock()
+        HeadlessApplication(object : ApplicationAdapter() {})
+        val settings = buildSettings(I18NBundle.createBundle(Gdx.files.internal(Res.STRINGS)))
 
         // Create players
-        val south = RandomPlayer()
-        val west = RandomPlayer()
-        val north = RandomPlayer()
+        val players = listOf(
+                MctsPlayer(Difficulty.ADVANCED),
+                MctsPlayer(Difficulty.INTERMEDIATE),
+                MctsPlayer(Difficulty.INTERMEDIATE))
 
-        //playGame(settings, south, west, north, VERBOSE_MOVES)
-        playGames(settings, south, west, north, 10000)
+        //playGame(settings, players, VERBOSE_ALL)
+        //playGames(settings, players, VERBOSE_NONE, 1000)
+        playGamesParallel(settings, players, 1000)
     }
 
     /**
      * Play a single game.
      */
     private fun playGame(settings: GamePrefs,
-                         south: Player, west: Player, north: Player,
+                         players: List<Player>,
                          verbosity: Int): Game {
-        val game = Game(settings, south, west, north)
-        val players = game.players
-        val names = (settings[PrefKeys.PLAYER_NAMES] as PlayerNamesPref).value
+        require(players.size == 3) { "There must be exactly 3 players." }
 
-        var lastScores = IntArray(3) { settings.getInt(PrefKeys.START_SCORE) }
+        val game = Game(settings, players[0], players[1], players[2])
+        val names = (settings[PrefKeys.PLAYER_NAMES] as PlayerNamesPref).defaultValue
 
         game.eventListeners += { event ->
             when (event) {
@@ -88,7 +82,6 @@ internal class GameTest {
                     }
                 }
                 is RoundStartEvent -> {
-                    // >>> Round 1 started, trump: ♥
                     if (verbosity >= VERBOSE_ROUNDS) {
                         val trumpStr = if (game.trumpSuit == GameState.NO_TRUMP) {
                             "none"
@@ -99,22 +92,16 @@ internal class GameTest {
                     }
                 }
                 is RoundEndEvent -> {
-                    // >>> Round 1 ended, diff: [-2, 1, 0], scores: [7, 10, 9]
                     if (verbosity >= VERBOSE_ROUNDS) {
-                        val scores = IntArray(3) { players[it].score }
-                        val diff = IntArray(3) { scores[it] - lastScores[it] }
-                        lastScores = scores
                         println(">>> Round ${game.round} ended, " +
-                                "diff: ${diff.contentToString()}, " +
-                                "scores: ${scores.contentToString()}\n")
+                                "diff: ${event.result.map { 4 - it.toInt() }}, " +
+                                "scores: ${players.map { it.score }}\n")
                     }
                 }
                 is EndEvent -> {
-                    // === GAME ENDED after 13 rounds, scores: [-1, 6, 9], winner: South ===
                     if (verbosity >= VERBOSE_ROUNDS) {
-                        val scores = IntArray(3) { players[it].score }
                         println("=== GAME ENDED after ${game.round} rounds, " +
-                                "scores: ${scores.contentToString()}, " +
+                                "scores: ${players.map { it.score }}, " +
                                 "winner: ${names[game.winnerPos]} ===\n")
                     }
                 }
@@ -122,20 +109,24 @@ internal class GameTest {
                     if (verbosity >= VERBOSE_MOVES) {
                         val state = game.state!!
                         val player = players[event.playerPos]
-                        // South did: Trade hand, trick: []
-                        print("${names[event.playerPos]} did: $event, trick: ${state.currentTrick}")
+                        print("${names[event.playerPos]} did: $event")
+                        if (event is PlayMove) {
+                            val trickCards = if (state.currentTrick.cards.isEmpty()) {
+                                state.tricksPlayed.last()
+                            } else {
+                                state.currentTrick
+                            }.cards
+                            print(", trick: $trickCards")
+                        }
                         if (verbosity == VERBOSE_ALL) {
-                            // West did: Play 5♥, trick: [A♥, 5♥], hand: [...]
-                            print(", hand: ${player.hand}")
+                            print(", hand: ${player.hand.cards.toSortedString()}")
                         }
                         println()
                         if (state.tricksPlayed.size > 0 && state.currentTrick.cards.isEmpty()) {
-                            // > Trick #5 taken by North
-                            println("> Trick #${state.tricksPlayed} taken by ${names[state.posToMove]}\n")
+                            println("> Trick #${state.tricksPlayed.size} taken by ${names[state.posToMove]} " +
+                                    "(${player.tricksTaken})\n")
                         }
                     }
-
-
                 }
             }
         }
@@ -174,21 +165,47 @@ internal class GameTest {
     }
 
     /**
-     * Play a number of games in parallel.
+     * Play a number of games.
      */
     private fun playGames(settings: GamePrefs,
-                          south: Player, west: Player, north: Player,
+                          players: List<Player>,
+                          verbosity: Int,
                           count: Int) {
+        var gamesPlayed = 0
+        val gamesWon = IntArray(3)
+
+        repeat(count) {
+            // Shuffle players to avoid bias. (eg: playing after a beginner is clearly an advantage)
+            val shuffledPlayers = players.shuffled()
+            val game = playGame(settings, shuffledPlayers.map { it.clone() }, verbosity)
+
+            val winner = shuffledPlayers[game.winnerPos]
+            gamesWon[players.indexOfFirst { it === winner }]++
+            gamesPlayed++
+
+            println("$gamesPlayed / $count, scores: ${gamesWon.contentToString()}")
+        }
+    }
+
+    /**
+     * Play a number of games in parallel.
+     */
+    private fun playGamesParallel(settings: GamePrefs,
+                                  players: List<Player>,
+                                  count: Int) {
         val gamesPlayed = AtomicInteger()
         val gamesWon = AtomicIntegerArray(3)
         val scoreDistribution = AtomicIntegerArray(14)
 
         runBlocking {
-            (0 until count).map {
+            List(count) {
                 GlobalScope.async {
-                    val game = playGame(settings, south.clone(), west.clone(), north.clone(), VERBOSE_NONE)
-                    gamesWon.addAndGet(game.winnerPos, 1)
-                    val played = gamesPlayed.addAndGet(1)
+                    val shuffledPlayers = players.shuffled()
+                    val game = playGame(settings, shuffledPlayers.map { it.clone() }, VERBOSE_NONE)
+
+                    val winner = shuffledPlayers[game.winnerPos]
+                    gamesWon.incrementAndGet(players.indexOfFirst { it === winner })
+                    val played = gamesPlayed.incrementAndGet()
                     println("$played / $count, scores: $gamesWon")
 
                     for (event in game.events) {
@@ -217,10 +234,10 @@ internal class GameTest {
         }
     }
 
-    companion object {
-        const val VERBOSE_NONE = 0
-        const val VERBOSE_ROUNDS = 1
-        const val VERBOSE_MOVES = 2
-        const val VERBOSE_ALL = 3
-    }
+    private const val VERBOSE_NONE = 0
+    private const val VERBOSE_ROUNDS = 1
+    private const val VERBOSE_MOVES = 2
+    private const val VERBOSE_ALL = 3
+
 }
+

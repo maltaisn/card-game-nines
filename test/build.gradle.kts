@@ -34,4 +34,5 @@ application {
 tasks.named<JavaExec>("run") {
     workingDir = file("../assets")
     standardInput = System.`in`
+    jvmArgs = listOf("-ea")
 }
