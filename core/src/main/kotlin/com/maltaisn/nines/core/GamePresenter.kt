@@ -18,7 +18,7 @@ package com.maltaisn.nines.core
 
 import com.badlogic.gdx.Files
 import com.maltaisn.cardgame.CoreRes
-import com.maltaisn.cardgame.game.CardPlayer
+import com.maltaisn.cardgame.game.player.CardPlayer
 import com.maltaisn.cardgame.game.sortWith
 import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.prefs.GamePref
@@ -873,7 +873,7 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         for (event in game.events) {
             if (event is RoundEndEvent) {
                 layout.addScoresTableRow(List(3) {
-                    val diff = Game.MINIMUM_TRICKS - event.result[it]
+                    val diff = Game.MINIMUM_TRICKS - event.tricksTaken[it]
                     ScoresTable.Score(layout.numberFormat.format(diff))
                 })
             }

@@ -27,32 +27,33 @@ import ktx.json.readArrayValue
  */
 class RoundEndEvent() : GameEvent() {
 
-    lateinit var result: List<Float>
+    /** Number of tricks taken for each player, indexed by position. */
+    lateinit var tricksTaken: List<Int>
         private set
 
     lateinit var tricks: List<Trick>
         private set
 
-    constructor(result: List<Float>, tricks: List<Trick>) : this() {
-        this.result = result
+    constructor(tricksTaken: List<Int>, tricks: List<Trick>) : this() {
+        this.tricksTaken = tricksTaken
         this.tricks = tricks
     }
 
     override fun equals(other: Any?) = other === this || other is RoundEndEvent &&
-            result == other.result && tricks == other.tricks
+            tricksTaken == other.tricksTaken && tricks == other.tricks
 
-    override fun hashCode() = arrayOf(result, tricks).contentHashCode()
+    override fun hashCode() = arrayOf(tricksTaken, tricks).contentHashCode()
 
-    override fun toString() = "Round end [result: $result, tricks: $tricks]"
+    override fun toString() = "Round end [tricksTaken: $tricksTaken, tricks: $tricks]"
 
 
     override fun read(json: Json, jsonData: JsonValue) {
-        result = json.readArrayValue(jsonData, "result")
+        tricksTaken = jsonData["tricksTaken"].asIntArray().toList()
         tricks = json.readArrayValue(jsonData, "tricks")
     }
 
     override fun write(json: Json) {
-        json.writeValue("result", result)
+        json.writeValue("tricksTaken", tricksTaken.toIntArray())
         json.writeValue("tricks", tricks)
     }
 }

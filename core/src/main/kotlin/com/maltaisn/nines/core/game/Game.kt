@@ -22,7 +22,7 @@ import com.badlogic.gdx.utils.JsonValue
 import com.badlogic.gdx.utils.SerializationException
 import com.maltaisn.cardgame.game.CardGame
 import com.maltaisn.cardgame.game.CardGameEvent
-import com.maltaisn.cardgame.game.CardPlayer
+import com.maltaisn.cardgame.game.player.CardPlayer
 import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.nines.core.PrefKeys
@@ -199,9 +199,9 @@ class Game() : CardGame() {
         val state = state!!
 
         // Update the scores
-        val result = state.result!!
-        for ((i, player) in players.withIndex()) {
-            player.score += MINIMUM_TRICKS - result[i].toInt()
+        val tricksTaken = players.map { it.tricksTaken }
+        for (player in players) {
+            player.score += MINIMUM_TRICKS - player.tricksTaken
         }
 
         // Check if any player has won
@@ -210,7 +210,7 @@ class Game() : CardGame() {
             winnerPos = leader.position
         }
 
-        doEvent(RoundEndEvent(result, state.tricksPlayed))
+        doEvent(RoundEndEvent(tricksTaken, state.tricksPlayed))
 
         this.state = null
 

@@ -27,12 +27,14 @@ import com.maltaisn.nines.core.game.GameState
  */
 class CheatingPlayer : AiPlayer() {
 
+    private val mcts = Mcts()
+
     override fun findMove(state: GameState) =
             if (state.phase == GameState.Phase.TRADE) {
                 // See MctsPlayer#findMove.
-                state.getMoves().maxBy { Mcts.simulate(state, it, MCTS_ITER / 2) }!!
+                state.getMoves().maxBy { mcts.simulate(state, it, MCTS_ITER / 2) }!!
             } else {
-                Mcts.run(state, MCTS_ITER)
+                mcts.run(state, MCTS_ITER)
             }
 
     override fun clone() = cloneTo(CheatingPlayer())

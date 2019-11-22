@@ -22,6 +22,7 @@ import com.maltaisn.cardgame.game.CardGameEvent
 import com.maltaisn.cardgame.game.CardGameState
 import com.maltaisn.cardgame.game.ai.Mcts
 import com.maltaisn.cardgame.game.drawTop
+import com.maltaisn.cardgame.game.player.CardMctsPlayer
 import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.utils.Hungarian
 import com.maltaisn.nines.core.game.GameState
@@ -58,7 +59,10 @@ import kotlin.random.Random
  * and that the beginner doesn't always win against the random player
  * shows that luck plays a big part in a game of Nines.
  */
-class MctsPlayer() : AiPlayer() {
+class MctsPlayer() : AiPlayer(), CardMctsPlayer {
+
+    private val mcts = Mcts()
+
 
     lateinit var difficulty: Difficulty
         private set
@@ -67,7 +71,7 @@ class MctsPlayer() : AiPlayer() {
      * A map of cards known to belong to a hand (mapped by hand ID).
      * An ID of [Hand.NO_ID] means the card was played in a trick.
      */
-    private val knownCards = mutableMapOf<PCard, Int>()
+    private val knownCards = linkedMapOf<PCard, Int>()
 
     /**
      * A list of possible card suits in a hand, indexed by hand ID.
@@ -75,11 +79,8 @@ class MctsPlayer() : AiPlayer() {
      */
     private var knownSuits: List<MutableList<Int>> = emptyList()
 
-    /**
-     * Whether this player is a clone used for MCTS simulation.
-     * If it's a clone, it won't remember information since [findMove] will never be called.
-     */
-    private var isMctsClone = false
+
+    override var isMctsClone = false
 
 
     constructor(difficulty: Difficulty) : this() {
@@ -113,12 +114,12 @@ class MctsPlayer() : AiPlayer() {
             // This is the only heuristic used in the AI.
             val tradeMove = moves.find { it is TradeHandMove && it.trade }!!
             val noTradeMove = moves.find { it is TradeHandMove && !it.trade }!!
-            val tradeScore = Mcts.simulate(state, tradeMove, difficulty.tradeIter) * difficulty.tradeWeights[state.tradesCount]
-            val noTradeScore = Mcts.simulate(state, noTradeMove, difficulty.tradeIter)
+            val tradeScore = mcts.simulate(state, tradeMove, difficulty.tradeIter) * difficulty.tradeWeights[state.tradesCount]
+            val noTradeScore = mcts.simulate(state, noTradeMove, difficulty.tradeIter)
             if (tradeScore > noTradeScore) tradeMove else noTradeMove
 
         } else {
-            Mcts.run(state, max(moves.size, difficulty.playIter))
+            mcts.run(state, max(moves.size, difficulty.playIter))
         }
     }
 
@@ -177,14 +178,8 @@ class MctsPlayer() : AiPlayer() {
 
 
     override fun randomizeGameState(state: CardGameState<*>) {
+        super.randomizeGameState(state)
         state as GameState
-
-        // Set MCTS clone attribute to all players
-        for (player in state.players) {
-            if (player is MctsPlayer) {
-                player.isMctsClone = true
-            }
-        }
 
         // The next steps aim to separate all known cards and all unknown cards. A known card is a card that this
         // player knows belong to a specific hand. Known cards are given back to their known owners.

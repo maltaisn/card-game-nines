@@ -104,7 +104,7 @@ class StatsHandler(private val game: Game,
     private fun onRoundEnded(event: RoundEndEvent) {
         addToStat(ROUNDS_PLAYED)
 
-        val diff = event.result.map { 4 - it.toInt() }
+        val diff = event.tricksTaken.map { 4 - it }
 
         // Increment rounds won if player has lowest score in the round
         if (Game.findLowestScorePosition(diff) == 0) {

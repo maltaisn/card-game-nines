@@ -53,14 +53,14 @@ object Main {
         val settings = buildSettings(I18NBundle.createBundle(Gdx.files.internal(Res.STRINGS)))
 
         // Create players
-        val players = listOf(
-                MctsPlayer(Difficulty.ADVANCED),
-                MctsPlayer(Difficulty.INTERMEDIATE),
-                MctsPlayer(Difficulty.INTERMEDIATE))
+        val players = listOf<Player>(
+                MctsPlayer(Difficulty.EXPERT2),
+                MctsPlayer(Difficulty.EXPERT),
+                MctsPlayer(Difficulty.EXPERT))
 
         //playGame(settings, players, VERBOSE_ALL)
-        //playGames(settings, players, VERBOSE_NONE, 1000)
-        playGamesParallel(settings, players, 1000)
+        playGames(settings, players, VERBOSE_NONE, 1000)
+        //playGamesParallel(settings, players, 1000)
     }
 
     /**
@@ -94,7 +94,7 @@ object Main {
                 is RoundEndEvent -> {
                     if (verbosity >= VERBOSE_ROUNDS) {
                         println(">>> Round ${game.round} ended, " +
-                                "diff: ${event.result.map { 4 - it.toInt() }}, " +
+                                "diff: ${event.tricksTaken.map { 4 - it }}, " +
                                 "scores: ${players.map { it.score }}\n")
                     }
                 }
@@ -172,7 +172,7 @@ object Main {
                           verbosity: Int,
                           count: Int) {
         var gamesPlayed = 0
-        val gamesWon = IntArray(3)
+        val gamesWon = IntArray(players.size)
 
         repeat(count) {
             // Shuffle players to avoid bias. (eg: playing after a beginner is clearly an advantage)
@@ -194,7 +194,7 @@ object Main {
                                   players: List<Player>,
                                   count: Int) {
         val gamesPlayed = AtomicInteger()
-        val gamesWon = AtomicIntegerArray(3)
+        val gamesWon = AtomicIntegerArray(players.size)
         val scoreDistribution = AtomicIntegerArray(14)
 
         runBlocking {
@@ -210,8 +210,8 @@ object Main {
 
                     for (event in game.events) {
                         if (event is RoundEndEvent) {
-                            for (score in event.result) {
-                                scoreDistribution.incrementAndGet(score.toInt())
+                            for (score in event.tricksTaken) {
+                                scoreDistribution.incrementAndGet(score)
                             }
                         }
                     }

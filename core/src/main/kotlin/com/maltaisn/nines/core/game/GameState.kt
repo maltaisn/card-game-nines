@@ -20,8 +20,8 @@ import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
 import com.maltaisn.cardgame.game.CardGameEvent
 import com.maltaisn.cardgame.game.CardGameState
-import com.maltaisn.cardgame.game.CardPlayer
 import com.maltaisn.cardgame.game.drawTop
+import com.maltaisn.cardgame.game.player.CardPlayer
 import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.nines.core.game.event.MoveEvent
@@ -123,8 +123,8 @@ class GameState() : CardGameState<Player>() {
                     currentTrick = Trick(posToMove)
 
                     if (tricksPlayed.size == CARDS_COUNT) {
-                        // Round is done, create result.
-                        result = List(3) { players[it].tricksTaken.toFloat() }
+                        // Round is done.
+                        isGameDone = true
                     }
                 } else {
                     posToMove = getPositionNextTo(posToMove)
