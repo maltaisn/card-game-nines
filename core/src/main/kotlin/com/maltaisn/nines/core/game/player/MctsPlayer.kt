@@ -99,6 +99,27 @@ class MctsPlayer() : AiPlayer(), CardMctsPlayer {
         knownSuits = List(4) { PCard.SUITS.toMutableList() }
     }
 
+    override fun getStateResult(state: CardGameState<*>) = if (difficulty.simulateAfterRound) {
+        // Simulate the end of the game by giving random round scores in a predetermined distribution
+        // to all players. Then give the result according to the position of the players in the game.
+        state as GameState
+        val scores = IntArray(3) { state.players[it].score }
+        while (scores.none { it <= 0 }) {
+            for (pos in scores.indices) {
+                val n = Random.nextInt(1000)
+                for (tricksTaken in 0 until SCORE_DISTRIBUTION.size - 1) {
+                    if (n >= SCORE_DISTRIBUTION[tricksTaken] && n < SCORE_DISTRIBUTION[tricksTaken + 1]) {
+                        scores[pos] += 4 - tricksTaken
+                        break
+                    }
+                }
+            }
+        }
+        1 - scores.sorted().indexOf(scores[position]) / 2f
+    } else {
+        super.getStateResult(state)
+    }
+
     override fun findMove(state: GameState): CardGameEvent.Move {
         assert(!isMctsClone)
 
@@ -309,18 +330,29 @@ class MctsPlayer() : AiPlayer(), CardMctsPlayer {
      * @property rememberOpponentSuits Whether the player remembers when a player is out of a suit.
      * @property tradeWeights Weight applied on trade move results to deter player from trading
      * when some players have already traded. Indexed by trades count, should be of length 3.
+     * @property simulateAfterRound TODO
      */
     enum class Difficulty(val tradeIter: Int,
                           val playIter: Int,
                           val forgetRatio: Float,
                           val rememberOpponentSuits: Boolean,
-                          val tradeWeights: FloatArray) {
+                          val tradeWeights: FloatArray,
+                          val simulateAfterRound: Boolean) {
 
-        BEGINNER(2, 10, 0.75f, false, floatArrayOf(1f, 1f, 1f)),
-        INTERMEDIATE(12, 50, 0.5f, false, floatArrayOf(1f, 1f, 1f)),
-        ADVANCED(70, 200, 0.25f, false, floatArrayOf(1f, 0.85f, 0.7f)),
-        EXPERT(140, 350, 0f, true, floatArrayOf(1f, 0.85f, 0.7f)),
-        PERFECT(1000, 2000, 0f, true, floatArrayOf(1f, 0.85f, 0.7f))
+        BEGINNER(2, 10, 0.75f, false, floatArrayOf(1f, 1f, 1f), false),
+        INTERMEDIATE(12, 50, 0.5f, false, floatArrayOf(1f, 1f, 1f), false),
+        ADVANCED(75, 250, 0.25f, false, floatArrayOf(1f, 1f, 1f), false),
+        EXPERT(150, 400, 0f, true, floatArrayOf(1f, 0.85f, 0.7f), false),
+        EXPERT2(150, 400, 0f, true, floatArrayOf(1f, 0.85f, 0.7f), true),
+        PERFECT(1000, 2000, 0f, true, floatArrayOf(1f, 0.85f, 0.7f), true)
+    }
+
+    companion object {
+        /**
+         * Round score distribution. When choosing a random number between 0 and 1000, if the number
+         * is between `s[i]` and `s[i + 1]`, then the round score is `4 - i`.
+         */
+        private val SCORE_DISTRIBUTION = intArrayOf(0, 9, 54, 167, 350, 561, 742, 869, 943, 979, 994, 1000)
     }
 
 }

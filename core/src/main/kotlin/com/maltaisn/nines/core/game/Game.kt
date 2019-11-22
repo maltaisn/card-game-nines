@@ -185,6 +185,7 @@ class Game() : CardGame() {
         dealerPos = (dealerPos + 1) % 3
 
         val state = GameState(settings, players, dealerPos, trumpSuit)
+        state.game = this
         this.state = state
 
         doEvent(RoundStartEvent(trumpSuit,
@@ -282,7 +283,10 @@ class Game() : CardGame() {
         dealerPos = jsonData.getInt("dealerPos")
         winnerPos = jsonData.getInt("winnerPos")
 
-        state?.players = players
+        state?.let {
+            it.game = this
+            it.players = players
+        }
     }
 
     override fun write(json: Json) {

@@ -37,6 +37,9 @@ import kotlin.random.Random
  */
 class GameState() : CardGameState<Player>() {
 
+    /** The game associated with the state. */
+    lateinit var game: Game
+
     /** Position of the dealer. */
     var dealerPos = CardPlayer.NO_POSITION
         private set
@@ -204,6 +207,7 @@ class GameState() : CardGameState<Player>() {
     }
 
     override fun clone() = cloneTo(GameState()).also { state ->
+        state.game = game
         state.dealerPos = dealerPos
         state.trumpSuit = trumpSuit
         state.extraHand = extraHand.clone()
