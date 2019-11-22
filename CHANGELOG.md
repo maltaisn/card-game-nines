@@ -7,6 +7,8 @@
     now fixed for a whole round.
     - Known suits was never updated so it was basically useless until now.
     - Added weighting heuristic for hand trading. Effect on play level is barely noticeable.
+    - Smaller cards will be played first if many moves are equally visited. This aims
+    to improve perception of stronger play rather that actually improve play level.
     - Rebalanced AI difficulties, all of them should be somewhat better.
 
 ### v1.0.2

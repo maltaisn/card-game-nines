@@ -104,12 +104,8 @@ class MctsPlayer() : AiPlayer(), CardMctsPlayer {
 
         val moves = state.getMoves()
         return if (state.phase == GameState.Phase.TRADE) {
-            // Do random simulations of trading and not trading.
-            // Choose the option that maximizes the average result.
-            // This is better than MCTS itself because we don't want exploitation, both
-            // options must be tested the same. With full MCTS, an option could be only tested
-            // once in 1000 simulations if the initial result is bad enough.
-
+            // Do random simulations of trading and not trading. Choose the option that maximizes the average result.
+            // This produces slightly better results than MCTS since both moves are guaranteed to be equally tested.
             // The trade result is also weighted as more players trade to deter players.
             // This is the only heuristic used in the AI.
             val tradeMove = moves.find { it is TradeHandMove && it.trade }!!
@@ -119,7 +115,15 @@ class MctsPlayer() : AiPlayer(), CardMctsPlayer {
             if (tradeScore > noTradeScore) tradeMove else noTradeMove
 
         } else {
-            mcts.run(state, max(moves.size, difficulty.playIter))
+            // Use MCTS to find the best move. Sometimes two or more moves are equally visited, indicating that they
+            // should produce roughly the same outcome. For example, if a player has no cards left allowing it to take
+            // a trick, all cards will produce the same result. However a human player would still discard the lowest
+            // cards in that situation, which is what is done here to improve perception of a stronger play even
+            // though it has no significant impact on play level.
+            val childNodes = mcts.run(state, max(moves.size, difficulty.playIter)).childNodes
+            val maxVisits = childNodes.maxBy { it.visits }!!.visits
+            val bestMoves = childNodes.filter { it.visits == maxVisits }
+            bestMoves.minBy { (it.move as PlayMove).card.rank }!!.move!!
         }
     }
 

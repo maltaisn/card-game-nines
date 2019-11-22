@@ -54,7 +54,7 @@ object Main {
 
         // Create players
         val players = listOf<Player>(
-                MctsPlayer(Difficulty.EXPERT2),
+                MctsPlayer(Difficulty.EXPERT),
                 MctsPlayer(Difficulty.EXPERT),
                 MctsPlayer(Difficulty.EXPERT))
 

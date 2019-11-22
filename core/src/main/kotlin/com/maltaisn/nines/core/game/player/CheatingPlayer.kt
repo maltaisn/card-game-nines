@@ -34,7 +34,7 @@ class CheatingPlayer : AiPlayer() {
                 // See MctsPlayer#findMove.
                 state.getMoves().maxBy { mcts.simulate(state, it, MCTS_ITER / 2) }!!
             } else {
-                mcts.run(state, MCTS_ITER)
+                mcts.findMove(state, MCTS_ITER)
             }
 
     override fun clone() = cloneTo(CheatingPlayer())
