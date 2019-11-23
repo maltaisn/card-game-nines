@@ -12,6 +12,7 @@
     - Rebalanced AI difficulties, all of them should be somewhat better.
     
 - Fixed starting score preference change not being reflected when there was no saved game.
+- Fixed blocked play after clicking on unplayable card.
 
 ### v1.0.2
 - Fixed crash with msdf-gdx on devices with older Open GL ES versions.

@@ -253,12 +253,12 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         val game = requireGame()
         val state = requireState()
 
-        if (!waitingForHumanInput || state.phase != GameState.Phase.PLAY) return
-        waitingForHumanInput = false
-
         // Play the clicked card if it can be played.
         val move = state.getMoves().find { (it as PlayMove).card == card }
         if (move != null) {
+            if (!waitingForHumanInput || state.phase != GameState.Phase.PLAY) return
+            waitingForHumanInput = false
+
             // This card can be played, play it.
             game.doMove(move)
 
