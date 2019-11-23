@@ -120,8 +120,13 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
     }
 
     override fun onPrefNeedsConfirm(pref: GamePref<*>, callback: (Boolean) -> Unit) {
+        // A preference was changed and requires game reset
         if (GAME_SAVE_FILE.exists()) {
+            // There's a saved game, ask user.
             layout.showResetGameDialog(pref, callback)
+        } else {
+            // No saved game, change value.
+            callback(true)
         }
     }
 

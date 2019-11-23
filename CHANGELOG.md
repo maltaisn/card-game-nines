@@ -10,6 +10,8 @@
     - Smaller cards will be played first if many moves are equally visited. This aims
     to improve perception of stronger play rather that actually improve play level.
     - Rebalanced AI difficulties, all of them should be somewhat better.
+    
+- Fixed starting score preference change not being reflected when there was no saved game.
 
 ### v1.0.2
 - Fixed crash with msdf-gdx on devices with older Open GL ES versions.
