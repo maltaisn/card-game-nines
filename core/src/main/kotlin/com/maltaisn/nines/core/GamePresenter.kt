@@ -229,8 +229,8 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         if (!waitingForHumanInput) return
         waitingForHumanInput = false
 
-        val game = requireGame()
-        val state = requireState()
+        val game = game ?: return
+        val state = game.state ?: return
 
         // Do the trade move and hide the popup
         game.doMove(state.getMoves().find { (it as TradeHandMove).trade == trade }!!)
@@ -250,13 +250,14 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
     }
 
     override fun onPlayerCardClicked(card: PCard) {
-        val game = requireGame()
-        val state = requireState()
+        val game = game ?: return
+        val state = game.state ?: return
+
+        if (!waitingForHumanInput || state.phase != GameState.Phase.PLAY) return
 
         // Play the clicked card if it can be played.
         val move = state.getMoves().find { (it as PlayMove).card == card }
         if (move != null) {
-            if (!waitingForHumanInput || state.phase != GameState.Phase.PLAY) return
             waitingForHumanInput = false
 
             // This card can be played, play it.

@@ -13,6 +13,7 @@
     
 - Fixed starting score preference change not being reflected when there was no saved game.
 - Fixed blocked play after clicking on unplayable card.
+- Fixed crash when clicking player cards during hide transition.
 
 ### v1.0.2
 - Fixed crash with msdf-gdx on devices with older Open GL ES versions.
