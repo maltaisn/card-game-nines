@@ -16,8 +16,8 @@
 
 package com.maltaisn.nines.core.game.player
 
-import com.maltaisn.cardgame.game.CardGameEvent
 import com.maltaisn.cardgame.game.CardGameState
+import com.maltaisn.cardgame.game.event.CardGameMove
 import com.maltaisn.nines.core.game.GameState
 
 
@@ -30,6 +30,6 @@ abstract class AiPlayer : Player() {
      * Find the best move to play given the current game state.
      * The moves must come from [CardGameState.getMoves] and not be created.
      */
-    abstract fun findMove(state: GameState): CardGameEvent.Move
+    abstract fun findMove(state: GameState): CardGameMove
 
 }

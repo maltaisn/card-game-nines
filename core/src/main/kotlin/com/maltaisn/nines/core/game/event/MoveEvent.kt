@@ -18,13 +18,13 @@ package com.maltaisn.nines.core.game.event
 
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
-import com.maltaisn.cardgame.game.CardGameEvent
+import com.maltaisn.cardgame.game.event.CardGameMove
 import com.maltaisn.cardgame.game.player.CardPlayer
 
 /**
  * The base class for any move made by a player.
  */
-abstract class MoveEvent : GameEvent(), CardGameEvent.Move {
+abstract class MoveEvent : GameEvent(), CardGameMove {
 
     /**
      * The position of the player who made the move.

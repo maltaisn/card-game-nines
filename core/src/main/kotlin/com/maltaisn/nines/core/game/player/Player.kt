@@ -18,8 +18,8 @@ package com.maltaisn.nines.core.game.player
 
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
-import com.maltaisn.cardgame.game.CardGameEvent
 import com.maltaisn.cardgame.game.CardGameState
+import com.maltaisn.cardgame.game.event.CardGameMove
 import com.maltaisn.cardgame.game.player.CardPlayer
 import com.maltaisn.nines.core.game.GameState
 import com.maltaisn.nines.core.game.Hand
@@ -54,7 +54,7 @@ abstract class Player : CardPlayer(), Json.Serializable {
     /**
      * Called when [state] performs a [move] for any player.
      */
-    open fun onMove(state: GameState, move: CardGameEvent.Move) = Unit
+    open fun onMove(state: GameState, move: CardGameMove) = Unit
 
     override fun getStateResult(state: CardGameState<*>): Float {
         state as GameState

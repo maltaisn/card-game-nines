@@ -18,10 +18,10 @@ package com.maltaisn.nines.core.game.player
 
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
-import com.maltaisn.cardgame.game.CardGameEvent
 import com.maltaisn.cardgame.game.CardGameState
 import com.maltaisn.cardgame.game.ai.Mcts
 import com.maltaisn.cardgame.game.drawTop
+import com.maltaisn.cardgame.game.event.CardGameMove
 import com.maltaisn.cardgame.game.player.CardMctsPlayer
 import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.utils.Hungarian
@@ -99,7 +99,7 @@ class MctsPlayer() : AiPlayer(), CardMctsPlayer {
         knownSuits = List(4) { PCard.SUITS.toMutableList() }
     }
 
-    override fun findMove(state: GameState): CardGameEvent.Move {
+    override fun findMove(state: GameState): CardGameMove {
         assert(!isMctsClone)
 
         val moves = state.getMoves()
@@ -127,7 +127,7 @@ class MctsPlayer() : AiPlayer(), CardMctsPlayer {
         }
     }
 
-    override fun onMove(state: GameState, move: CardGameEvent.Move) {
+    override fun onMove(state: GameState, move: CardGameMove) {
         if (isMctsClone) {
             // MCTS Clones have no interest to learn from moves since they never make informed decisions.
             // They only make random moves.

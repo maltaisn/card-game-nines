@@ -21,7 +21,7 @@ import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
 import com.badlogic.gdx.utils.SerializationException
 import com.maltaisn.cardgame.game.CardGame
-import com.maltaisn.cardgame.game.CardGameEvent
+import com.maltaisn.cardgame.game.event.CardGameMove
 import com.maltaisn.cardgame.game.player.CardPlayer
 import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.prefs.GamePrefs
@@ -228,7 +228,7 @@ class Game() : CardGame() {
     }
 
     /** Do a [move] on the game state. */
-    fun doMove(move: CardGameEvent.Move) {
+    fun doMove(move: CardGameMove) {
         check(phase == Phase.ROUND_STARTED)
 
         state?.doMove(move)

@@ -18,9 +18,9 @@ package com.maltaisn.nines.core.game
 
 import com.badlogic.gdx.utils.Json
 import com.badlogic.gdx.utils.JsonValue
-import com.maltaisn.cardgame.game.CardGameEvent
 import com.maltaisn.cardgame.game.CardGameState
 import com.maltaisn.cardgame.game.drawTop
+import com.maltaisn.cardgame.game.event.CardGameMove
 import com.maltaisn.cardgame.game.player.CardPlayer
 import com.maltaisn.cardgame.pcard.PCard
 import com.maltaisn.cardgame.prefs.GamePrefs
@@ -83,7 +83,7 @@ class GameState() : CardGameState<Player>() {
         extraHand = Hand(id, deck.drawTop(CARDS_COUNT))
     }
 
-    override fun doMove(move: CardGameEvent.Move) {
+    override fun doMove(move: CardGameMove) {
         val player = players[posToMove]
         when (move) {
             is TradeHandMove -> {
@@ -137,7 +137,7 @@ class GameState() : CardGameState<Player>() {
         }
     }
 
-    override fun getMoves(): MutableList<out CardGameEvent.Move> {
+    override fun getMoves(): MutableList<out CardGameMove> {
         val moves = mutableListOf<MoveEvent>()
         if (isGameDone) {
             return moves
