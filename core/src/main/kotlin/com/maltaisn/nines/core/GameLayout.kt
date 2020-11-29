@@ -35,8 +35,21 @@ import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.prefs.SwitchPref
 import com.maltaisn.cardgame.stats.Statistics
 import com.maltaisn.cardgame.utils.postDelayed
-import com.maltaisn.cardgame.widget.*
-import com.maltaisn.cardgame.widget.card.*
+import com.maltaisn.cardgame.widget.AboutView
+import com.maltaisn.cardgame.widget.AlertDialog
+import com.maltaisn.cardgame.widget.Button
+import com.maltaisn.cardgame.widget.CardGameLayout
+import com.maltaisn.cardgame.widget.CoreIcons
+import com.maltaisn.cardgame.widget.DealerChip
+import com.maltaisn.cardgame.widget.Dialog
+import com.maltaisn.cardgame.widget.FadeTable
+import com.maltaisn.cardgame.widget.PlayerLabel
+import com.maltaisn.cardgame.widget.Popup
+import com.maltaisn.cardgame.widget.card.CardActor
+import com.maltaisn.cardgame.widget.card.CardContainer
+import com.maltaisn.cardgame.widget.card.CardHand
+import com.maltaisn.cardgame.widget.card.CardStack
+import com.maltaisn.cardgame.widget.card.CardTrick
 import com.maltaisn.cardgame.widget.menu.DefaultGameMenu
 import com.maltaisn.cardgame.widget.menu.MenuItem
 import com.maltaisn.cardgame.widget.menu.PagedSubMenu
@@ -54,7 +67,6 @@ import ktx.style.get
 import java.text.NumberFormat
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
-
 
 class GameLayout(skin: Skin, override val listener: GameListener) :
         CardGameLayout(skin), GameContract.View {
@@ -165,10 +177,10 @@ class GameLayout(skin: Skin, override val listener: GameListener) :
                 strings["about_version"], strings["about_author"])
         if (listener.isRateAppSupported) {
             aboutView.addButton(strings["about_rate"], skin.getDrawable(CoreIcons.STAR))
-                    .onClick(presenter::onAboutRateAppClicked)
+                .onClick { presenter.onAboutRateAppClicked() }
         }
         aboutView.addButton(strings["about_report_bug"], skin.getDrawable(CoreIcons.ALERT))
-                .onClick(presenter::onAboutReportBugClicked)
+            .onClick { presenter.onAboutReportBugClicked() }
         aboutView.appIcon = style.appIcon
         aboutPage.content = aboutView
 
@@ -313,7 +325,7 @@ class GameLayout(skin: Skin, override val listener: GameListener) :
         }
 
         // Back key listener
-        onKeyDownEvent(true) { event, _, key ->
+        onKeyDownEvent(true) { event, key ->
             if (!event.isHandled) {
                 when (key) {
                     Input.Keys.F11 -> {
