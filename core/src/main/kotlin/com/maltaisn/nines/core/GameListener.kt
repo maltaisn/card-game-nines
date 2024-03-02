@@ -37,6 +37,8 @@ interface GameListener : CardGameListener {
 
     fun onReportBugClicked()
 
+    fun onViewSourceClicked()
+
     fun onRateAppClicked() = Unit
 
 }

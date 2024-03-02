@@ -281,6 +281,10 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         layout.listener.onReportBugClicked()
     }
 
+    override fun onAboutSourceClicked() {
+        layout.listener.onViewSourceClicked()
+    }
+
     override fun onGameOverDialogScoresBtnClicked() {
         showGameSummary()
     }

@@ -35,21 +35,8 @@ import com.maltaisn.cardgame.prefs.GamePrefs
 import com.maltaisn.cardgame.prefs.SwitchPref
 import com.maltaisn.cardgame.stats.Statistics
 import com.maltaisn.cardgame.utils.postDelayed
-import com.maltaisn.cardgame.widget.AboutView
-import com.maltaisn.cardgame.widget.AlertDialog
-import com.maltaisn.cardgame.widget.Button
-import com.maltaisn.cardgame.widget.CardGameLayout
-import com.maltaisn.cardgame.widget.CoreIcons
-import com.maltaisn.cardgame.widget.DealerChip
-import com.maltaisn.cardgame.widget.Dialog
-import com.maltaisn.cardgame.widget.FadeTable
-import com.maltaisn.cardgame.widget.PlayerLabel
-import com.maltaisn.cardgame.widget.Popup
-import com.maltaisn.cardgame.widget.card.CardActor
-import com.maltaisn.cardgame.widget.card.CardContainer
-import com.maltaisn.cardgame.widget.card.CardHand
-import com.maltaisn.cardgame.widget.card.CardStack
-import com.maltaisn.cardgame.widget.card.CardTrick
+import com.maltaisn.cardgame.widget.*
+import com.maltaisn.cardgame.widget.card.*
 import com.maltaisn.cardgame.widget.menu.DefaultGameMenu
 import com.maltaisn.cardgame.widget.menu.MenuItem
 import com.maltaisn.cardgame.widget.menu.PagedSubMenu
@@ -181,6 +168,8 @@ class GameLayout(skin: Skin, override val listener: GameListener) :
         }
         aboutView.addButton(strings["about_report_bug"], skin.getDrawable(CoreIcons.ALERT))
             .onClick { presenter.onAboutReportBugClicked() }
+        aboutView.addButton(strings["about_source"], skin.getDrawable(CoreIcons.GITHUB))
+                .onClick { presenter.onAboutSourceClicked() }
         aboutView.appIcon = style.appIcon
         aboutPage.content = aboutView
 

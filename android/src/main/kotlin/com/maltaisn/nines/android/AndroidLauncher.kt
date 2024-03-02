@@ -112,6 +112,10 @@ class AndroidLauncher : AndroidApplication(), GameListener {
         startActivity(Intent.createChooser(emailIntent, "Send feedback"))
     }
 
+    override fun onViewSourceClicked() {
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/maltaisn/card-game-nines")))
+    }
+
     private fun rateIntentForUrl(url: String): Intent {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(String.format("%s?id=%s", url, packageName)))
         val flags = Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_MULTIPLE_TASK or

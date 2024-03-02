@@ -67,4 +67,10 @@ object DesktopLauncher : GameListener {
         }
     }
 
+    override fun onViewSourceClicked() {
+        if (Desktop.isDesktopSupported()) {
+            Desktop.getDesktop().browse(URI("https://github.com/maltaisn/card-game-nines"))
+        }
+    }
+
 }

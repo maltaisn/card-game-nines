@@ -1,3 +1,8 @@
+## v1.1.1
+
+- Update target Android API, libGDX & other libraries.
+- Added view source on GitHub button in about page.
+
 ## v1.1.0
 - AI fixes and improvements
     - Fixed cheating bug. The known hand IDs was never reset, so the player
