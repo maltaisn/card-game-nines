@@ -8,12 +8,14 @@ val appVersionCode = appVersion.split('.')
         .joinToString("") { it.padStart(2, '0') }.toInt()
 
 android {
-    buildToolsVersion("29.0.2")
-    compileSdkVersion(29)
+    namespace = "com.maltaisn.nines.android"
+
+    buildToolsVersion = "34.0.0"
+    compileSdk = 34
     defaultConfig {
         applicationId = "com.maltaisn.nines.android"
-        minSdkVersion(16)
-        targetSdkVersion(29)
+        minSdk = 16
+        targetSdk = 34
         versionCode = appVersionCode
         versionName = appVersion
     }
@@ -34,12 +36,15 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_6
-        targetCompatibility = JavaVersion.VERSION_1_6
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
-    packagingOptions {
-        exclude("com/badlogic/**")  // Unused default shader files and assets
-        exclude("META-INF/core.kotlin_module")  // Collision between core and cardgame/core modules
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+    packaging {
+        resources.excludes.add("com/badlogic/**")  // Unused default shader files and assets
+        resources.excludes.add("META-INF/*")  // Collision between core and cardgame/core modules
     }
     sourceSets {
         named("main") {
@@ -55,11 +60,10 @@ dependencies {
 
     implementation(project(":core"))
 
-    implementation(kotlin("stdlib"))
+    implementation(kotlin("stdlib-jdk8"))
 
     // LibGDX
-    implementation("com.badlogicgames.gdx:gdx-backend-android:$gdxVersion")
-    natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi")
+    api("com.badlogicgames.gdx:gdx-backend-android:$gdxVersion")
     natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi-v7a")
     natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-arm64-v8a")
     natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86")

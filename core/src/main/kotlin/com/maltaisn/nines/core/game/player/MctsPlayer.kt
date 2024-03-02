@@ -121,9 +121,9 @@ class MctsPlayer() : AiPlayer(), CardMctsPlayer {
             // cards in that situation, which is what is done here to improve perception of a stronger play even
             // though it has no significant impact on play level.
             val childNodes = mcts.run(state, max(moves.size, difficulty.playIter)).childNodes
-            val maxVisits = childNodes.maxBy { it.visits }!!.visits
+            val maxVisits = childNodes.maxBy { it.visits }.visits
             val bestMoves = childNodes.filter { it.visits == maxVisits }
-            bestMoves.minBy { (it.move as PlayMove).card.rank }!!.move!!
+            bestMoves.minBy { (it.move as PlayMove).card.rank }.move!!
         }
     }
 

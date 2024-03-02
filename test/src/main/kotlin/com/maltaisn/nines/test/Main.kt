@@ -34,11 +34,8 @@ import com.maltaisn.nines.core.game.player.AiPlayer
 import com.maltaisn.nines.core.game.player.MctsPlayer
 import com.maltaisn.nines.core.game.player.MctsPlayer.Difficulty
 import com.maltaisn.nines.core.game.player.Player
-import com.nhaarman.mockitokotlin2.mock
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
+import org.mockito.kotlin.mock
 import java.text.DecimalFormat
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicIntegerArray
@@ -190,6 +187,7 @@ object Main {
     /**
      * Play a number of games in parallel.
      */
+    @OptIn(DelicateCoroutinesApi::class)
     private fun playGamesParallel(settings: GamePrefs,
                                   players: List<Player>,
                                   count: Int) {

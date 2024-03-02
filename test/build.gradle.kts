@@ -10,7 +10,7 @@ dependencies {
 
     implementation(project(":core"))
 
-    implementation(kotlin("stdlib"))
+    implementation(kotlin("stdlib-jdk8"))
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
 
@@ -18,17 +18,17 @@ dependencies {
     implementation("com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion")
     implementation("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop")
 
-    implementation("com.nhaarman.mockitokotlin2:mockito-kotlin:$mockitoKotlinVersion")
+    implementation("org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion")
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_6
-    targetCompatibility = JavaVersion.VERSION_1_6
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
 }
 
-
 application {
-    mainClassName = "com.maltaisn.nines.test.Main"
+    mainClass = "com.maltaisn.nines.test.Main"
 }
 
 tasks.named<JavaExec>("run") {

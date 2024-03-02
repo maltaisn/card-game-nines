@@ -32,7 +32,7 @@ class CheatingPlayer : AiPlayer() {
     override fun findMove(state: GameState) =
             if (state.phase == GameState.Phase.TRADE) {
                 // See MctsPlayer#findMove.
-                state.getMoves().maxBy { mcts.simulate(state, it, MCTS_ITER / 2) }!!
+                state.getMoves().maxBy { mcts.simulate(state, it, MCTS_ITER / 2) }
             } else {
                 mcts.findMove(state, MCTS_ITER)
             }

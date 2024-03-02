@@ -118,6 +118,7 @@ class AndroidLauncher : AndroidApplication(), GameListener {
                 if (Build.VERSION.SDK_INT >= 21) {
                     Intent.FLAG_ACTIVITY_NEW_DOCUMENT
                 } else {
+                    @Suppress("DEPRECATION")
                     Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET
                 }
         intent.addFlags(flags)

@@ -8,11 +8,12 @@ dependencies {
     val coroutinesVersion: String by project
     val cardGameVersion: String by project
     val pcardVersion: String by project
+    val mockitoKotlinVersion: String by project
 
     api("com.maltaisn.cardgame:core:$cardGameVersion")
     api("com.maltaisn.cardgame:pcard:$pcardVersion")
 
-    implementation(kotlin("stdlib"))
+    implementation(kotlin("stdlib-jdk8"))
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("io.github.libktx:ktx-async:$ktxVersion")
@@ -29,12 +30,13 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit"))
-    testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion")
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_6
-    targetCompatibility = JavaVersion.VERSION_1_6
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
 }
 
 // Tasks to copy the card game assets to the project assets folder

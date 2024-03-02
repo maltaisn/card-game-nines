@@ -1,10 +1,12 @@
 buildscript {
     val kotlinVersion: String by project
+    val androidGradlePluginVersion: String by project
     repositories {
+        gradlePluginPortal()
         google()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:3.5.2")
+        classpath("com.android.tools.build:gradle:$androidGradlePluginVersion")
         classpath(kotlin("gradle-plugin", kotlinVersion))
     }
 }
@@ -13,16 +15,14 @@ plugins {
     base
 }
 
-tasks.named("clean") {
-    delete(buildDir)
+tasks.clean {
+    delete(rootProject.layout.buildDirectory)
 }
 
 allprojects {
     repositories {
         mavenLocal()
         mavenCentral()
-        maven("https://oss.sonatype.org/content/repositories/snapshots/")
-        jcenter()
         google()
     }
 }

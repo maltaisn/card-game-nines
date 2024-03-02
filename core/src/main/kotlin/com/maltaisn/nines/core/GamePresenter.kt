@@ -1006,6 +1006,7 @@ class GamePresenter(private val layout: GameContract.View) : GameContract.Presen
         }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun <T : Any> onPreferenceValueChanged(pref: GamePref<T>, value: T) {
         if (pref.key == PrefKeys.GAME_SPEED) {
             updateAnimationDuration()
