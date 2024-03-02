@@ -40,14 +40,11 @@ java {
 }
 
 // Tasks to copy the card game assets to the project assets folder
-tasks.register("copyCardGameAssets") {
-    file("../assets").mkdirs()
-    copy {
-        from("../../cardgame/assets/")
-        include("core/**")
-        include("pcard/**")
-        into("../assets")
-    }
+tasks.register<Copy>("copyCardGameAssets") {
+    from("../../cardgame/assets/")
+    include("core/**")
+    include("pcard/**")
+    into("../assets")
 }
 
 tasks.register<Delete>("cleanCardGameAssets") {
@@ -55,10 +52,10 @@ tasks.register<Delete>("cleanCardGameAssets") {
     delete("../assets/pcard")
 }
 
-tasks.clean {
+tasks.named("clean") {
     finalizedBy("cleanCardGameAssets")
 }
 
-tasks.build {
+tasks.named("build") {
     finalizedBy("copyCardGameAssets")
 }
