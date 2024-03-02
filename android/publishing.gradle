@@ -1,0 +1,52 @@
+// To publish on Google Play, run "gradle publishBundle". This will fully publish the
+// release so make sure everything works! The listing will be published at the same time.
+// New listing locales should be added automatically.
+
+play {
+    enabled.set(true)
+    defaultToAppBundles.set(true)
+
+    serviceAccountCredentials = file("../production/google-play-api-key.json")
+
+    track.set("production")
+}
+
+// Publish a new release to Github, using the lastest defined appVersion property,
+// a git tag, and the release notes in CHANGELOG.md.
+githubRelease {
+    token githubReleasePluginToken
+    owner "maltaisn"
+    repo "card-game-nines"
+
+    tagName "v$appVersion"
+    targetCommitish "master"
+    releaseName "v$appVersion"
+
+    body {
+        // Get release notes for version from changelog file.
+        def changelog = file("../CHANGELOG.md")
+        def lines = changelog.readLines()
+        def versionChanges = new StringBuilder()
+        def foundVersion = false
+        for (line in lines) {
+            if (foundVersion && line ==~ /^#+\s*v[\d.]+$/) {
+                break
+            } else if (line ==~ /^#+\s*v${appVersion.replace(".", "\\.")}$/) {
+                foundVersion = true
+            } else if (foundVersion) {
+                versionChanges.append(line)
+                versionChanges.append('\n')
+            }
+        }
+        if (!foundVersion) {
+            throw new GradleException("No release notes for version $appVersion")
+        }
+        return versionChanges.toString().trim()
+    }
+
+    def apkPath = "${getLayout().getBuildDirectory().get()}/outputs/apk"
+    releaseAssets "$apkPath/release/android-release.apk"
+
+    overwrite true
+}
+tasks.named("githubRelease").get().dependsOn "assembleRelease"

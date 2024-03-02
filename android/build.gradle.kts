@@ -1,6 +1,8 @@
 plugins {
     id("com.android.application")
     kotlin("android")
+    id("com.github.triplet.play")
+    id("com.github.breadmoirai.github-release")
 }
 
 val appVersion: String by project
@@ -31,7 +33,7 @@ android {
         named("release") {
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.named("release").get()
         }
     }
@@ -49,6 +51,7 @@ android {
     sourceSets {
         named("main") {
             java.srcDir("src/main/kotlin")  // Not necessary but works better with IntelliJ
+            assets.srcDir("src/main/assets")
         }
     }
 }
@@ -88,7 +91,7 @@ tasks.register("copyAndroidNatives") {
         }
     }
 }
-tasks.whenTaskAdded {
+tasks.configureEach {
     if ("package" in name) {
         dependsOn("copyAndroidNatives")
     }
@@ -98,11 +101,14 @@ tasks.whenTaskAdded {
 val assetsPath = android.sourceSets.named("main").get().assets.srcDirs.last().path
 
 tasks.register("copyAssets") {
-    file(assetsPath).mkdirs()
-    copy {
-        from("../assets")
-        into(assetsPath)
-        exclude("saved-game.json")
+    dependsOn(":core:copyCardGameAssets")
+    doFirst {
+        file(assetsPath).mkdirs()
+        copy {
+            from("../assets")
+            into(assetsPath)
+            exclude("saved-game.json")
+        }
     }
 }
 
@@ -116,4 +122,12 @@ tasks.named("clean") {
 
 tasks.named("build") {
     finalizedBy("copyAssets")
+}
+
+// Publishing
+play {
+    serviceAccountCredentials = file("fake-key.json")
+}
+if (file("publishing.gradle").exists()) {
+    apply { from("publishing.gradle") }
 }
