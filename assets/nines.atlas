@@ -1,13 +1,6 @@
-
 nines.png
-size: 256,256
-format: RGBA8888
-filter: Linear,Linear
-repeat: none
+size:256,256
+filter:Linear,Linear
+repeat:none
 icon
-  rotate: false
-  xy: 4, 4
-  size: 192, 192
-  orig: 192, 192
-  offset: 0, 0
-  index: -1
+bounds:4,4,192,192
