@@ -6,7 +6,7 @@ play {
     enabled.set(true)
     defaultToAppBundles.set(true)
 
-    serviceAccountCredentials = file("../production/google-play-api-key.json")
+    serviceAccountCredentials = file("../dev/google-play-api-key.json")
 
     track.set("production")
 }
