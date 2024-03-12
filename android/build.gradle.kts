@@ -116,12 +116,12 @@ tasks.register<Delete>("cleanAssets") {
     delete(assetsPath)
 }
 
-tasks.named("clean") {
+tasks.clean {
     finalizedBy("cleanAssets")
 }
 
-tasks.named("build") {
-    finalizedBy("copyAssets")
+tasks.named("preBuild") {
+    dependsOn("copyAssets")
 }
 
 // Publishing

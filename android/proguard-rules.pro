@@ -13,6 +13,11 @@
 -keep public class com.badlogic.gdx.graphics.Color { *; }
 -keep public class com.badlogic.gdx.math.Rectangle { *; }
 
+# JSON game deserialization: keep zero-args constructors
+-keepclassmembers class com.maltaisn.nines.core.game.** {
+    <init>();
+}
+
 # For deobfuscating crash reports
 -keepattributes *Annotation*
 -keepattributes SourceFile,LineNumberTable

@@ -1,3 +1,7 @@
+### v1.1.2
+
+- Fix game deserialization not working in release build.
+
 ### v1.1.1
 
 - Update target Android API, libGDX & other libraries.
